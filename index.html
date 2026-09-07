@@ -36,8 +36,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-C1FHKzL3.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CKfy2iLY.css">
+  <script type="module" crossorigin src="./assets/index-K3yWCBUz.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BJMldRDz.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -100,17 +100,57 @@
  <div class="weekend-banner" id="weekend-banner" style="display:none;" data-i18n="weekendBanner">주말 한정! 오늘 완주하면 XP 2배</div>
  <div class="comeback-banner" id="comeback-banner" style="display:none;"></div>
 
+ <div class="challenge-invite" id="challenge-invite" style="display:none;">
+ <div class="ci-title" id="challenge-invite-title"></div>
+ <div class="ci-sub" id="challenge-invite-sub"></div>
+ <button type="button" id="challenge-accept-btn">받아들인다 🔥</button>
+ </div>
+
  <div class="hero">
  <h1 class="logo">Q-fit<span class="logo-dot">.</span></h1>
  <p class="hero-line" data-i18n="heroLine">1분이면 끝. 귀찮지 않은 운동.</p>
  </div>
 
+ <!-- 캘린더 + 다마고치 펫, 4:5 비율로 나란히(원본 기준 복원). 별도 백엔드
+      필드 없이 기존 totalCompletions/lastPlayDate/xp 만으로 굴러간다. -->
+ <div class="home-status-row">
  <div class="card week-card">
  <div class="week-head">
  <span class="week-title" data-i18n="thisWeek">이번 주</span>
  <span class="dim" id="streak-line"></span>
  </div>
  <div class="week-strip" id="week-strip"></div>
+ </div>
+
+ <div class="pet-card-mini" id="pet-card" role="button" tabindex="0">
+ <div class="pet-visual" id="pet-visual">
+ <span class="pet-emoji" id="pet-emoji">🥚</span>
+ <img class="pet-cupid-img" id="pet-cupid-img" src="media/pet/egg-v1.webp" alt="" style="display:none;">
+ </div>
+ <div class="pet-mini-label" id="pet-status">성장 중!</div>
+ <button class="pet-sos-btn" id="pet-sos-btn" type="button" style="display:none;">🆘</button>
+ </div>
+ </div>
+
+ <div class="pause-overlay" id="pet-detail-overlay">
+ <div class="pause-box pet-detail-box">
+ <div class="pet-visual pet-detail-visual" id="pet-detail-visual">
+ <span class="pet-emoji" id="pet-detail-emoji">🥚</span>
+ <img class="pet-cupid-img" id="pet-detail-cupid-img" src="media/pet/cupid-logo-v3.webp" alt="" style="display:none;">
+ </div>
+ <input type="text" id="pet-name-input" class="pet-name-input" maxlength="12" placeholder="이름 짓기" data-i18n="petNamePlaceholder">
+ <div class="pet-detail-title" id="pet-detail-title">🥚 Q-FIT EGG</div>
+ <div class="pet-detail-level" id="pet-detail-level">Lv. 1</div>
+ <div class="pet-detail-bar-track"><div class="pet-detail-bar-fill" id="pet-detail-bar-fill"></div></div>
+ <div class="pet-detail-count" id="pet-detail-count">0 / 100 XP</div>
+ <div class="pet-detail-next" id="pet-detail-next">다음 진화까지 100 XP</div>
+ <div class="pet-detail-preview" id="pet-detail-preview" style="display:none;">
+ <div class="pet-detail-preview-label" data-i18n="petPreviewLabel">그리고 운동을 끝내면</div>
+ <div class="pet-detail-preview-xp" id="pet-detail-preview-xp">+20 XP</div>
+ <div class="pet-detail-preview-next" id="pet-detail-preview-next"></div>
+ </div>
+ <button class="btn-restart" id="pet-detail-close-btn" data-i18n="closeBtn">닫기</button>
+ </div>
  </div>
 
  <!-- 회복·운동동작은 더보기에도 있다. 여기 버튼은 그 버튼을 눌러 준다 —
@@ -155,6 +195,13 @@
  <span class="row-ic" data-icon="repeat"></span>
  <span class="row-main"><span class="row-t" data-i18n="repeatLast">지난 루틴 다시 시작</span><span class="row-d dim" id="repeat-trigger-sub"></span></span>
  </button>
+ <!-- 타바타 타이머(원본 기준 복원) — 정해진 세트/시간 없이 직접 운동·휴식·
+      라운드 수를 정해서 쓰는 별도의 인터벌 타이머. 위 세 갈래와 달리 여기
+      결과는 XP/기록에 반영되지 않는다(원본과 동일한 설계). -->
+ <button class="row44 card" id="tabata-link-btn" type="button">
+ <span class="row-ic" data-icon="timer"></span>
+ <span class="row-main"><span class="row-t" data-i18n="tabataLinkLabel">⏱️ 타바타 타이머</span><span class="row-d dim" data-i18n="tabataLinkSub">직접 설정하는 인터벌 타이머</span></span>
+ </button>
  </div>
  </div>
 
@@ -167,9 +214,25 @@
  <div class="eyebrow" data-i18n="moreEyebrow">더보기</div>
  <h2 class="lb-title" data-i18n="moreTitle">내 활동</h2>
 
- <!-- 설계 16 에는 여기 '오늘의 챌린지' 배너가 있지만 넣지 않는다.
-      챌린지는 FR-05 로 걷어낸 기능이다(커밋 150da98) — 설계는 그 결정보다
-      앞선 그림이라, 여기서는 요구사항이 이긴다. -->
+ <!-- 오늘의 퀘스트(한때 FR-05 로 걷어냈던 기능 — 대표님 지시로 원본 기준
+      복원, 2026-09-05). -->
+ <div class="daily-challenge-card" id="daily-challenge-card">
+ <div class="dc-header">
+ <span class="dc-icon" id="dc-icon">🎯</span>
+ <div class="dc-title" id="dc-title">오늘의 퀘스트</div>
+ </div>
+ <div class="dc-goals" id="dc-goals"></div>
+ <div class="dc-sub" id="dc-sub">로딩 중...</div>
+ </div>
+
+ <button class="invite-friend-card" id="invite-friend-card" type="button" style="display:none;">
+ <span class="invite-icon">🌟</span>
+ <div class="invite-text">
+ <div class="invite-title" id="invite-friend-title" data-i18n="inviteFriendTitle">친구 초대하고 한정판 뱃지 받기</div>
+ <div class="invite-sub" id="invite-friend-sub" data-i18n="inviteFriendSub">친구가 내 링크로 가입해 3분 운동을 끝내면, 나도 친구도 챌린지 메이트 뱃지 획득!</div>
+ </div>
+ </button>
+
  <button class="repeat-chip repeat-trigger-btn" id="repeat-trigger-more" style="display:none;" data-i18n="repeatLast">지난 루틴 다시 시작</button>
 
 
@@ -285,6 +348,15 @@
  <button class="primary profile-login" id="settings-login-btn" data-i18n="loginOrSignup">로그인 / 가입</button>
 
  <div class="settings-group">
+ <div class="settings-list">
+ <button type="button" class="settings-row settings-link" id="settings-premium-row">
+ <span class="row-main"><span class="row-t" id="settings-premium-label">✨ 프리미엄 아님 — 눌러서 보기</span></span>
+ <span class="settings-val">›</span>
+ </button>
+ </div>
+ </div>
+
+ <div class="settings-group">
  <div class="kick" data-i18n="setGroupWorkout">운동</div>
  <div class="settings-list">
  <button class="settings-row settings-link" id="settings-default-sets" type="button">
@@ -317,6 +389,13 @@
  <input type="checkbox" id="settings-vibration-toggle" class="sw-input" checked>
  <span class="sw" aria-hidden="true"><i></i></span>
  </label>
+ <div class="settings-row settings-voice-row">
+ <span class="row-main"><span class="row-t" data-i18n="setVoice">코치 목소리</span></span>
+ <div class="voice-toggle-group">
+ <button type="button" class="voice-toggle-btn active" id="voice-male-btn" data-i18n="voiceMaleBtn">낮은 톤</button>
+ <button type="button" class="voice-toggle-btn" id="voice-female-btn" data-i18n="voiceFemaleBtn">높은 톤</button>
+ </div>
+ </div>
  </div>
  </div>
 
@@ -383,7 +462,7 @@
  <div class="select-tools">
  <label class="inp-wrap">
  <span class="inp-ic" data-icon="search"></span>
- <input type="text" id="ex-search-input" class="inp ex-search-input" placeholder="동작 검색 (예: 스쿼트)" aria-label="동작 검색">
+ <input type="text" id="ex-search-input" class="inp ex-search-input" placeholder="동작 검색 (예: 스쿼트)" aria-label="동작 검색" data-i18n="exSearchPlaceholder">
  </label>
  <div class="chip-row" id="group-row"></div>
  </div>
@@ -410,15 +489,15 @@
  </div>
 
  <div id="account-login-form" class="auth-form">
- <input type="email" id="account-login-email" class="auth-input" placeholder="이메일" autocomplete="email">
- <input type="password" id="account-login-pw" class="auth-input" placeholder="비밀번호" autocomplete="current-password">
+ <input type="email" id="account-login-email" class="auth-input" placeholder="이메일" autocomplete="email" data-i18n="loginEmailPlaceholder">
+ <input type="password" id="account-login-pw" class="auth-input" placeholder="비밀번호" autocomplete="current-password" data-i18n="loginPwPlaceholder">
  <button class="primary" id="account-login-btn" data-i18n="accountBtn">로그인</button>
  <div class="auth-error" id="account-login-error"></div>
  </div>
 
  <div id="account-signup-form" class="auth-form" style="display:none;">
- <input type="email" id="account-signup-email" class="auth-input" placeholder="이메일" autocomplete="email">
- <input type="password" id="account-signup-pw" class="auth-input" placeholder="비밀번호 (6자리 이상)" autocomplete="new-password">
+ <input type="email" id="account-signup-email" class="auth-input" placeholder="이메일" autocomplete="email" data-i18n="loginEmailPlaceholder">
+ <input type="password" id="account-signup-pw" class="auth-input" placeholder="비밀번호 (6자리 이상)" autocomplete="new-password" data-i18n="signupPwPlaceholder">
  <button class="primary" id="account-signup-btn" data-i18n="signupBtn">회원가입</button>
  <div class="auth-error" id="account-signup-error"></div>
  </div>
@@ -651,7 +730,7 @@
 
    <label class="inp-wrap">
    <span class="inp-ic" data-icon="search"></span>
-   <input type="text" id="injury-search-input" class="inp search-input" placeholder="부위 또는 증상 검색" aria-label="부위 검색">
+   <input type="text" id="injury-search-input" class="inp search-input" placeholder="부위 또는 증상 검색" aria-label="부위 검색" data-i18n="injurySearchPlaceholder">
    </label>
    <div class="chip-row" id="injury-chip-row"></div>
    <div class="search-empty" id="injury-search-empty" style="display:none;" data-i18n="searchEmpty">검색 결과가 없습니다</div>
@@ -681,7 +760,7 @@
  <h2 class="lb-title" data-i18n="movesBtn">운동동작 소개</h2>
  <label class="inp-wrap">
  <span class="inp-ic" data-icon="search"></span>
- <input type="text" id="video-search-input" class="inp search-input" placeholder="동작 검색 (예: 스쿼트)" aria-label="동작 검색">
+ <input type="text" id="video-search-input" class="inp search-input" placeholder="동작 검색 (예: 스쿼트)" aria-label="동작 검색" data-i18n="exSearchPlaceholder">
  </label>
  <div class="video-gallery-grid" id="video-gallery-grid"></div>
  <div class="search-empty" id="video-search-empty" style="display:none;" data-i18n="searchEmpty">검색 결과가 없습니다</div>
@@ -696,6 +775,87 @@
  <div class="video-lightbox-desc" id="video-lightbox-desc"></div>
  <div class="video-lightbox-tip" id="video-lightbox-tip"></div>
  <div class="video-lightbox-risk" id="video-lightbox-risk"></div>
+ </div>
+
+ <!-- 타바타 타이머(원본 기준 복원). 메인 WOD 흐름과 완전히 독립적인 커스텀
+      인터벌 타이머 — 운동/휴식/라운드 수를 직접 정한다. 여기 결과는 XP·기록·
+      스트릭에 반영되지 않는다(원본과 동일). -->
+ <div class="screen" id="tabata-setup-screen">
+ <div class="eyebrow" id="tabata-setup-eyebrow" data-i18n="tabataSetupTitle">⏱️ 타바타 타이머</div>
+ <p class="tabata-input-hint" id="tabata-input-hint" data-i18n="tabataInputHint">✎ 숫자를 탭하면 직접 입력할 수 있어요</p>
+
+ <div class="card setup-card">
+ <div class="section-label" id="tabata-work-label" data-i18n="tabataWorkLabel">🔥 운동 시간(초)</div>
+ <div class="tabata-slider-row">
+ <button type="button" class="tabata-stepper-btn" id="tabata-work-minus" aria-label="minus">−</button>
+ <input type="range" id="tabata-work-slider" class="tabata-qfit-slider" min="1" max="180" value="20">
+ <button type="button" class="tabata-stepper-btn" id="tabata-work-plus" aria-label="plus">+</button>
+ <span class="tabata-slider-value-wrap">
+ <input type="number" inputmode="numeric" class="tabata-slider-value-input" id="tabata-work-value" min="1" max="180" value="20">
+ <span class="tabata-slider-unit">초</span>
+ </span>
+ </div>
+ </div>
+
+ <div class="card setup-card">
+ <div class="section-label" id="tabata-rest-label" data-i18n="tabataRestLabel">💤 휴식 시간(초)</div>
+ <div class="tabata-slider-row">
+ <button type="button" class="tabata-stepper-btn" id="tabata-rest-minus" aria-label="minus">−</button>
+ <input type="range" id="tabata-rest-slider" class="tabata-qfit-slider" min="0" max="180" value="10">
+ <button type="button" class="tabata-stepper-btn" id="tabata-rest-plus" aria-label="plus">+</button>
+ <span class="tabata-slider-value-wrap">
+ <input type="number" inputmode="numeric" class="tabata-slider-value-input" id="tabata-rest-value" min="0" max="180" value="10">
+ <span class="tabata-slider-unit">초</span>
+ </span>
+ </div>
+ </div>
+
+ <div class="card setup-card">
+ <div class="section-label" id="tabata-rounds-label" data-i18n="tabataRoundsLabel">🔁 라운드 수</div>
+ <div class="tabata-slider-row">
+ <button type="button" class="tabata-stepper-btn" id="tabata-rounds-minus" aria-label="minus">−</button>
+ <input type="range" id="tabata-rounds-slider" class="tabata-qfit-slider" min="1" max="50" value="8">
+ <button type="button" class="tabata-stepper-btn" id="tabata-rounds-plus" aria-label="plus">+</button>
+ <span class="tabata-slider-value-wrap">
+ <input type="number" inputmode="numeric" class="tabata-slider-value-input" id="tabata-rounds-value" min="1" max="50" value="8">
+ <span class="tabata-slider-unit">라운드</span>
+ </span>
+ </div>
+ </div>
+
+ <p class="duration-hint dim" id="tabata-total-hint">총 4분</p>
+ <button class="primary" id="tabata-start-btn" data-i18n="tabataStartBtn">▶️ 시작</button>
+ <button class="back-link-btn" id="tabata-setup-back-btn" data-i18n="backBtn">이전</button>
+ </div>
+
+ <div class="screen" id="tabata-run-screen">
+ <div class="tabata-phase-label" id="tabata-phase-label">운동!</div>
+ <div class="tabata-round-label" id="tabata-round-label">1 / 8</div>
+ <div class="hold-ring tabata-ring">
+ <svg viewBox="0 0 150 150">
+ <circle class="track" cx="75" cy="75" r="65"></circle>
+ <circle class="prog" id="tabata-ring-prog" cx="75" cy="75" r="65"></circle>
+ </svg>
+ <div class="num" id="tabata-time-num">20</div>
+ </div>
+ <div class="tabata-round-progress">
+ <div class="tabata-round-track"><div class="tabata-round-fill" id="tabata-round-fill"></div></div>
+ </div>
+ <div class="tabata-controls">
+ <button class="btn-restart" id="tabata-pause-btn" data-i18n="tabataPauseBtn">⏸️ 일시정지</button>
+ <button class="btn-home" id="tabata-skip-btn">⏭️ 이번 세트 건너뛰기</button>
+ <button class="btn-home" id="tabata-quit-btn" data-i18n="tabataQuitBtn">⏹️ 종료</button>
+ </div>
+ </div>
+
+ <div class="pause-overlay" id="tabata-done-overlay">
+ <div class="pause-box">
+ <div class="tabata-done-emoji">🎉</div>
+ <div class="pause-title" id="tabata-done-title" data-i18n="tabataDoneTitle">완료!</div>
+ <p class="dim" id="tabata-done-sub" data-i18n="tabataDoneSub">고생하셨습니다, 웃으세요 😄</p>
+ <button class="btn-restart" id="tabata-done-again-btn" data-i18n="tabataDoneAgainBtn">🔁 다시하기</button>
+ <button class="btn-home" id="tabata-done-home-btn" data-i18n="tabataDoneHomeBtn">🏠 홈화면으로</button>
+ </div>
  </div>
 
  <!-- WOD PREVIEW (설계 06).
@@ -777,6 +937,18 @@
     <div class="mission-zone" id="mission-zone">
       <div class="clear-banner" id="clear-banner">CLEAR!</div>
 
+      <div class="rest-touch-zone" id="rest-touch-zone" style="display:none;">
+        <div class="rest-touch-ring">
+          <svg viewBox="0 0 60 60">
+            <circle class="rtz-track" cx="30" cy="30" r="26"></circle>
+            <circle class="rtz-prog" id="rest-touch-prog" cx="30" cy="30" r="26"></circle>
+          </svg>
+          <span class="rtz-icon" id="rest-touch-icon">⚡</span>
+        </div>
+        <div class="rest-touch-label" id="rest-touch-label" data-i18n="restTouchLabel">⚡ 위 번개를 꾹 눌러요!</div>
+        <div class="rest-touch-caption" id="rest-touch-caption" data-i18n="restTouchCaption">인증을 위해 첫휴식에만 화면 위 번개를 눌러주세요!</div>
+      </div>
+
       <div class="figure-wrap" id="figure-wrap">
         <svg viewBox="0 0 100 140">
           <g id="figure-outer">
@@ -811,6 +983,7 @@
       </div>
 
       <p class="ex-cue" id="ex-cue">제자리에서 위로 점프</p>
+      <button class="easy-swap-btn" id="easy-swap-btn" type="button" style="display:none;">😵 힘들어요 → 쉬운 동작으로</button>
       <p class="ex-warn" id="ex-warn"></p>
     </div>
 
@@ -914,6 +1087,22 @@
  <button class="btn-restart" id="retry-same-btn" data-i18n="retrySame">방금 운동 다시</button>
  <button class="btn-home" id="retry-new-btn" data-i18n="retryNew">새로 운동 정하기</button>
  <button class="link-btn" id="retry-cancel-btn" data-i18n="cancelBtn">취소</button>
+ </div>
+</div>
+
+<!-- 프리미엄 게이팅(테스트 모드 — 실제 결제는 아직 연결 안 됨). 원본 기준 복원. -->
+<div class="pause-overlay" id="premium-overlay">
+ <div class="pause-box premium-box">
+ <div class="premium-icon">✨</div>
+ <div class="pause-title" id="premium-title">프리미엄 전용 운동</div>
+ <p class="premium-desc" id="premium-desc">이 운동은 프리미엄 회원만 이용할 수 있어요. 프리미엄에 가입하면 더 다양한 고강도 운동을 즐길 수 있어요.</p>
+ <div class="premium-price-box" id="premium-price-box">
+ <span class="premium-price-amount" id="premium-price-amount">₩3,900</span>
+ <span class="premium-price-unit">/ 월</span>
+ </div>
+ <button class="btn-restart" id="premium-activate-btn">✨ 프리미엄 시작하기</button>
+ <p class="premium-fineprint" id="premium-fineprint">테스트 모드 — 실제 결제는 아직 연결되지 않았어요</p>
+ <button class="link-btn" id="premium-close-btn" data-i18n="closeBtn">닫기</button>
  </div>
 </div>
 
