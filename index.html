@@ -36,8 +36,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-K3yWCBUz.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-BJMldRDz.css">
+  <script type="module" crossorigin src="./assets/index-BakHmDb3.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-C62-9MIu.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -422,6 +422,10 @@
  <span class="row-main"><span class="row-t" data-i18n="setTheme">테마</span><span class="row-d dim" data-i18n="setThemeSub">시스템 설정을 따릅니다</span></span>
  <span class="settings-val" id="settings-theme-val"></span>
  </button>
+ <button class="settings-row settings-link" id="settings-fontsize-btn" type="button">
+ <span class="row-main"><span class="row-t" data-i18n="setFontSize">글자 크기</span><span class="row-d dim" data-i18n="setFontSizeSub">본문 글자 크기를 조정합니다</span></span>
+ <span class="settings-val" id="settings-fontsize-val"></span>
+ </button>
  </div>
  </div>
 
@@ -690,6 +694,12 @@
  <clipPath id="bottle-clip">
  <path d="M22,4 h16 v9 c8,4 12,13 12,21 v50 a7,7 0 0 1 -7,7 h-26 a7,7 0 0 1 -7,-7 v-50 c0,-8 4,-17 12,-21 z"/>
  </clipPath>
+ <!-- 물이 단색 민트라 밋밋했다 — 펫 상세 레벨바(.pet-detail-bar-fill)와
+      같은 민트→골드 그라데이션을 물병에도 입혔다(2026-09-06). -->
+ <linearGradient id="xp-water-grad" x1="0" y1="1" x2="0" y2="0">
+ <stop offset="0%" stop-color="var(--mint)"/>
+ <stop offset="100%" stop-color="var(--volt)"/>
+ </linearGradient>
  </defs>
  <path class="bottle-outline" d="M22,4 h16 v9 c8,4 12,13 12,21 v50 a7,7 0 0 1 -7,7 h-26 a7,7 0 0 1 -7,-7 v-50 c0,-8 4,-17 12,-21 z"/>
  <rect class="bottle-cap" x="23" y="0" width="14" height="6" rx="2"/>
@@ -728,6 +738,9 @@
         지금 아픈 사람이 여는 화면이므로 검색과 부위 칩이 맨 위에 온다. -->
    <p class="recovery-lead" data-i18n="recoveryLead">아픈 데를 먼저 찾으세요.</p>
 
+   <!-- "목부터 발목은 부위별 회복으로" 지적(2026-09-06) — 검색·칩·목록이
+        전부 목~발목(부위) 대상이라는 게 소제목 없이는 안 드러났었다. -->
+   <div class="injury-section-title" data-i18n="injuryByPartTitle">부위별 회복</div>
    <label class="inp-wrap">
    <span class="inp-ic" data-icon="search"></span>
    <input type="text" id="injury-search-input" class="inp search-input" placeholder="부위 또는 증상 검색" aria-label="부위 검색" data-i18n="injurySearchPlaceholder">
@@ -740,6 +753,19 @@
    <div class="recovery-warn-t" data-i18n="recoveryWarnT">통증이 48시간 넘게 남으면</div>
    <p class="dim" data-i18n="recoveryWarnD">앱의 스트레칭을 멈추고 전문가를 만나세요. 이 목록은 진단이 아닙니다.</p>
    </div>
+
+   <!-- 노인/어린이/부상 회복 중/오십견은 부위별 회복과 다른 대상별 안내라
+        따로 둔다(2026-09-06, 위 부위별 목록에 같이 섞여 있던 걸 분리).
+        src/data/recovery.js 의 SPECIAL_GUIDES 를 읽어 그린다. -->
+   <div class="injury-section-title" data-i18n="specialGuidesTitle">대상별 가이드</div>
+   <div id="special-list"></div>
+
+   <!-- 식단(목적별)은 부상 대처법과 다른 이야기라 따로 둔다 — 위 부위별
+        목록에 섞여 있었던 것을 분리함(2026-09-06, "다이어트용 등은 식단이지
+        회복이 아니다" 지적). src/data/recovery.js 의 DIET_GUIDES 를 읽어 그린다. -->
+   <div class="injury-section-title" data-i18n="dietGuidesTitle">식단</div>
+   <p class="injury-intro" data-i18n="dietGuidesIntro">목적에 맞는 식단 방향을 간단히 정리했어요. 개인 건강 상태에 따라 다를 수 있으니 참고용으로만 봐주세요.</p>
+   <div id="diet-list"></div>
 
    <div class="injury-section-title" id="injury-section-anchor" data-i18n="recoveryHabits">회복 습관</div>
    <p class="injury-intro" data-i18n="recoveryIntro">운동은 절반, 회복은 나머지 절반입니다. 아래 습관들로 다음 WOD를 더 가볍게 시작해봅니다.</p>
@@ -792,7 +818,7 @@
  <button type="button" class="tabata-stepper-btn" id="tabata-work-plus" aria-label="plus">+</button>
  <span class="tabata-slider-value-wrap">
  <input type="number" inputmode="numeric" class="tabata-slider-value-input" id="tabata-work-value" min="1" max="180" value="20">
- <span class="tabata-slider-unit">초</span>
+ <span class="tabata-slider-unit" data-i18n="secUnit">초</span>
  </span>
  </div>
  </div>
@@ -805,7 +831,7 @@
  <button type="button" class="tabata-stepper-btn" id="tabata-rest-plus" aria-label="plus">+</button>
  <span class="tabata-slider-value-wrap">
  <input type="number" inputmode="numeric" class="tabata-slider-value-input" id="tabata-rest-value" min="0" max="180" value="10">
- <span class="tabata-slider-unit">초</span>
+ <span class="tabata-slider-unit" data-i18n="secUnit">초</span>
  </span>
  </div>
  </div>
@@ -818,7 +844,7 @@
  <button type="button" class="tabata-stepper-btn" id="tabata-rounds-plus" aria-label="plus">+</button>
  <span class="tabata-slider-value-wrap">
  <input type="number" inputmode="numeric" class="tabata-slider-value-input" id="tabata-rounds-value" min="1" max="50" value="8">
- <span class="tabata-slider-unit">라운드</span>
+ <span class="tabata-slider-unit" data-i18n="roundsUnit">라운드</span>
  </span>
  </div>
  </div>
@@ -843,7 +869,7 @@
  </div>
  <div class="tabata-controls">
  <button class="btn-restart" id="tabata-pause-btn" data-i18n="tabataPauseBtn">⏸️ 일시정지</button>
- <button class="btn-home" id="tabata-skip-btn">⏭️ 이번 세트 건너뛰기</button>
+ <button class="btn-home" id="tabata-skip-btn" data-i18n="tabataSkipBtn">⏭️ 이번 세트 건너뛰기</button>
  <button class="btn-home" id="tabata-quit-btn" data-i18n="tabataQuitBtn">⏹️ 종료</button>
  </div>
  </div>
