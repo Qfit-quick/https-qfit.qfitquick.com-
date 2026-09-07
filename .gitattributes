@@ -1,0 +1,12 @@
+# 배포 산출물은 바이트 그대로 유지한다.
+#
+# core.autocrlf=true 인 윈도우에서 clone 하면 텍스트 파일이 CRLF 로 풀리는데,
+# 그러면 sw.js 의 precacheAndRoute revision(index.html·manifest 의 md5)이
+# 실제 파일과 어긋난다. 실제로 manifest.webmanifest 가 이 때문에 한 번
+# 어긋나 있었다. 산출물은 빌드가 뱉은 LF 그대로 둬야 배포본과 같아진다.
+index.html          -text
+sw.js               -text
+registerSW.js       -text
+workbox-*.js        -text
+manifest.webmanifest -text
+assets/**           -text
