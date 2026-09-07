@@ -21,7 +21,8 @@
     "i18n": "node scripts/i18n.mjs",
     "reminder": "node scripts/reminder.mjs",
     "plan": "node scripts/plan.mjs",
-    "stale": "node scripts/stale.mjs"
+    "stale": "node scripts/stale.mjs",
+    "deploy": "npm run build && npx --yes wrangler deploy"
   },
   "devDependencies": {
     "ffmpeg-static": "^5.3.0",
