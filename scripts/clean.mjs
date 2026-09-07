@@ -14,7 +14,23 @@ import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 
 // 빌드가 만드는 것들. 여기 없는 것은 건드리지 않는다.
-const DIRS = ['assets', 'media', 'icons'];
+//
+// ⚠ media 와 icons 는 **일부러 빼 두었다.**
+//
+// 지우는 목적은 해시가 붙은 옛 자산을 걷어내는 것이다(assets/index-a1b2c3.js).
+// 그런데 media·icons 의 파일 이름에는 해시가 없다 — public/ 에서 그대로
+// 복사되므로 이름이 늘 같고, 새 빌드가 같은 이름 위에 덮어쓴다. 즉 이 둘을
+// 지워서 얻는 것이 없다.
+//
+// 잃는 것은 있었다. 배포본에는 public/ 에 없는 파일 47개가 있다 —
+// 클립 13~25(5.7MB), media/pet/, 잘려 나간 동작들의 사진 33장. 코드가
+// 하나도 참조하지 않는 잔여물이지만, 지우는 순간 **라이브에서 사라진다.**
+// media 를 목록에 두면 빌드할 때마다 그 일이 되풀이된다.
+//
+// 대신 감수하는 것: public/ 에서 사진 한 장을 정말로 빼도 배포본에는
+// 남는다. 그건 손으로 지우면 되는 일이고, 라이브 파일이 예고 없이
+// 사라지는 것보다 훨씬 작은 문제다.
+const DIRS = ['assets'];
 const FILES = ['index.html', 'sw.js', 'registerSW.js', 'manifest.webmanifest'];
 const PATTERNS = [/^workbox-[\w-]+\.js$/];
 

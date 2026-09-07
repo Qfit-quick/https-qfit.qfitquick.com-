@@ -24,6 +24,9 @@ const SUB_SCREENS = {
   'routines-screen': ['routinesTitle', '#routines-back-btn'],
   'account-screen': ['accountEyebrow', '#account-back-btn'],
   'settings-screen': ['settingsBtn', '#settings-back-btn'],
+  // 신체정보는 계획 아래 화면이다 — 저장하면 계획으로 나가므로 뒤로 갈 곳이
+  // 있다. 계획·기록지는 탭으로 바로 닿으니 큰 제목 쪽(아래 목록)이다.
+  'body-screen': ['bodyTitle', '#body-back-btn'],
   'video-gallery-screen': ['movesBtn', '#video-gallery-back-btn'],
   // 미리보기부터 탭바를 감춘다. 그러면 뒤로 버튼이 유일한 탈출구라
   // 이 화면에도 머리가 반드시 있어야 한다(설계의 주석 핀 4번).
@@ -97,7 +100,7 @@ export function initHeaders({ STATIC_UI, t, ICON }) {
   //  · '닫기' 는 탭바가 이미 하는 일이다. 목록이 길면 스크롤을 끝까지 내려야
   //    나가는 길이 보이는데, 그 길은 화면 아래에 늘 떠 있는 탭바다.
   // 버튼은 지우지 않고 감춘다 — 다른 곳에서 눌러 이동하는 데 쓴다.
-  for (const id of ['records-screen', 'recovery-screen', 'more-screen']) {
+  for (const id of ['records-screen', 'recovery-screen', 'more-screen', 'plan-screen', 'log-screen']) {
     const screen = document.getElementById(id);
     if (!screen) continue;
     const eyebrow = screen.querySelector(':scope > .eyebrow');

@@ -11,7 +11,19 @@ import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const html = fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf-8');
-const js = fs.readFileSync(path.join(ROOT, 'src', 'app.js'), 'utf-8');
+// app.js 만 훑던 것을 src/ 전체로 넓혔다. 화면 셋(계획·기록지·관문)의
+// 안쪽은 src/ui/*.js 가 문자열로 조립하는데, app.js 만 보면 그 클래스가
+// '아무도 안 쓰는 것' 으로 보여서 검사가 통과하며 화면만 망가진다.
+const jsFiles = [];
+const walk = (dir) => {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) walk(full);
+    else if (e.name.endsWith('.js')) jsFiles.push(full);
+  }
+};
+walk(path.join(ROOT, 'src'));
+const js = jsFiles.map((f) => fs.readFileSync(f, 'utf-8')).join('\n');
 
 const cssFiles = fs
   .readdirSync(path.join(ROOT, 'src', 'styles'))
@@ -32,6 +44,21 @@ for (const [, v] of js.matchAll(/classList\.(?:add|remove|toggle)\(\s*'([^']+)'/
 for (const [, v] of js.matchAll(/className\s*=\s*'([^']*)'/g)) {
   v.split(/\s+/).filter(Boolean).forEach((c) => used.add(c));
 }
+// JS 안에서 문자열로 조립하는 마크업.
+//
+// 두 모양이 섞여 있다:
+//   '<div class="card plan-meal">'                    ← 그냥 문자열
+//   `<div class="log-half w${on ? ' on' : ''}">`      ← 조각을 이어 붙인 것
+// 그래서 class=" 뒤를 따옴표·백틱·${ 중 먼저 오는 것까지만 자르고, 남은
+// 토큰이 실제 클래스 이름 꼴인지 한 번 더 거른다. 안 거르면 '===' 이나
+// '(done' 같은 코드 조각이 '스타일 없는 클래스' 로 보고된다.
+//
+// 삼항으로 붙는 수식어(' on', ' partial')는 여기서 안 잡힌다. 그것들은
+// 잡히는 본 클래스에 딸린 상태라, 본 클래스가 없으면 같이 걸린다.
+const CLASS_NAME = /^[a-zA-Z][\w-]*$/;
+for (const [, v] of js.matchAll(/class="([^"'`$\n]*)/g)) {
+  v.split(/\s+/).filter((c) => CLASS_NAME.test(c)).forEach((c) => used.add(c));
+}
 
 // ── CSS 가 정의하는 클래스 ───────────────────────────────
 const defined = new Set();
@@ -48,6 +75,9 @@ const PREFIX_OK = ['anim-'];
 const IGNORE = new Set([
   'anim-',
   'recovery-trigger-btn', 'video-gallery-trigger-btn', 'repeat-trigger-btn',
+  // 바텀시트 닫기 버튼. 보이는 모양은 .icb 가 다 정하고, 이 이름은
+  // sheet.js 가 querySelector 로 집는 손잡이다(스타일이 없는 게 정상).
+  'sheet-close',
 ]);
 
 const missing = [...used]

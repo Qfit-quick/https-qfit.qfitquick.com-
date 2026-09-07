@@ -1,0 +1,10 @@
+import { launch, context } from './_browser.mjs';
+const b = await launch(); const p = await (await context(b)).newPage();
+await p.setViewportSize({ width: 1600, height: 1100 });
+const errs = []; p.on('pageerror', e => errs.push(e.message));
+await p.goto('http://localhost:5190/Q-fit.dc.html', { waitUntil: 'load' });
+await p.waitForTimeout(3000);
+console.log('폰 목업 수:', await p.evaluate(() => document.querySelectorAll('.phone').length));
+console.log('오류:', errs.length ? errs.slice(0, 2) : '없음');
+await p.screenshot({ path: 'screenshots/design-full.png', fullPage: false });
+await b.close();

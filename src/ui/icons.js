@@ -34,6 +34,10 @@ export const ICON = {
   chart: svg('<path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>'),
   recovery: svg('<path d="M20.8 6.6a4.9 4.9 0 0 0-7 0L12 8.4l-1.8-1.8a4.9 4.9 0 1 0-7 7l8.8 8.8 8.8-8.8a4.9 4.9 0 0 0 0-7Z"/>'),
   more: svg('<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>'),
+  // 계획 탭 — 달력. '주 단위로 정해 둔 것' 이라는 뜻이라 목록(more)과 구별된다.
+  plan: svg('<rect x="4" y="4" width="16" height="17" rx="2"/><path d="M8 3v3M16 3v3M4 10h16"/>'),
+  // 체크 탭 — 오늘 두 칸(운동·식단)에 표시하는 일. 체크 두 개가 곧 그 뜻이다.
+  checklist: svg('<path d="m3 7 2 2 3-3"/><path d="m3 16 2 2 3-3"/><path d="M12 8h9"/><path d="M12 17h9"/>'),
 
   // 홈 머리와 두 바로가기. 설계 파일의 path 를 그대로 옮겼다 —
   // 비슷하게 다시 그리면 같은 뜻의 아이콘이 두 벌이 된다.
@@ -62,6 +66,10 @@ export const ICON = {
   trophy: svg('<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0z"/>'),
   send: svg('<path d="M3 11l18-8-8 18-2-8z"/>'),
   share: svg('<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v12M8 7l4-4 4 4"/>'),
+  // 식단. 포크와 숟가락 — 접시(원)로 그리면 '완료' 체크의 원과 헷갈린다.
+  food: svg('<path d="M6 3v7a2.5 2.5 0 0 0 5 0V3"/><path d="M8.5 12v9"/><path d="M17 3c-1.4 2-2 3.6-2 6 0 2 .8 3 2 3s2-1 2-3c0-2.4-.6-4-2-6Z"/><path d="M17 12v9"/>'),
+  // 신체정보. 사람 하나 — 몸에 관한 값이라는 뜻이다.
+  body: svg('<circle cx="12" cy="5" r="2.4"/><path d="M12 7.4V14"/><path d="M7 10h10"/><path d="m9.5 21 2.5-7 2.5 7"/>'),
 };
 
 // 마크업에 data-icon="close" 라고 적어 두면 부팅할 때 채워 넣는다.

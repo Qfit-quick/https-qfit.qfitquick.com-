@@ -1,0 +1,75 @@
+# 배포본이 소스보다 낡는 것을 막는다.
+#
+# 이 저장소는 빌드 산출물을 커밋한다 — 클라우드플레어가 저장소 루트를 그대로
+# 서빙하기 때문이다(wrangler.jsonc 의 assets.directory: "."). 그래서 소스만
+# 커밋하고 push 하면 코드는 올라갔는데 사이트는 안 바뀐다. 저장소를 보면
+# 다 되어 있어 보이므로, 알아채기가 제일 어려운 실패다.
+#
+# 그래서 push 마다 여기서 다시 빌드하고, 산출물이 달라졌으면 그것만 되커밋한다.
+# 사람이 `npm run build` 를 잊어도 사이트는 따라온다.
+#
+# ⚠ 되커밋에는 두 가지가 필요하다:
+#   1. 저장소 설정 → Actions → General → Workflow permissions 를
+#      "Read and write permissions" 로.
+#   2. 커밋 메시지의 [skip ci] — 이게 없으면 이 워크플로가 자기 커밋에
+#      다시 걸려 무한히 돈다.
+
+name: 배포본 맞추기
+
+on:
+  push:
+    branches: [main]
+  # 손으로도 돌릴 수 있게. 사이트가 옛 판인 것 같을 때 여기서 한 번 돌리면 된다.
+  workflow_dispatch:
+
+# 같은 브랜치에서 두 번이 겹치면 뒤에 온 것만 남긴다. 둘이 같이 되커밋하면
+# 서로의 산출물을 밀어낸다.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 산출물이 바이트 그대로여야 한다. .gitattributes 가 -text 로 잡아 두었지만
+      # 체크아웃 단계에서 한 번 더 못 박는다 — CRLF 로 풀리면 sw.js 가 적어 둔
+      # md5 가 실제 파일과 어긋나고, 사용자에게 영원히 옛 판이 나간다.
+      - name: 줄바꿈 변환 끄기
+        run: git config core.autocrlf false
+
+      - run: npm ci
+
+      # 소스 자체가 성립하는지 먼저 본다. 번역이 빠졌거나 스타일이 없는
+      # 클래스가 있으면 사이트가 뜨긴 뜨는데 그 자리만 망가진다.
+      - name: 소스 검사 (브라우저 없이 도는 것만)
+        run: |
+          npm run i18n
+          npm run coverage
+          npm run contrast
+
+      - name: 빌드
+        run: npm run build
+
+      - name: 산출물이 달라졌으면 되커밋
+        run: |
+          if git diff --quiet -- index.html sw.js registerSW.js manifest.webmanifest assets icons media 'workbox-*.js'; then
+            echo "배포본이 이미 소스와 같다 — 커밋할 것 없음"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- index.html sw.js registerSW.js manifest.webmanifest assets icons media 'workbox-*.js'
+          git commit -m "빌드 산출물을 소스에 맞춤 [skip ci]"
+          git push
+          echo "배포본을 갱신했다. 클라우드플레어가 이 커밋을 집어 간다."

@@ -1,0 +1,688 @@
+/* 시작 관문 · 신체정보 · 계획 · 기록지.
+ *
+ * 여기 없는 값을 쓰지 말 것 — tokens.css 한 곳에서만 정한다. 이 파일이
+ * 마지막에 들어오므로 앞의 일곱 장과 특이도가 같으면 여기가 이긴다.
+ * 그래서 남의 컴포넌트를 덮어쓰는 규칙은 **왜 덮는지** 를 반드시 적는다.
+ */
+
+/* ══════════════════════════════════════════════════════
+   시작 관문 (하루 첫 설문 + 오늘의 명언)
+   ══════════════════════════════════════════════════════ */
+
+/* 스플래시(z-index 200)보다 낮게 둔다. 스플래시가 먼저 걷히고 그 아래에서
+   관문이 드러나는 순서다 — 반대로 두면 로고 위에 질문이 겹쳐 보인다. */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:
+    calc(var(--s-6) + env(safe-area-inset-top))
+    calc(var(--s-5) + env(safe-area-inset-right))
+    calc(var(--s-6) + env(safe-area-inset-bottom))
+    calc(var(--s-5) + env(safe-area-inset-left));
+  background: var(--bg);
+  overflow-y: auto;
+  opacity: 1;
+  transition: opacity var(--dur) var(--ease-out);
+}
+.gate.leaving { opacity: 0; pointer-events: none; }
+
+.gate-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  width: 100%;
+  max-width: 420px;
+  margin: auto;
+}
+
+/* 세 걸음 표시. 관문이 몇 걸음인지 모르면 첫 질문에서 나가고 싶어진다. */
+.gate-dots { display: flex; gap: 6px; justify-content: center; }
+.gate-dot {
+  width: 22px;
+  height: 4px;
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.gate-dot.on { background: var(--mint); border-color: var(--mint); }
+
+.gate-step { display: flex; flex-direction: column; gap: var(--s-4); }
+.gate-kick {
+  font-family: var(--font-num);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.gate-q {
+  font-size: var(--t-xl);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  word-break: keep-all;   /* 한글이 낱말 가운데서 끊기지 않게 */
+}
+
+.gate-opts { display: flex; flex-direction: column; gap: var(--s-2); }
+.gate-opt {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--tap);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+.gate-opt:active { background: var(--surface-2); }
+/* 이모지는 여기서만 쓴다. 아이콘이 아니라 '기분' 그 자체를 가리키는
+   자리라, 선 아이콘으로는 다섯 단계를 구별해 그릴 수가 없다. */
+.gate-opt-emoji { font-size: 1.5rem; line-height: 1; flex: none; }
+.gate-opt-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.gate-opt-t { font-size: var(--t-md); font-weight: 600; }
+.gate-opt-d { font-size: var(--t-xs); color: var(--text-dim); }
+.gate-back { align-self: flex-start; }
+
+/* 명언 한 장. 이 화면에서 제일 큰 것이 이 글자여야 한다 —
+   아래에 '시작' 버튼을 따로 두면 명언은 장식이 되고 버튼이 주인공이 된다. */
+.gate-quote {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-6) var(--s-5) var(--s-5);
+  border: 1px solid var(--mint);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  box-shadow: var(--shadow);
+}
+.gate-quote:active { background: var(--surface-2); }
+.gate-quote-mark {
+  font-family: var(--font-num);
+  font-size: var(--t-2xl);
+  line-height: 0.6;
+  color: var(--mint-text);
+}
+.gate-quote-text {
+  font-size: var(--t-lg);
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+.gate-quote-author { font-size: var(--t-sm); color: var(--text-dim); }
+.gate-quote-cta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin-top: var(--s-2);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--mint-text);
+}
+.gate-quote-cta svg { width: 16px; height: 16px; }
+.gate-advice { font-size: var(--t-sm); color: var(--text-dim); word-break: keep-all; }
+
+/* 관문이 떠 있는 동안은 뒤가 스크롤되지 않게. 안 막으면 아이폰에서
+   관문을 밀어 올려 그 아래 앱을 만질 수 있다. */
+body.gated { overflow: hidden; }
+
+/* ══════════════════════════════════════════════════════
+   신체정보
+   ══════════════════════════════════════════════════════ */
+
+.body-lead,
+.setup-sec-d { font-size: var(--t-sm); color: var(--text-dim); word-break: keep-all; }
+
+/* 나이·키·체중 세 칸. 셋 다 짧은 숫자라 한 줄에 나란히 둔다 —
+   위아래로 쌓으면 화면 한 판이 입력칸 셋으로 다 찬다. */
+.body-num-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); }
+.body-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.body-field-l { font-size: var(--t-xs); font-weight: 600; color: var(--text-dim); }
+/* components.css 의 `.inp-wrap .inp` 는 왼쪽에 아이콘 자리를 40px 비운다.
+   여기는 아이콘이 아니라 오른쪽 단위(cm·kg)를 쓰므로 되돌린다. */
+.body-field .inp { padding: 0 34px 0 12px; text-align: right; }
+.inp-unit {
+  position: absolute;
+  right: 12px;
+  top: 0;
+  display: flex;
+  align-items: center;
+  height: 48px;
+  font-size: var(--t-sm);
+  color: var(--text-dim);
+  pointer-events: none;
+}
+.body-warn {
+  font-size: var(--t-sm);
+  color: var(--danger);
+  word-break: keep-all;
+}
+
+/* 두 갈래 토글. 셋 이상은 .pick-row 를 쓴다 — 두 갈래까지만 나란히 두어야
+   각 칸이 44px 폭을 지킬 수 있다. */
+.seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--s-2);
+}
+.seg-btn {
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--t-md);
+  font-weight: 600;
+}
+.seg-btn.on {
+  border-color: var(--mint);
+  background: var(--mint);
+  color: var(--on-mint);
+}
+
+/* 세 갈래 이상. 설명 한 줄이 붙어야 고를 수 있는 값들이라 줄로 세운다. */
+.pick-row { justify-content: space-between; }
+.pick-row.on { border-color: var(--mint); }
+.pick-mark {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-full);
+}
+.pick-row.on .pick-mark {
+  border-color: var(--mint);
+  background:
+    radial-gradient(circle at center, var(--mint) 0 5px, transparent 5px);
+}
+
+/* ══════════════════════════════════════════════════════
+   계획 (오늘 · 주간 운동 · 식단 · 내 숫자)
+   ══════════════════════════════════════════════════════ */
+
+.plan-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-8) var(--s-4);
+  text-align: center;
+}
+.plan-empty-ic { display: flex; color: var(--text-dim); }
+.plan-empty-ic svg { width: 40px; height: 40px; }
+
+#plan-body { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+
+/* 판을 가르는 네 칸. 라벨이 길어질 수 있어(주간 운동 · 내 숫자) 가로로
+   넘겨 본다 — 1fr 네 칸으로 고정하면 320px 폭에서 말줄임이 된다. */
+.plan-tabs {
+  display: flex;
+  gap: var(--s-2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding: 3px 0;
+  margin: -3px 0;
+}
+.plan-tabs::-webkit-scrollbar { display: none; }
+.plan-tab {
+  flex: 0 0 auto;
+  min-height: var(--tap);
+  padding: 0 var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.plan-tab.on {
+  border-color: var(--mint);
+  background: var(--mint);
+  color: var(--on-mint);
+}
+
+.plan-pane { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+
+/* 숫자에 붙는 단위. 숫자와 같은 크기로 쓰면 단위가 값처럼 읽힌다.
+   한 글자 클래스(.u)로 두었다가 이름을 늘렸다 — 짧은 이름은 어디서
+   부딧히는지 grep 으로도 못 찾는다. */
+.num-u { margin-left: 2px; font-size: 0.55em; font-weight: 600; letter-spacing: 0; }
+
+/* screens.css 의 .stat-val 은 44px 다. 3~4열 격자에서는 두 자리만 넘어도
+   옆 칸을 밀어내므로 여기서만 한 단 낮춘다(기록 화면이 하는 것과 같다). */
+.plan-stat { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 12px 10px; }
+.plan-stat .stat-val { font-size: var(--t-xl); }
+.plan-stat .stat-label { font-size: var(--t-xs); word-break: keep-all; }
+.plan-stat .val-sub {
+  margin-left: 0;
+  font-size: var(--t-xs);
+  word-break: keep-all;
+  white-space: normal;
+}
+/* 식단 판의 머리는 네 칸(열량·단백·탄수·지방)이라 4열로 좁힌다.
+   주간 운동 판은 세 칸이라 .records-grid 의 3열을 그대로 쓴다.
+   내 숫자 판은 네 칸인데 라벨이 길어서(기초대사량·하루 소모량) 4열에
+   안 들어간다 — 3열로 두면 3+1 로 갈라져 마지막 칸이 떠 보이므로 2열이다. */
+.plan-macro-head { grid-template-columns: repeat(4, 1fr); }
+.plan-num-head { grid-template-columns: repeat(2, 1fr); }
+
+
+/* 카드 안쪽. .card 는 테두리만 정하므로 여백은 쓰는 쪽이 정한다. */
+.plan-intensity,
+.plan-day-card,
+.plan-diet-card,
+.plan-meal,
+.plan-out,
+.plan-range,
+.plan-basis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  min-width: 0;
+}
+
+.plan-intensity-row { display: flex; align-items: baseline; gap: var(--s-2); flex-wrap: wrap; }
+.plan-intensity-row b { font-size: var(--t-lg); font-weight: 800; }
+.plan-intensity-row span { font-size: var(--t-sm); }
+.plan-quote {
+  margin-top: var(--s-1);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+  font-size: var(--t-sm);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.plan-day-t { font-size: var(--t-xl); font-weight: 800; letter-spacing: -0.02em; }
+.plan-day-list { font-size: var(--t-md); line-height: 1.5; word-break: keep-all; }
+.plan-day-meta { font-size: var(--t-sm); }
+.plan-start-btn { margin-top: var(--s-2); }
+/* 앱 세션 위에 얹는 걷기·스트레칭. 앱만으로는 주간 권장량에 못 닿는다는
+   사실을 줄마다 적어 두는 자리라, 흐리게 두면 안 읽힌다. */
+.plan-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--mint-text);
+}
+.plan-add::before { content: '+'; font-family: var(--font-num); font-size: var(--t-md); }
+.plan-day-card.rest .plan-day-t { color: var(--text-dim); }
+
+/* 오늘 식단 요약 네 줄. 이름 · 음식 · 칼로리로 세 칸이다. */
+.plan-meal-mini { display: flex; flex-direction: column; gap: 1px; }
+.plan-meal-mini-row {
+  display: grid;
+  grid-template-columns: 3.5em 1fr auto;
+  gap: var(--s-2);
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-sm);
+}
+.plan-meal-mini-row:last-child { border-bottom: 0; }
+.pm-name { font-weight: 700; }
+.pm-food {
+  color: var(--text-dim);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pm-kcal { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; }
+/* 이미 먹은 끼니. 줄을 그어 지우지 않는다 — 지운 줄은 '취소' 로 읽힌다. */
+.plan-meal-mini-row.done .pm-name { color: var(--mint-text); }
+.plan-meal-mini-row.done .pm-name::after { content: ' ✓'; }
+.plan-diet-sum { font-size: var(--t-sm); word-break: keep-all; }
+.plan-jump { margin-top: var(--s-2); height: var(--tap); }
+
+/* 안내 한 덩어리. 근거를 적는 자리라 대비가 본문급이어야 한다 —
+   흐린 회색으로 두면 정작 읽어야 할 것이 제일 안 보인다. */
+.plan-note {
+  font-size: var(--t-sm);
+  line-height: 1.6;
+  color: var(--text);
+  word-break: keep-all;
+}
+.plan-note.warn {
+  padding: var(--s-3);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.plan-gap { color: var(--text-dim); }
+.plan-gap.warn { color: var(--text); }
+
+.plan-week-list { display: flex; flex-direction: column; gap: var(--s-2); }
+.plan-week-row {
+  display: grid;
+  grid-template-columns: 2em 1fr auto;
+  gap: var(--s-3);
+  align-items: center;
+  padding: var(--s-3);
+  min-width: 0;
+}
+.pw-dow {
+  font-family: var(--font-num);
+  font-size: var(--t-md);
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-dim);
+}
+.pw-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pw-focus { font-size: var(--t-md); font-weight: 700; }
+.pw-focus em {
+  font-style: normal;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--mint-text);
+}
+.pw-list {
+  font-size: var(--t-xs);
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pw-kcal { font-family: var(--font-num); font-size: var(--t-sm); }
+/* 요일 줄의 칼로리 숫자가 그날 운동을 켜는 버튼이다. 오른쪽에 화살표를
+   따로 두면 한 줄에 누를 곳이 둘이 되고, 어느 쪽이 무엇인지 알 수 없다. */
+.pw-go {
+  flex: none;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 var(--s-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-num);
+  font-size: var(--t-md);
+  font-weight: 700;
+}
+.pw-go:active { background: var(--mint); color: var(--on-mint); }
+.plan-week-row.today { border-color: var(--mint); }
+.plan-week-row.rest .pw-focus { color: var(--text-dim); }
+
+/* 끼니 한 장. 항목마다 이름 · 양 · 칼로리 세 칸. */
+.plan-meal-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); }
+.plan-meal-name { font-size: var(--t-lg); font-weight: 800; }
+.plan-meal-kcal {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.plan-meal.done { border-color: var(--mint); }
+.plan-meal-rows { display: flex; flex-direction: column; gap: 1px; }
+.pmr {
+  display: grid;
+  grid-template-columns: 1fr auto 3.2em;
+  gap: var(--s-2);
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-sm);
+}
+.pmr:last-child { border-bottom: 0; }
+.pmr-name { font-weight: 600; word-break: keep-all; }
+.pmr-amt { color: var(--text-dim); font-size: var(--t-xs); white-space: nowrap; }
+.pmr-kcal {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+}
+.plan-meal-macro { font-size: var(--t-xs); }
+.plan-water { font-size: var(--t-sm); word-break: keep-all; }
+
+/* 외식 표. 한 줄에 이름 · 칼로리, 그 아래 줄이는 방법. */
+.plan-out-rows { display: flex; flex-direction: column; gap: 1px; }
+.por {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px var(--s-2);
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+.por:last-child { border-bottom: 0; }
+.por-name { font-size: var(--t-sm); font-weight: 600; word-break: keep-all; }
+.por-kcal {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-md);
+  font-weight: 700;
+  text-align: right;
+}
+.por-tip { grid-column: 1 / -1; font-size: var(--t-xs); line-height: 1.5; word-break: keep-all; }
+
+.plan-source { font-size: var(--t-xs); line-height: 1.6; color: var(--text-dim); word-break: keep-all; }
+.plan-range-line { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
+.plan-range-line b {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-xl);
+  font-weight: 700;
+}
+.plan-basis-list { display: flex; flex-direction: column; gap: var(--s-2); padding-left: var(--s-4); }
+.plan-basis-list li { font-size: var(--t-sm); line-height: 1.6; word-break: keep-all; }
+.plan-edit { height: var(--tap); }
+
+/* ══════════════════════════════════════════════════════
+   기록지
+   ══════════════════════════════════════════════════════ */
+
+/* 홈의 '오늘 두 칸' 카드 */
+.today-card { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
+.tc-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); }
+.tc-status { font-size: var(--t-sm); word-break: keep-all; text-align: right; }
+.tc-rows { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+.tc-row { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-md); font-weight: 600; }
+.tc-row em { font-style: normal; font-size: var(--t-xs); color: var(--text-dim); }
+.tc-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--on-mint);
+}
+.tc-mark svg { width: 16px; height: 16px; }
+.tc-mark.on { border-color: var(--mint); background: var(--mint); }
+/* 반만 채운 것(세 끼 중 일부)은 색이 아니라 채움으로 구별한다 —
+   색을 하나 더 만들면 범례를 봐야 읽히는 화면이 된다. */
+.tc-mark.partial { border-color: var(--mint); background: var(--surface-2); }
+.tc-open { margin-top: var(--s-1); height: var(--tap); }
+
+/* 기록지 맨 위 한 줄. 이 화면이 답하는 질문의 답이 여기다. */
+.log-status { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
+.log-status[data-status='both'] { border-color: var(--mint); }
+.log-status-line {
+  font-size: var(--t-xl);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+.log-chips { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+.log-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.log-chip-mark { display: flex; }
+.log-chip-mark svg { width: 15px; height: 15px; }
+.log-chip.on { border-color: var(--mint); background: var(--mint); color: var(--on-mint); }
+.log-chip.partial { border-color: var(--mint); color: var(--mint-text); }
+.log-partial { font-size: var(--t-sm); line-height: 1.6; word-break: keep-all; }
+
+/* 체크칸. 운동 하나와 끼니 넷. */
+.log-check { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+.log-check .section-label { margin-top: var(--s-2); }
+.log-check .section-label:first-child { margin-top: 0; }
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 56px;
+  padding: var(--s-3) var(--s-4);
+  text-align: left;
+  min-width: 0;
+}
+.log-row.on { border-color: var(--mint); }
+.log-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--on-mint);
+}
+.log-box svg { width: 18px; height: 18px; }
+.log-row.on .log-box { border-color: var(--mint); background: var(--mint); }
+/* components.css 의 .row-d 는 한 줄로 잘라 말줄임을 붙인다(목록 줄에서는
+   그게 맞다). 여기는 규칙을 설명하는 문장이 들어가는 자리라, 잘리면
+   정작 읽어야 할 말이 '…' 뒤로 사라진다. */
+.log-row .row-d {
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+.pick-row .row-d { overflow: visible; white-space: normal; text-overflow: clip; }
+.log-note { font-size: var(--t-xs); line-height: 1.6; word-break: keep-all; }
+
+/* 물 · 체중 · 아침 체크인 */
+.log-extra { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
+/* 라벨과 개수를 한 줄에 두고 컵은 그 아래로 내린다.
+   셋을 한 줄에 늘어놓았더니 컵이 줄바꿈되면서 라벨·컵·개수가 세 줄로
+   흩어졌다 — 체중 80kg 이면 권장이 14잔이라 한 줄에 절대 안 들어간다. */
+.log-water-row { display: flex; flex-direction: column; gap: var(--s-2); }
+.log-water-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); }
+.log-water-l,
+.log-weight-l,
+.log-mood-l { font-size: var(--t-sm); font-weight: 600; flex: none; }
+/* 컵은 눌러서 채운다. 숫자 입력칸으로 두면 아무도 안 적는다.
+   두 줄로 내려가도 괜찮게 폭을 좁혔다. */
+.log-cups { display: flex; gap: 5px; flex-wrap: wrap; }
+.log-cup {
+  width: 22px;
+  height: 26px;
+  border: 2px solid var(--line);
+  border-radius: 3px 3px 7px 7px;
+  background: var(--surface);
+}
+.log-cup.on { border-color: var(--mint); background: var(--mint); }
+.log-water-n {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-md);
+  font-weight: 700;
+  flex: none;
+}
+.log-weight-row { display: flex; align-items: center; gap: var(--s-3); }
+.log-weight-row .inp-wrap { flex: 1 1 auto; min-width: 0; }
+/* 아이콘 자리로 비워 둔 왼쪽 40px 을 되돌린다(신체정보 칸과 같은 이유). */
+.log-weight-row .inp { padding: 0 34px 0 12px; text-align: right; }
+.log-mood-row { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
+.log-mood-v { font-size: var(--t-sm); color: var(--text-dim); }
+
+/* 최근 14일. 칸 하나를 반으로 갈라 왼쪽이 운동, 오른쪽이 식단이다.
+   색 하나로 네 상태를 나타내려면 색이 네 개 필요하고, 색 네 개는
+   범례를 봐야 읽힌다 — 반으로 가르면 채워진 개수가 곧 답이다. */
+.log-strip-card { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
+.log-strip { display: grid; grid-template-columns: repeat(14, 1fr); gap: 3px; }
+.log-day { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
+/* 반쪽 두 개를 감싸는 칸. 둥근 모서리를 만들려면 overflow: hidden 이
+   필요한데, 날짜 숫자를 이 안에 두면 그 hidden 이 숫자까지 자른다.
+   그래서 숫자는 이 칸 밖(아래)에 둔다. */
+.log-day-cells {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  width: 100%;
+  aspect-ratio: 0.62;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.log-half { background: var(--surface-2); border: 1px solid var(--line); }
+.log-half.w.on { background: var(--mint); border-color: var(--mint); }
+.log-half.d.on { background: var(--accent); border-color: var(--accent); }
+/* 세 끼 중 일부. 같은 색을 옅게 쓰는 대신 위쪽 절반만 채운다 —
+   옅은 색은 다크 모드에서 '꺼짐' 과 구별이 안 됐다. */
+.log-half.d.partial {
+  background: linear-gradient(to top, var(--surface-2) 50%, var(--accent) 50%);
+  border-color: var(--accent);
+}
+.log-day-n { font-size: 9px; line-height: 1; color: var(--text-dim); }
+.log-day.today .log-day-cells { outline: 2px solid var(--text); outline-offset: 1px; }
+.log-day.today .log-day-n { font-weight: 700; color: var(--text); }
+
+.log-legend { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+.lg-item { display: flex; align-items: center; gap: 5px; font-size: var(--t-xs); color: var(--text-dim); }
+.lg-sw { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.lg-sw.w { background: var(--mint); }
+.lg-sw.d { background: var(--accent); }
+.lg-sw.p { background: linear-gradient(to top, var(--surface-2) 50%, var(--accent) 50%); border: 1px solid var(--accent); }
+
+/* 이번 달 캘린더. 날짜 아래에 점 두 개 — 왼쪽 운동, 오른쪽 식단.
+   screens.css 의 .cal-day 는 가운데 한 줄이므로 여기서 두 단으로 바꾼다. */
+.cal-day.log-cal {
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px 0;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.cal-day.log-cal.future { opacity: 0.5; }
+.log-cal-n { font-size: 10px; font-weight: 700; line-height: 1; }
+.log-cal-marks { display: flex; gap: 2px; }
+.log-cal-marks i {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--r-full);
+  background: var(--line);
+}
+.log-cal-marks .lc-w.on { background: var(--mint); }
+.log-cal-marks .lc-d.on { background: var(--accent); }
+.log-cal-marks .lc-d.partial {
+  background: linear-gradient(to top, var(--line) 50%, var(--accent) 50%);
+}
+.cal-day.log-cal[data-status='both'] { background: var(--surface); border: 1px solid var(--mint); }
+/* 오늘 표시는 '둘 다' 의 민트 테두리보다 뒤에 와야 한다. 앞에 두었더니
+   둘 다 한 날과 오늘이 같은 테두리가 되어 오늘이 어디인지 사라졌다. */
+.cal-day.log-cal.today {
+  border: 2px solid var(--text);
+  background: var(--surface);
+  color: var(--text);
+}

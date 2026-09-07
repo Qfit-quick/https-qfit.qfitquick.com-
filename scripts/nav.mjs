@@ -11,8 +11,11 @@ const URL = process.env.NAV_URL || DEFAULT_URL;
 // [탭 라벨, 화면 id, 채워졌는지 보는 방법]
 const TABS = [
   ['홈', 'start-screen', () => document.querySelectorAll('.week-strip .week-day').length === 7],
+  // 계획은 신체정보가 없으면 빈 안내만 나온다. 검사는 정보를 안 넣은 상태로
+  // 도는 것이 맞다 — 처음 켠 사람이 보는 것이 그 화면이기 때문이다.
+  ['계획', 'plan-screen', () => !document.getElementById('plan-empty')?.hidden],
+  ['체크', 'log-screen', () => document.querySelectorAll('#log-check .log-row').length === 5],
   ['기록', 'records-screen', () => document.getElementById('rec-total')?.textContent.trim().length > 0],
-  ['회복', 'recovery-screen', () => document.querySelectorAll('#recovery-screen .recovery-card').length > 0],
   // 챌린지 카드로 판정하던 것을 바꿨다 — 그 기능을 지웠기 때문이다(FR-05).
   // 더보기는 메뉴가 채워지는 화면이라 그걸 본다.
   ['더보기', 'more-screen', () => document.querySelectorAll('#more-screen .menu-btn').length >= 2],
@@ -44,18 +47,18 @@ for (const [label, id, filled] of TABS) {
 }
 
 console.log('\n--- 뒤로가기 ---');
-// 지금 '더보기'. 뒤로 가면 '회복' 이어야 한다.
+// 지금 '더보기'. 탭을 누른 순서대로 되짚어 나와야 한다.
 await page.goBack();
 await page.waitForTimeout(400);
 let now = await active();
-console.log(`  ${now === 'recovery-screen' ? '통과' : '실패'}  한 번 뒤로 → ${now}  (기대 recovery-screen)`);
-if (now !== 'recovery-screen') fail++;
+console.log(`  ${now === 'records-screen' ? '통과' : '실패'}  한 번 뒤로 → ${now}  (기대 records-screen)`);
+if (now !== 'records-screen') fail++;
 
 await page.goBack();
 await page.waitForTimeout(400);
 now = await active();
-console.log(`  ${now === 'records-screen' ? '통과' : '실패'}  두 번 뒤로 → ${now}  (기대 records-screen)`);
-if (now !== 'records-screen') fail++;
+console.log(`  ${now === 'log-screen' ? '통과' : '실패'}  두 번 뒤로 → ${now}  (기대 log-screen)`);
+if (now !== 'log-screen') fail++;
 
 console.log('\n--- 운동 중 ---');
 await page.click('.tab[data-screen="start-screen"]');

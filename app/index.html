@@ -111,6 +111,13 @@
  <div class="week-strip" id="week-strip"></div>
  </div>
 
+ <!-- 오늘 두 칸(설계에 없던 카드).
+      이 앱이 새로 약속한 것을 홈에서 바로 답한다 — "오늘 운동과 식단,
+      무엇을 했나." 두 줄뿐이라 카드 하나에 들어가고, 눌러 들어가면 기록지다.
+      안쪽은 src/ui/log.js 가 그린다(기록지와 같은 판정 함수를 쓴다 —
+      두 벌로 만들면 홈과 기록지가 서로 다른 말을 하는 날이 온다). -->
+ <div class="card today-card" id="today-card"></div>
+
  <!-- 회복·운동동작은 더보기에도 있다. 여기 버튼은 그 버튼을 눌러 준다 —
       화면을 여는 논리가 거기 붙어 있어서, 두 벌로 만들면 한쪽만 고쳐진다.
       그래서 id 도 다르게 둔다(같으면 querySelector 가 어느 쪽을 집을지 모른다). -->
@@ -176,6 +183,12 @@
       id 를 그대로 두는 이유: 탭바가 #open-recovery-btn 을 눌러 이동하고,
       JS 는 클래스로 잡는다. 바꾸면 둘 다 끊긴다. -->
  <div class="menu-box">
+ <button class="menu-btn" id="open-body-btn">
+ <span class="row-main"><span class="row-t" data-i18n="bodyTitle">신체정보</span><span class="row-d dim" id="body-summary-sub"></span></span>
+ </button>
+ <button class="menu-btn" id="open-log-btn-more">
+ <span class="row-main"><span class="row-t" data-i18n="logTitle">오늘 기록지</span><span class="row-d dim" data-i18n="logSub">운동 · 식단 체크 · 캘린더</span></span>
+ </button>
  <button class="menu-btn" id="open-records-btn">
  <span class="row-main"><span class="row-t" data-i18n="recordsBtn">내 기록</span><span class="row-d dim" data-i18n="recordsSub">연속 · 월간 · 업적</span></span>
  </button>
@@ -204,6 +217,129 @@
  </div>
 
  <button class="btn-restart" id="more-back-btn" style="margin-top:16px;" data-i18n="lbBackBtn">닫기</button>
+ </div>
+
+ <!-- PLAN (운동 · 식단).
+      네 판(오늘·주간 운동·식단·내 숫자)을 한 화면의 탭으로 접는다. 화면을 넷으로
+      나누면 '오늘 무엇을 먹고 무엇을 하나' 를 보려고 네 곳을 돌아야 하는데,
+      그 넷은 같은 신체정보 하나에서 나온 값이라 나눌 이유가 없다.
+      안쪽은 src/ui/plan.js 가 그린다 — 값이 신체정보에 따라 전부 달라져서
+      마크업으로 둘 수 있는 부분이 제목뿐이다. -->
+ <div class="screen" id="plan-screen">
+ <div class="eyebrow" data-i18n="planEyebrow">내 계획</div>
+ <h2 class="lb-title" data-i18n="planTitle">운동 · 식단</h2>
+
+ <!-- 신체정보가 없으면 탭도 감춘다. 빈 탭 넷을 보여 주는 것은
+      "여기는 원래 뭔가 있는 자리" 를 네 번 말하는 것이다. -->
+ <div class="plan-empty" id="plan-empty" hidden>
+ <span class="plan-empty-ic" data-icon="body"></span>
+ <p class="empty-line" data-i18n="planEmpty">키·체중·나이를 넣으면 하루 필요 열량과 주간 운동 계획을 계산해 드립니다.</p>
+ <button class="primary" id="plan-empty-btn" type="button" data-i18n="bodyEnter">신체정보 입력</button>
+ </div>
+
+ <div id="plan-body" hidden>
+ <div class="plan-tabs" role="tablist" aria-label="계획 보기 방식">
+ <button class="plan-tab on" type="button" role="tab" data-plan-tab="today" data-i18n="planTabToday">오늘</button>
+ <button class="plan-tab" type="button" role="tab" data-plan-tab="week" data-i18n="planTabWeek">주간 운동</button>
+ <button class="plan-tab" type="button" role="tab" data-plan-tab="diet" data-i18n="planTabDiet">식단</button>
+ <button class="plan-tab" type="button" role="tab" data-plan-tab="numbers" data-i18n="planTabNumbers">내 숫자</button>
+ </div>
+ <div class="plan-pane" id="plan-pane-today" role="tabpanel"></div>
+ <div class="plan-pane" id="plan-pane-week" role="tabpanel" hidden></div>
+ <div class="plan-pane" id="plan-pane-diet" role="tabpanel" hidden></div>
+ <div class="plan-pane" id="plan-pane-numbers" role="tabpanel" hidden></div>
+ </div>
+
+ <button class="btn-restart" id="plan-back-btn" data-i18n="lbBackBtn">닫기</button>
+ </div>
+
+ <!-- BODY (신체정보).
+      계산에 필요한 값만 받는다. 체지방률·허리둘레 같은 것은 받아도 이 앱이
+      쓸 데가 없고, 칸이 늘면 아무것도 안 넣고 나가게 된다. -->
+ <div class="screen" id="body-screen">
+ <div class="eyebrow" data-i18n="bodyEyebrow">신체정보</div>
+ <h2 class="lb-title" data-i18n="bodyTitle">신체정보</h2>
+ <p class="dim body-lead" data-i18n="bodyLead">하루 필요 열량과 운동량을 계산하는 데만 씁니다. 이 기기에만 저장되고 어디로도 보내지 않습니다.</p>
+
+ <section class="setup-sec">
+ <h3 class="setup-sec-t" data-i18n="bodySex">성별</h3>
+ <!-- 기초대사량 식(Mifflin-St Jeor)이 성별로 갈리기 때문에 받는다.
+      그 밖의 곳에서는 쓰지 않는다. -->
+ <div class="seg" id="body-sex"></div>
+ </section>
+
+ <section class="setup-sec">
+ <div class="body-num-row">
+ <label class="body-field">
+ <span class="body-field-l" data-i18n="bodyAge">나이</span>
+ <span class="inp-wrap"><input class="inp" id="body-age" type="number" inputmode="numeric" min="10" max="100" placeholder="30"><span class="inp-unit" data-i18n="unitYear">세</span></span>
+ </label>
+ <label class="body-field">
+ <span class="body-field-l" data-i18n="bodyHeight">키</span>
+ <span class="inp-wrap"><input class="inp" id="body-height" type="number" inputmode="decimal" min="100" max="230" placeholder="170"><span class="inp-unit">cm</span></span>
+ </label>
+ <label class="body-field">
+ <span class="body-field-l" data-i18n="bodyWeight">체중</span>
+ <span class="inp-wrap"><input class="inp" id="body-weight" type="number" inputmode="decimal" min="25" max="250" placeholder="65"><span class="inp-unit">kg</span></span>
+ </label>
+ </div>
+ <p class="body-warn" id="body-warn" hidden></p>
+ </section>
+
+ <section class="setup-sec">
+ <h3 class="setup-sec-t" data-i18n="bodyActivity">평소 활동량</h3>
+ <p class="dim setup-sec-d" data-i18n="bodyActivityHint">운동 말고 <b>평소 생활</b>을 기준으로 고르십시오. 여기서 고른 것이 하루 열량을 가장 크게 바꿉니다.</p>
+ <div class="sheet-rows" id="body-activity"></div>
+ </section>
+
+ <section class="setup-sec">
+ <h3 class="setup-sec-t" data-i18n="bodyGoal">목표</h3>
+ <div class="sheet-rows" id="body-goal"></div>
+ </section>
+
+ <section class="setup-sec">
+ <h3 class="setup-sec-t" data-i18n="bodyLevel">운동 경험</h3>
+ <div class="seg" id="body-level"></div>
+ </section>
+
+ <div class="screen-foot">
+ <button class="primary" id="body-save-btn" type="button" data-i18n="bodySave">계획 만들기</button>
+ </div>
+ <button class="btn-restart" id="body-back-btn" data-i18n="lbBackBtn">닫기</button>
+ </div>
+
+ <!-- LOG (기록지).
+      이 화면이 답하는 질문은 하나다 — "오늘 운동과 식단, 무엇을 했나."
+      그래서 맨 위에 그 답을 한 줄로 먼저 쓰고, 체크칸은 그 아래에 둔다.
+      체크를 다 훑어서 스스로 상태를 세게 만들면 기록지가 아니라 설문이 된다. -->
+ <div class="screen" id="log-screen">
+ <div class="eyebrow" data-i18n="logEyebrow">기록지</div>
+ <h2 class="lb-title" data-i18n="logTitle">오늘 기록지</h2>
+
+ <div class="card log-status" id="log-status"></div>
+ <div class="log-check" id="log-check"></div>
+ <div class="card log-extra" id="log-extra"></div>
+
+ <div class="card log-strip-card">
+ <div class="week-head">
+ <span class="week-title" data-i18n="logRecent">최근 14일</span>
+ <span class="dim" id="log-streaks"></span>
+ </div>
+ <div class="log-strip" id="log-strip"></div>
+ <!-- 칸의 색이 무엇을 뜻하는지 적는다. 왼쪽 반이 운동, 오른쪽 반이 식단인데
+      그건 보고 알 수 있는 규칙이 아니다. -->
+ <div class="log-legend" id="log-legend"></div>
+ </div>
+
+ <div class="card calendar-card">
+ <div class="cal-head">
+ <span class="cal-month" id="log-cal-month"></span>
+ <span class="dim" id="log-cal-sum"></span>
+ </div>
+ <div class="calendar-grid" id="log-cal-grid"></div>
+ </div>
+
+ <button class="btn-restart" id="log-back-btn" data-i18n="lbBackBtn">닫기</button>
  </div>
 
  <!-- AI ROUTINE QUIZ (설계 04).
@@ -912,6 +1048,53 @@
  <button class="btn-restart" id="retry-same-btn" data-i18n="retrySame">방금 운동 다시</button>
  <button class="btn-home" id="retry-new-btn" data-i18n="retryNew">새로 운동 정하기</button>
  <button class="link-btn" id="retry-cancel-btn" data-i18n="cancelBtn">취소</button>
+ </div>
+</div>
+
+<!-- 시작 관문(체크인 + 오늘의 명언).
+     하루에 한 번, 앱을 열면 여기가 먼저 뜬다. 두 문항에 답하면 그 답에 맞는
+     명언 한 장이 나오고, 그 장을 누르면 앱으로 들어간다.
+
+     .screen 이 아니라 덮개(overlay)로 둔 이유가 셋이다:
+      · 화면 목록(showScreen)에 끼면 탭바·뒤로가기의 대상이 되어 버린다.
+        관문은 뒤로 갈 곳이 없는 자리다.
+      · 앱이 다 붙은 뒤에 걷히는 스플래시와 같은 층위라, 같은 방식으로 두는
+        편이 이해하기 쉽다.
+      · 답을 마치면 DOM 에서 아예 지운다. 남겨 두면 접근성 트리에 계속 남아
+        스크린리더가 없는 화면을 읽는다.
+
+     ⚠ 이 덮개는 앱을 막는다. 그래서 src/ui/gate.js 는 어떤 오류가 나도
+     마지막에 자기를 지우게 되어 있다 — 관문이 깨지면 앱을 못 쓰게 되는 것이
+     이 기능의 유일한 실패 방식이다. -->
+<div class="gate" id="gate" hidden>
+ <div class="gate-inner">
+ <div class="gate-dots" id="gate-dots" aria-hidden="true"></div>
+
+ <div class="gate-step" id="gate-step-mood">
+ <p class="gate-kick" id="gate-date"></p>
+ <h2 class="gate-q" data-i18n="gateMoodQ">오늘 기분은 어떠십니까?</h2>
+ <div class="gate-opts" id="gate-mood-opts"></div>
+ </div>
+
+ <div class="gate-step" id="gate-step-drive" hidden>
+ <p class="gate-kick" data-i18n="gateStep2">2 / 2</p>
+ <h2 class="gate-q" data-i18n="gateDriveQ">오늘 운동, 솔직히 어떻습니까?</h2>
+ <div class="gate-opts" id="gate-drive-opts"></div>
+ <button class="txtb gate-back" id="gate-back-btn" type="button" data-i18n="backBtn">이전</button>
+ </div>
+
+ <div class="gate-step" id="gate-step-quote" hidden>
+ <p class="gate-kick" data-i18n="gateQuoteKick">오늘의 한 줄</p>
+ <!-- 명언 자체가 버튼이다. 아래에 '시작' 버튼을 따로 두면 명언은 읽고
+      지나가는 장식이 되고, 누르는 것은 버튼이 된다. -->
+ <button class="gate-quote" id="gate-quote-card" type="button">
+ <span class="gate-quote-mark" aria-hidden="true">&ldquo;</span>
+ <span class="gate-quote-text" id="gate-quote-text"></span>
+ <span class="gate-quote-author" id="gate-quote-author"></span>
+ <span class="gate-quote-cta"><span data-i18n="gateEnter">눌러서 시작하기</span><span data-icon="chevron"></span></span>
+ </button>
+ <p class="gate-advice" id="gate-advice"></p>
+ </div>
  </div>
 </div>
 

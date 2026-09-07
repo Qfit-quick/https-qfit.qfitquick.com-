@@ -11,10 +11,17 @@ import { ICON } from './icons.js';
 import { showScreenById, isWorkoutRunning } from '../app.js';
 import { closeSheet, isSheetOpen } from './sheet.js';
 
+// 다섯 칸이 상한이다. 여섯이 되면 라벨이 두 자로 줄고, 두 자짜리 이름은
+// 서로 구별이 안 된다('기록'과 '기록지'가 그랬다 — 그래서 하나는 '체크'다).
+//
+// 회복은 탭에서 뺐다. 다칠 때만 여는 화면이고 홈 타일과 더보기 줄로 이미
+// 두 길이 있는데, 매일 쓰는 계획·체크를 그 자리 때문에 못 올리는 것이
+// 순서가 뒤바뀐 것이었다.
 const TABS = [
   { id: 'start-screen', label: '홈', icon: 'home', via: null },
+  { id: 'plan-screen', label: '계획', icon: 'plan', via: null },
+  { id: 'log-screen', label: '체크', icon: 'checklist', via: '#today-card-open' },
   { id: 'records-screen', label: '기록', icon: 'chart', via: '#open-records-btn' },
-  { id: 'recovery-screen', label: '회복', icon: 'recovery', via: '#open-recovery-btn' },
   { id: 'more-screen', label: '더보기', icon: 'more', via: '#open-more-btn' },
 ];
 
@@ -30,7 +37,13 @@ const BELONGS_TO = {
   'settings-screen': 'more-screen',
   'routines-screen': 'more-screen',
   'account-screen': 'more-screen',
-  'video-gallery-screen': 'recovery-screen',
+  // 회복과 동작 소개는 탭에서 내려왔다. 탭을 하나도 안 켜 두면 지금 어디에
+  // 있는지 알려 주는 것이 없어지므로, 들어온 문인 '더보기' 를 켜 둔다.
+  'recovery-screen': 'more-screen',
+  'video-gallery-screen': 'more-screen',
+  // 신체정보는 계획을 만들기 위한 입력이다. 더보기에서도 들어올 수 있지만
+  // 저장하면 계획으로 나가므로, 켜 둘 탭은 계획이다.
+  'body-screen': 'plan-screen',
   'setup-screen': 'start-screen',
   'manual-select-screen': 'start-screen',
   'ai-quiz-screen': 'start-screen',

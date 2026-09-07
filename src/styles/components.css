@@ -221,6 +221,24 @@
 .settings-row:active { background: var(--surface-2); }
 
 .routine-row > span { flex: 1; min-width: 0; }
+/* 이름·설명이 든 왼쪽 덩어리. 예전에는 클래스에 규칙이 없어서 min-width 가
+   auto 로 남았고, 루틴 이름이 길면 오른쪽 버튼 셋을 밀어냈다.
+   (src/app.js 가 문자열로 조립하는 마크업이라 CSS 검사가 app.js 만 훑던
+   동안에는 이 빠짐이 안 보였다.) */
+.routine-row .info { flex: 1; min-width: 0; }
+.routine-row .rname {
+  font-size: var(--t-md);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.routine-row .rmeta { font-size: var(--t-xs); color: var(--text-dim); }
+/* 셋 다 .routine-row button 이 모양을 정한다. 이름을 여기 적어 두는 것은
+   '이 세 버튼이 이 줄의 것' 이라는 사실을 CSS 쪽에도 남기기 위해서다. */
+.routine-row .load-btn,
+.routine-row .share-btn,
+.routine-row .del-btn { flex: none; }
 .routine-row button {
   min-height: var(--tap);
   min-width: var(--tap);
@@ -230,6 +248,26 @@
   color: var(--text-dim);
 }
 .routine-row button.danger { color: var(--danger); }
+
+/* 최근 출석 목록(내 기록). 날짜와 시각 두 칸이다 — 클래스에 규칙이 없어서
+   두 칸이 위아래로 쌓여 있었다. app.js 가 문자열로 조립하는 마크업이라
+   화면을 직접 열어 보지 않으면 안 보이는 빠짐이었다. */
+.lb-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.lb-row:last-child { border-bottom: 0; }
+.lb-name { font-size: var(--t-sm); font-weight: 600; }
+.lb-stats {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-sm);
+  color: var(--text-dim);
+}
 
 .lb-empty,
 .search-empty {

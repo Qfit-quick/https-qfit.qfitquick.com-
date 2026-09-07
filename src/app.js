@@ -19,6 +19,7 @@ import { ACHIEVEMENTS } from './data/achievements.js';
 import { VIDEO_CLIPS } from './data/video-clips.js';
 import { AI_GOAL_POOLS } from './data/ai-goals.js';
 import { photoUrl, clipUrl } from './core/assets.js';
+import { markWorkoutDone, wipeHealthData } from './health/store.js';
 
 // ---------- DATA ----------
 // ---------- i18n ----------
@@ -381,6 +382,11 @@ const openRecoveryBtn = document.getElementById('open-recovery-btn');
 const recoveryBackBtn = document.getElementById('recovery-back-btn');
 const videoGalleryScreen = document.getElementById('video-gallery-screen');
 const moreScreen = document.getElementById('more-screen');
+// 새로 붙은 세 화면. showScreen 의 목록에 같이 들어간다 —
+// 목록에서 빠지면 다른 화면으로 넘어가도 이 화면이 안 꺼진 채 겹친다.
+const planScreen = document.getElementById('plan-screen');
+const bodyScreen = document.getElementById('body-screen');
+const logScreen = document.getElementById('log-screen');
 const openVideoGalleryBtn = document.getElementById('open-video-gallery-btn');
 const videoGalleryBackBtn = document.getElementById('video-gallery-back-btn');
 const videoGalleryGrid = document.getElementById('video-gallery-grid');
@@ -429,7 +435,7 @@ const bestScoreBox = document.getElementById('best-score-box');
 const bestScoreVal = document.getElementById('best-score-val');
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen].forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  // safety net: a leftover shake() animation frame can occasionally get
  // orphaned (e.g. tab backgrounded mid-shake) and leave the whole #app
@@ -477,6 +483,38 @@ export function showScreenById(id){
  if(el) showScreen(el);
 }
 export function isWorkoutRunning(){ return missionActive; }
+
+/**
+ * 밖에서 루틴을 정해 두고 설정 화면으로 보낸다.
+ * 계획 화면(src/ui/plan.js)의 '이 날 운동 시작' 이 이걸 부른다.
+ *
+ * 바로 카운트다운으로 보내지 않는 이유: 계획은 제안이고, 무엇을 몇 세트
+ * 하는지는 마지막에 사람이 봐야 한다. 설정 화면이 그 확인 자리다 —
+ * '지난 루틴 다시' 도 같은 길을 쓴다.
+ */
+export function startRoutine({ keys, totalSets, durationPreset } = {}){
+ try{
+ Sound.unlock();
+ if(Array.isArray(keys) && keys.length) selectedExKeys = pickSet(keys);
+ if(Number.isFinite(totalSets)) selectedTotalSets = clamp(totalSets, LIMITS.setCount, selectedTotalSets);
+ if(durationPreset && DURATION_PRESETS[durationPreset]) selectedDurationPreset = durationPreset;
+ // 직접 입력 토글이 켜져 있으면 위에서 정한 프리셋이 무시된다 — 계획이
+ // 정한 값을 쓰려면 두 토글을 먼저 내려야 한다(AI 퀴즈도 같이 한다).
+ const setToggle = document.getElementById('custom-setcount-toggle');
+ const durToggle = document.getElementById('custom-duration-toggle');
+ if(setToggle) setToggle.checked = false;
+ if(durToggle) durToggle.checked = false;
+ revealDurationCard();
+ renderExGrid();
+ renderGroupRow();
+ showScreen(setupScreen);
+ syncPlayBtn();
+ updateStartNote();
+ }catch(e){ console.error('startRoutine failed:', e); }
+}
+
+/** 지금 쓰이는 체중(kg). 계획 화면이 칼로리 추정에 같은 값을 쓴다. */
+export function activeWeightKg(){ return currentWeightKg(); }
 
 // ---------- AUDIO (synthesized, no files) ----------
 
@@ -1164,6 +1202,10 @@ function wipeAllData(){
   .filter(k=> k.startsWith('wodrush_'))
   .forEach(k=> localStorage.removeItem(k));
  }catch(e){ console.error('wipe failed:', e); }
+ // 신체정보와 기록지는 접두어가 'qfit_' 다. 위의 'wodrush_' 훑기로는 안
+ // 걸리므로 따로 지운다 — '모든 데이터 지우기' 가 일부만 지우면
+ // 남은 쪽이 다음에 되살아나고, 그건 지웠다는 말이 거짓이 된다.
+ try{ wipeHealthData(); }catch(e){ console.error('wipe health failed:', e); }
  location.reload();
 }
 
@@ -1701,6 +1743,12 @@ function recordCompletion(){
 
  saveProfile();
  updateBestBox();
+
+ // 기록지의 '오늘 운동' 칸도 같이 켠다. 앱에서 운동을 끝냈는데 기록지에
+ // 손으로 또 체크해야 한다면 그건 장부를 두 번 적는 것이고, 두 벌은
+ // 반드시 어긋난다. 기록지가 이 함수를 유일한 출처로 삼는다.
+ try{ markWorkoutDone(); }catch(e){ console.error('markWorkoutDone failed:', e); }
+ document.dispatchEvent(new CustomEvent('qfit:completed'));
 }
 
 // ---------- SETUP: coach + exercise pickers ----------

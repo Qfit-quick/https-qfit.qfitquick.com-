@@ -64,7 +64,7 @@ const probe = await page.evaluate(() => {
 });
 
 console.log('--- 화면 ---');
-console.log(`  .screen 개수      ${probe.screens}  (기대 16)`);
+console.log(`  .screen 개수      ${probe.screens}  (기대 19)`);
 console.log(`  현재 활성 화면    ${probe.activeScreen}`);
 console.log('--- JS 초기화 ---');
 console.log(`  #play-btn 문구    ${JSON.stringify(probe.playBtnText)}`);
@@ -92,7 +92,7 @@ if (errors.length) {
 }
 
 const ok =
-  probe.screens === 16 &&
+  probe.screens === 19 &&
   probe.activeScreen === 'start-screen' &&
   probe.weekStripChildren === 7 &&
   probe.aliasOk &&

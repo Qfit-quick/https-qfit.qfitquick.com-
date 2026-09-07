@@ -7,7 +7,7 @@
 // (실제 값은 막대 0%, 아바타 "1" 이었다.)
 // 그래서 앱이 실제로 쓰는 길로 눌러서 들어간다.
 import fs from 'node:fs';
-import { launch, IPHONE_12, DEFAULT_URL } from './_browser.mjs';
+import { launch, IPHONE_12, DEFAULT_URL, seedCheckin } from './_browser.mjs';
 
 const URL = process.env.SHOT_URL || DEFAULT_URL;
 const OUT = 'screenshots';
@@ -26,9 +26,15 @@ const PATHS = {
   'setup-screen': ['#one-min-start-btn', '#mode-random'],
   'manual-select-screen': ['#one-min-start-btn', '#mode-manual'],
   'ai-quiz-screen': ['#one-min-start-btn', '#mode-ai-btn'],
+  'plan-screen': ['#open-more-btn', '#open-body-btn', '#body-save-btn'],
+  'body-screen': ['#open-more-btn', '#open-body-btn'],
+  'log-screen': ['#today-card-open'],
   // 운동·결과는 한 판을 돌려야 나온다. scripts/flow.mjs 가 그 길을 간다.
   'game-screen': null,
   'result-screen': null,
+  // 시작 관문. .screen 이 아니라 덮개라서 아래의 '못 가면 토글' 길로는 못
+  // 찍는다 — 대신 설문을 미리 지나 두지 않고 열면 그것이 곧 첫 화면이다.
+  gate: [],
 };
 
 const screens = process.env.SHOT_ONLY
@@ -42,6 +48,9 @@ let faked = 0;
 for (const theme of themes) {
   for (const id of screens) {
     const page = await browser.newPage({ ...IPHONE_12, colorScheme: theme });
+    // 관문(하루 첫 설문)은 앱을 덮는다. 미리 지나 두지 않으면 열여섯 장이
+    // 전부 같은 질문 화면으로 찍힌다. 관문 자체는 아래에서 따로 한 장 찍는다.
+    if (id !== 'gate') await page.addInitScript(seedCheckin);
     await page.goto(URL, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(600);
 
@@ -55,10 +64,13 @@ for (const theme of themes) {
       }
     }
 
-    const reached = await page.evaluate(
-      (sid) => document.querySelector('.screen.active')?.id === sid,
-      id
-    );
+    // 관문은 화면(.screen)이 아니라 덮개다. 뜬 것만 확인하고 바로 찍는다.
+    const reached = id === 'gate'
+      ? await page.evaluate(() => !!document.getElementById('gate'))
+      : await page.evaluate(
+        (sid) => document.querySelector('.screen.active')?.id === sid,
+        id
+      );
 
     if (!reached) {
       // 길이 없는 화면은 어쩔 수 없이 토글한다. 다만 그 사실을 파일 이름에 남긴다 —

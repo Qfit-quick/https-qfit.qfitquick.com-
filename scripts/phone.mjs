@@ -2,7 +2,7 @@
 //
 // 그림으로는 "밀린 것"과 "원래 그런 것"을 구별할 수 없어서 몇 달을 지나치게 된다.
 // 그래서 px 로 재고, 화면마다 따로 잰다 — 한 화면만 보고는 어디가 틀어졌는지 모른다.
-import { launch, IPHONE_12, DEFAULT_URL } from './_browser.mjs';
+import { launch, IPHONE_12, DEFAULT_URL, seedCheckin } from './_browser.mjs';
 
 const URL = process.env.PHONE_URL || DEFAULT_URL;
 
@@ -19,6 +19,9 @@ const SCREENS = [
   'routines-screen', 'manual-select-screen', 'account-screen', 'setup-screen',
   'records-screen', 'recovery-screen', 'video-gallery-screen',
   'game-screen', 'result-screen',
+  // 계획·기록지·신체정보. 표가 셋(끼니·외식·요일)이나 들어 있어서
+  // 가로로 밀릴 위험이 다른 화면보다 크다 — 여기가 제일 먼저 새는 자리다.
+  'plan-screen', 'body-screen', 'log-screen',
 ];
 
 const browser = await launch();
@@ -29,6 +32,8 @@ for (const d of DEVICES) {
     ...IPHONE_12,
     viewport: { width: d.w, height: d.h },
   });
+  // 하루 첫 설문을 미리 지나 둔다. 관문이 앱을 덮고 있으면 화면 폭을 잴 수 없다.
+  await page.addInitScript(seedCheckin);
   await page.goto(URL, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(600);
 
