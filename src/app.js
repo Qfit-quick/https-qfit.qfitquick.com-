@@ -14,11 +14,12 @@ import { EXERCISES } from './data/exercises.js';
 import { MUSCLE_GROUPS, EX_TO_GROUP } from './data/muscle-groups.js';
 import { DURATION_PRESETS } from './data/durations.js';
 import { MOTIVATION_LINES } from './data/motivation.js';
-import { PHOTO_SEQUENCES } from './data/photo-sequences.js';
+import { PHOTO_SEQUENCES, photoCycle } from './data/photo-sequences.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { VIDEO_CLIPS } from './data/video-clips.js';
 import { AI_GOAL_POOLS } from './data/ai-goals.js';
 import { photoUrl, clipUrl } from './core/assets.js';
+import { clipThumb, disposeClipThumbs } from './ui/clip-thumb.js';
 import { markWorkoutDone, wipeHealthData } from './health/store.js';
 
 // ---------- DATA ----------
@@ -825,40 +826,90 @@ function stopLegSync(){
  if(legR){ legR.style.transform = ''; legR.setAttribute('x2','65'); legR.setAttribute('y2','118'); }
 }
 
-// ---------- REAL PHOTO DEMO (used for exercises with an actual photo sequence) ----------
-let photoDemoInterval = null;
-let photoDemoTop = 'a'; // which layer is currently the visible/top one
+// ---------- 운동 중 사진 ----------
+//
+// 이 자리만 사진을 쓴다. 동작을 알려 주는 화면(고르기 카드, 미리보기 줄,
+// 동작 도감, 일시정지)은 전부 영상이다. 둘을 섞어 쓰면 보는 사람은
+// 어느 쪽을 따라 해야 하는지 매번 다시 판단해야 한다.
+//
+// 움직임은 두 겹으로 만든다:
+//   1. 프레임 교차 페이드 — 한 운동의 국면을 순서대로 순환한다.
+//   2. 천천한 화면 흐름(CSS) — 버티기처럼 프레임이 한 장뿐인 동작에도
+//      정지 화면이 아니라는 감각을 남긴다.
+let photoDemoTimer = null;
+let photoDemoTop = 'a'; // 지금 보이는 쪽
+let photoDemoKey = null;
+
+// 미리 받아 둔다. 다음 프레임을 그자리에서 받기 시작하면 첫 바퀴가 빈 화면으로
+// 지나가는데, 디졸브로 이으려는 화면에서 그 한 번이 제일 크게 눈에 띈다.
+const photoWarmed = new Set();
+function warmPhotos(files){
+ files.forEach(f=>{
+ if(photoWarmed.has(f)) return;
+ photoWarmed.add(f);
+ const img = new Image();
+ img.decoding = 'async';
+ img.src = photoUrl(f);
+ });
+}
+
 function stopPhotoDemo(){
- if(photoDemoInterval){ clearInterval(photoDemoInterval); photoDemoInterval = null; }
- if(photoDemoWrap) photoDemoWrap.style.display = 'none';
+ if(photoDemoTimer){ clearTimeout(photoDemoTimer); photoDemoTimer = null; }
+ photoDemoKey = null;
+ if(photoDemoWrap){ photoDemoWrap.style.display = 'none'; photoDemoWrap.classList.remove('flowing'); }
  if(figureWrap) figureWrap.style.display = '';
 }
+
 function startPhotoDemo(key){
  const seq = PHOTO_SEQUENCES[key];
- if(!seq || !photoDemoWrap || !photoDemoA || !photoDemoB){ stopPhotoDemo(); return; }
+ const cycle = photoCycle(key);
+ // 사진이 없는 동작은 막대인간으로 돌아간다. 지금 12종은 전부 있으므로
+ // 사실상 안 쓰는 길이지만, 운동을 늘렸는데 사진을 안 넣은 날 화면이
+ // 비는 것보다는 막대인간이라도 나오는 편이 낫다.
+ if(!seq || cycle.length === 0 || !photoDemoWrap || !photoDemoA || !photoDemoB){ stopPhotoDemo(); return; }
+
+ if(photoDemoTimer){ clearTimeout(photoDemoTimer); photoDemoTimer = null; }
+ photoDemoKey = key;
+ warmPhotos(seq.frames);
+
  if(figureWrap) figureWrap.style.display = 'none';
  photoDemoWrap.style.display = 'block';
- // reset both layers, show the first frame on layer A
- photoDemoA.src = photoUrl(seq[0]);
+ photoDemoWrap.classList.add('flowing');
+
+ photoDemoA.src = photoUrl(cycle[0]);
  photoDemoA.classList.add('active');
  photoDemoB.classList.remove('active');
  photoDemoTop = 'a';
- if(photoDemoInterval){ clearInterval(photoDemoInterval); photoDemoInterval = null; }
- if(seq.length > 1){
+
+ // 교차 페이드는 머무는 시간에 비례해서 잡는다. 고정값으로 두면
+ // 빠른 동작(제자리 달리기 380ms)에서는 페이드가 끝나기 전에 다음이 오고,
+ // 느린 동작에서는 중간에 멈춰 있는 구간이 생긴다.
+ //
+ // 버티기(ms:0)는 여기서 1500 이 된다 — 바꿀 프레임이 없으니 화면 흐름만
+ // 아주 느리게 돈다. 플랭크에서 화면이 빨리 흐르면 버티는 30초가 더 길게 느껴진다.
+ const hold = seq.ms || 1500;
+ const fade = Math.round(Math.min(700, Math.max(180, hold * 0.55)));
+ photoDemoWrap.style.setProperty('--photo-fade', fade + 'ms');
+ photoDemoWrap.style.setProperty('--photo-hold', hold + 'ms');
+
+ // 한 장짜리 버티기는 바꿀 것이 없다. CSS 흐름만 남긴다.
+ if(cycle.length < 2) return;
+
  let i = 0;
- // Slower pace + a true dissolve (both layers cross-fade at once, no
- // blank/blink moment) reads as a calm demonstration instead of a
- // flicker — and it stays big enough to read from a few steps away.
- photoDemoInterval = setInterval(()=>{
- i = (i + 1) % seq.length;
+ const step = ()=>{
+ // 다른 동작으로 넘어갔으면 이 타이머는 죽는다. 안 막으면 이전 세트의 사진이
+ // 새 세트 위에 한 장 섞이는데, 그게 바로 '사진이 섞인다' 로 보이는 것이다.
+ if(photoDemoKey !== key) return;
+ i = (i + 1) % cycle.length;
  const showing = photoDemoTop === 'a' ? photoDemoA : photoDemoB;
- const hidden = photoDemoTop === 'a' ? photoDemoB : photoDemoA;
- hidden.src = photoUrl(seq[i]);
+ const hidden  = photoDemoTop === 'a' ? photoDemoB : photoDemoA;
+ hidden.src = photoUrl(cycle[i]);
  hidden.classList.add('active');
  showing.classList.remove('active');
  photoDemoTop = photoDemoTop === 'a' ? 'b' : 'a';
- }, 1400);
- }
+ photoDemoTimer = setTimeout(step, hold);
+ };
+ photoDemoTimer = setTimeout(step, hold);
 }
 
 // ---------- LOCAL PROFILE (per-device, like Geometry Dash / Magic Tiles —
@@ -1800,6 +1851,9 @@ function exMeta(ex){
 }
 
 function renderExGrid(){
+ // 다시 그리기 전에 지금 붙어 있는 영상을 놓아 준다. 검색어를 한 자
+ // 칠 때마다 도는 함수라, 안 놓으면 관찰 대상과 내려받기가 계속 쌓인다.
+ disposeClipThumbs(exGrid);
  exGrid.innerHTML = '';
  const searchEl = document.getElementById('ex-search-input');
  const term = searchEl ? searchEl.value.trim().toLowerCase() : '';
@@ -1844,17 +1898,12 @@ function renderExGrid(){
  btn.setAttribute('role', 'checkbox');
  btn.setAttribute('aria-checked', checked ? 'true' : 'false');
 
+ // 무엇을 하는 동작인지 알려 주는 자리다 — 영상을 쓴다.
+ // 사진 한 장으로는 스쿼트와 '앉아 있는 사람' 이 구분되지 않는다.
  const shot = document.createElement('span');
  shot.className = 'ex-card-photo';
- const file = (PHOTO_SEQUENCES[ex.key] || [])[0];
- if(file){
-  const img = document.createElement('img');
-  img.src = photoUrl(file);
-  img.alt = '';
-  img.loading = 'lazy';
-  img.decoding = 'async';
-  shot.appendChild(img);
- }
+ const thumb = clipThumb(ex.key);
+ if(thumb) shot.appendChild(thumb);
 
  const head = document.createElement('span');
  head.className = 'ex-card-head';
@@ -2524,6 +2573,7 @@ function showWodPreview(nextFn){
 
  const list = document.getElementById('wod-preview-list');
  if(list){
+ disposeClipThumbs(list);
  list.innerHTML = '';
  missions.forEach((m, i)=>{
  const clip = clipForExercise(m.ex.key);
@@ -2533,12 +2583,10 @@ function showWodPreview(nextFn){
  item.className = 'wod-preview-item card' + (m.isBoss ? ' boss' : '') + (clip ? ' has-clip' : '');
  item.style.animationDelay = (i * 0.04) + 's';
 
- const photo = (PHOTO_SEQUENCES[m.ex.key] || [])[0];
  const hold = m.ex.type === 'hold';
  item.innerHTML =
  '<span class="wpi-num">' + (i+1) + '</span>' +
- (photo ? '<span class="wpi-shot"><img src="' + photoUrl(photo) + '" alt="" loading="lazy" decoding="async"></span>'
-        : '<span class="wpi-shot"></span>') +
+ '<span class="wpi-shot"></span>' +
  '<span class="wpi-main">' +
    '<span class="wpi-name">' + t(m.ex.label) + (m.isBoss ? t({ko:' (보스)', en:' (BOSS)', zh:'（BOSS）'}) : '') + '</span>' +
    '<span class="wpi-meta dim">' + m.duration + t(STATIC_UI.secUnit) +
@@ -2546,6 +2594,11 @@ function showWodPreview(nextFn){
  '</span>' +
  '<span class="wpi-tag' + (hold ? ' hold' : '') + '">' + t(hold ? STATIC_UI.kindHold : STATIC_UI.kindReps) + '</span>' +
  (clip ? '<span class="wpi-play" aria-hidden="true"></span>' : '');
+ // 이 줄의 작은 화면도 영상이다. '이 순서로 한다' 를 읽는 자리라
+ // 각 줄이 무슨 동작인지까지 같이 알려 줘야 순서가 뜻을 갖는다.
+ const shot = item.querySelector('.wpi-shot');
+ const thumb = clipThumb(m.ex.key);
+ if(shot && thumb) shot.appendChild(thumb);
  if(clip){
  item.type = 'button';
  item.setAttribute('aria-label', t(m.ex.label) + ' ' + t(STATIC_UI.watchClip));

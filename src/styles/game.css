@@ -54,7 +54,9 @@
   border-radius: var(--r-sm);
   background: var(--surface-2);
 }
-.wod-preview-item .wpi-shot img { width: 100%; height: 100%; object-fit: cover; }
+/* 영상이 들어간다(사진이 아니라). 크기 규칙은 같다 — 52px 정사각을 채운다. */
+.wod-preview-item .wpi-shot img,
+.wod-preview-item .wpi-shot video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .wod-preview-item .wpi-main { flex: 1; min-width: 0; text-align: left; }
 .wod-preview-item .wpi-name {
   display: block;
@@ -135,6 +137,9 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
+  /* 화면 흐름은 장식이라 끈다. 프레임이 넘어가는 것은 남긴다 —
+     그건 '이 동작이 이렇게 움직인다' 는 설명이라 정보다. */
+  .photo-demo-wrap.flowing .photo-demo-layer { animation: none; }
 }
 
 /* ── 운동 화면 · 3단 위계 ─────────────────────────────
@@ -228,9 +233,30 @@
      자세를 보여 주는 사진이라 그건 못 쓴다. */
   object-fit: contain;
   opacity: 0;
-  transition: opacity 0.45s var(--ease-out);
+  /* 페이드 길이는 JS 가 동작 속도에 맞춰 넣는다(--photo-fade).
+     제자리 달리기(380ms)와 레그레이즈(1000ms)가 같은 속도로 겹치면
+     빠른 쪽은 다음 장이 먼저 오고 느린 쪽은 중간에 멈춘 구간이 생긴다. */
+  transition: opacity var(--photo-fade, 0.45s) var(--ease-out);
 }
 .photo-demo-layer.active { opacity: 1; }
+
+/* 천천한 화면 흐름.
+   교차 페이드만으로는 사진 두 장이 번갈아 뜨는 것으로 읽힌다. 아주 느린
+   확대·이동을 겹쳐 두면 같은 두 장이 '이어지는 화면' 이 된다.
+   두 겹에 같은 애니메이션을 같은 시점에 걸어 둔다 — 어긋나면 페이드 도중에
+   두 장이 서로 다른 자리에 있어서 겹친 자국이 보인다.
+   1.035 를 넘기지 않는다. object-fit:contain 이라 그 이상 키우면
+   머리나 발끝이 잘리는데, 자세를 보여 주는 화면에서 그건 못 쓴다. */
+@keyframes photoFlow {
+  0%   { transform: scale(1) translateY(0); }
+  50%  { transform: scale(1.035) translateY(-0.8%); }
+  100% { transform: scale(1) translateY(0); }
+}
+.photo-demo-wrap.flowing .photo-demo-layer {
+  /* 프레임이 머무는 시간의 여섯 배. 한 바퀴가 프레임 교체보다 훨씬 길어야
+     흐름이 '천천히 흐르는 것' 으로 읽히고, 교체 박자와 안 부딪힌다. */
+  animation: photoFlow calc(var(--photo-hold, 900ms) * 6) ease-in-out infinite;
+}
 
 .ex-name {
   margin-top: var(--s-3);

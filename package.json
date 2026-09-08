@@ -19,6 +19,7 @@
     "sheet": "node scripts/sheet.mjs",
     "weight": "node scripts/weight.mjs",
     "i18n": "node scripts/i18n.mjs",
+    "media": "node scripts/media.mjs",
     "reminder": "node scripts/reminder.mjs",
     "plan": "node scripts/plan.mjs",
     "stale": "node scripts/stale.mjs",
