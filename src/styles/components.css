@@ -184,7 +184,10 @@
 .settings-danger .row-t { color: var(--danger); }
 
 /* 코치 목소리: 낮은 톤/높은 톤 두 갈래 세그먼트. 토글(.sw)과 달리 값이
-   둘 다 유효한 선택이라 스위치가 아니라 눌린 쪽을 채우는 버튼 쌍으로 둔다. */
+   둘 다 유효한 선택이라 스위치가 아니라 눌린 쪽을 채우는 버튼 쌍으로 둔다.
+   버튼 두 개가 좁은 화면에서 라벨 아래로 밀려 내려가지 않게 막는다 —
+   .settings-row 는 기본이 space-between 이라 줄어들면 감싸 버린다. */
+.settings-voice-row { flex-wrap: nowrap; }
 .voice-toggle-group { flex: none; display: flex; gap: var(--s-1); }
 .voice-toggle-btn {
   min-height: 32px;
@@ -221,6 +224,7 @@
   box-sizing: border-box;
 }
 .invite-icon { font-size: 22px; flex-shrink: 0; }
+.invite-text { min-width: 0; }
 .invite-title { font-size: var(--t-sm); font-weight: 800; color: var(--text); margin-bottom: 2px; }
 .invite-sub { font-size: var(--t-xs); color: var(--text-dim); line-height: 1.4; }
 
@@ -620,7 +624,10 @@
 .login-prompt-text { font-size: var(--t-md); color: var(--text-dim); }
 
 /* 프리미엄 게이팅(테스트 모드). .pause-box 를 그대로 쓰고 값 표시 몇 줄만
-   더한다 — 상자 자체를 새로 만들면 다른 덮개와 결이 어긋난다. */
+   더한다 — 상자 자체를 새로 만들면 다른 덮개와 결이 어긋난다.
+   줄이 .pause-box 보다 많아(아이콘·가격·잔글씨) 기본 gap 이 헐렁해 보여
+   여기만 좁힌다. */
+.premium-box { gap: var(--s-3); }
 .premium-icon { font-size: 40px; line-height: 1; }
 .premium-desc { font-size: var(--t-md); color: var(--text-dim); }
 .premium-price-box { display: flex; align-items: baseline; justify-content: center; gap: var(--s-1); }
