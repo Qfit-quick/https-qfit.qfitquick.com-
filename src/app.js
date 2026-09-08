@@ -17,8 +17,9 @@ import { MOTIVATION_LINES } from './data/motivation.js';
 import { PHOTO_SEQUENCES, photoCycle } from './data/photo-sequences.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { VIDEO_CLIPS } from './data/video-clips.js';
+import { phasesFor } from './data/exercise-phases.js';
 import { AI_GOAL_POOLS } from './data/ai-goals.js';
-import { photoUrl, clipUrl } from './core/assets.js';
+import { photoUrl, clipUrl, petUrl } from './core/assets.js';
 import { clipThumb, disposeClipThumbs } from './ui/clip-thumb.js';
 import { markWorkoutDone, wipeHealthData } from './health/store.js';
 
@@ -471,6 +472,9 @@ function showScreen(el){
  if(sub) sub.textContent = show ? routineSummary(savedPrefs.exKeys) : '';
  }catch(e){ console.error('repeat button refresh failed:', e); }
  try{ renderWeekStrip(); }catch(e){ console.error('week strip render failed:', e); }
+ // 운동을 끝내고 홈으로 오면 XP 가 늘어 있다. 여기서 다시 그리지 않으면
+ // 알은 앱을 다시 켤 때까지 옛 레벨로 남는다.
+ try{ renderPetCard(); }catch(e){ console.error('pet card render failed:', e); }
  }
  // 화면이 바뀌었다고 알린다. 탭바와 뒤로가기가 이 신호를 듣는다 —
  // 그쪽에서 showScreen 을 직접 부르게 하면 위에 붙은 훅들을 건너뛰게 된다.
@@ -1346,6 +1350,90 @@ function renderWeekStrip(){
   const st = myProfile.currentStreak || 0;
   line.textContent = st > 0 ? t(STATIC_UI.streakDays).replace('%s', st) : t(STATIC_UI.streakNone);
  }
+}
+
+// ---------- 알 (성장 펫) ----------
+//
+// XP 100 마다 레벨 하나(xpLevel), 레벨이 어느 구간에 드느냐로 단계가 갈린다.
+// 표는 여기 한 벌뿐이다 — 홈의 작은 알과 성장 창이 같은 표를 본다.
+// 두 벌로 두면 홈은 알인데 창은 큐피드인 날이 온다.
+//
+// 단계마다 그림 아니면 이모지 하나다. 아기 큐피드에는 그림이 없어서
+// 이모지로 세운다(그림 두 장은 알과 완전체뿐이다).
+const PET_STAGES = [
+ { min:1,  max:5,        img:'egg-v1.webp',        emoji:'🥚', name:{ko:'알', en:'Egg', zh:'蛋'} },
+ { min:5,  max:10,       img:null,                 emoji:'🐣', name:{ko:'아기 큐피드', en:'Baby Cupid', zh:'幼年丘比特'} },
+ { min:10, max:Infinity, img:'cupid-logo-v3.webp', emoji:'💗', name:{ko:'완전체 큐피드', en:'Full Cupid', zh:'完全体丘比特'} },
+];
+
+function petStageIndex(level){
+ const i = PET_STAGES.findIndex(s => level >= s.min && level < s.max);
+ return i < 0 ? 0 : i;
+}
+
+/** 그림 한 장을 그린다. 그림이 있는 단계면 <img>, 없으면 이모지만 보인다. */
+function paintPetVisual(imgEl, emojiEl, stage){
+ if(imgEl){
+  if(stage.img){
+   const url = petUrl(stage.img);
+   if(imgEl.getAttribute('src') !== url) imgEl.src = url;
+   imgEl.style.display = '';
+  } else {
+   imgEl.style.display = 'none';
+  }
+ }
+ if(emojiEl){
+  emojiEl.textContent = stage.img ? '' : stage.emoji;
+  emojiEl.style.display = stage.img ? 'none' : '';
+ }
+}
+
+/** 홈의 작은 알. 그림과 레벨 두 가지만 말한다. */
+function renderPetCard(){
+ const card = document.getElementById('pet-card');
+ if(!card) return;
+ const level = xpLevel(myProfile.xp || 0);
+ const stage = PET_STAGES[petStageIndex(level)];
+ paintPetVisual(document.getElementById('pet-img'), document.getElementById('pet-emoji'), stage);
+ const lvEl = document.getElementById('pet-level');
+ if(lvEl) lvEl.textContent = 'Lv. ' + level;
+ // 눈으로는 그림과 숫자로 읽히지만, 소리로 들으면 'Lv. 3' 뿐이라
+ // 무엇의 레벨인지 알 수 없다. 단계 이름을 붙여 준다.
+ card.setAttribute('aria-label', t(stage.name) + ' · Lv. ' + level);
+}
+
+/** 성장 창을 채우고 연다. */
+function openPetDetail(){
+ const overlay = document.getElementById('pet-overlay');
+ if(!overlay) return;
+ const xp = myProfile.xp || 0;
+ const level = xpLevel(xp);
+ const into = xpIntoLevel(xp);
+ const idx = petStageIndex(level);
+ const stage = PET_STAGES[idx];
+ const next = PET_STAGES[idx + 1];
+
+ paintPetVisual(document.getElementById('pet-detail-img'), document.getElementById('pet-detail-emoji'), stage);
+
+ const nameEl = document.getElementById('pet-detail-name');
+ if(nameEl) nameEl.textContent = t(stage.name);
+ const lvEl = document.getElementById('pet-detail-level');
+ if(lvEl) lvEl.textContent = 'Lv. ' + level;
+ const bar = document.getElementById('pet-detail-bar');
+ if(bar) bar.style.width = into + '%';
+ const xpEl = document.getElementById('pet-detail-xp');
+ if(xpEl) xpEl.textContent = into + ' / 100 XP';
+
+ // 다음 단계까지 남은 XP. 레벨 하나가 100 XP 이므로
+ // (다음 단계의 첫 레벨 - 지금 레벨) × 100 에서 이번 레벨에 쌓인 만큼을 뺀다.
+ const nextEl = document.getElementById('pet-detail-next');
+ if(nextEl){
+  nextEl.textContent = next
+   ? t(STATIC_UI.petNext).replace('%s', Math.max(0, (next.min - level) * 100 - into))
+   : t(STATIC_UI.petMax);
+ }
+
+ overlay.classList.add('on');
 }
 
 function renderCalendar(){
@@ -2483,27 +2571,138 @@ playBtn.addEventListener('click', ()=>{
 
 // 동작 영상 보기. 갤러리·미리보기·일시정지 세 곳에서 부르므로 모듈 수준에 둔다 —
 // try 블록 안에 있으면 엄격 모드에서 블록 스코프라 밖에서 못 부른다.
+ // ── 국면 재생 ────────────────────────────────────────
+ //
+ // 한 국면은 0.3~0.5 초짜리 구간이다. <video> 의 loop 속성은 클립 전체만
+ // 되돌리므로, 구간 반복은 직접 감시해서 되감아야 한다.
+ //
+ // timeupdate 로는 안 된다 — 초당 네 번쯤 오는 이벤트라 0.35 초 구간에서는
+ // 최대 0.25 초를 지나쳐 버리고, 그러면 다음 국면이 슬쩍 보였다 사라진다.
+ // 그래서 매 프레임(rAF) 본다. 라이트박스가 열려 있는 동안만 돈다.
+ let phaseWin = null;   // {t0,t1} — null 이면 '전체 재생'
+ let phaseRaf = null;
+
+ function stopPhaseLoop(){
+  if(phaseRaf){ cancelAnimationFrame(phaseRaf); phaseRaf = null; }
+ }
+ function startPhaseLoop(video){
+  stopPhaseLoop();
+  const tick = ()=>{
+   if(!phaseWin){ phaseRaf = null; return; }
+   // 뒤로도 본다. 사용자가 진행 막대를 끌어 구간 밖으로 나가면
+   // 되감지 않는 한 영영 딴 데를 재생하게 된다.
+   if(video.currentTime >= phaseWin.t1 || video.currentTime < phaseWin.t0 - 0.08){
+    video.currentTime = phaseWin.t0;
+   }
+   phaseRaf = requestAnimationFrame(tick);
+  };
+  phaseRaf = requestAnimationFrame(tick);
+ }
+
+ /**
+  * 국면 하나를 고른다. i < 0 이면 '전체 재생'(예전 동작 그대로).
+  *
+  * 국면일 때는 0.55 배속으로 튼다. 실제 속도로는 고관절이 언제 접히는지
+  * 같은 것이 안 보인다 — 그걸 보려고 구간을 자른 것이므로 느려야 한다.
+  */
+ function selectPhase(clip, phases, i){
+  const video = document.getElementById('video-lightbox-video');
+  const label = document.getElementById('video-lightbox-label');
+  const body = document.getElementById('phase-body');
+  const desc = document.getElementById('video-lightbox-desc');
+  const tip = document.getElementById('video-lightbox-tip');
+  const risk = document.getElementById('video-lightbox-risk');
+  const chips = document.getElementById('phase-chips');
+  if(!video) return;
+
+  if(chips){
+   chips.querySelectorAll('.phase-chip').forEach((b, n)=>{
+    const on = (n - 1) === i;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+   });
+  }
+
+  const phase = i >= 0 && phases ? phases[i] : null;
+  if(phase){
+   phaseWin = { t0: phase.t0, t1: phase.t1 };
+   video.loop = false;
+   video.playbackRate = 0.55;
+   video.currentTime = phase.t0;
+   if(label) label.textContent = (i + 1) + '. ' + t(phase.name);
+   const formEl = document.getElementById('phase-form');
+   const breathEl = document.getElementById('phase-breath');
+   if(formEl) formEl.textContent = t(phase.form);
+   if(breathEl) breathEl.textContent = t(phase.breath);
+   if(body) body.hidden = false;
+   // 전체 설명 세 줄은 감춘다. 국면을 읽는 동안에는 그것이 방해다.
+   if(desc) desc.hidden = true;
+   if(tip) tip.hidden = true;
+   if(risk) risk.hidden = true;
+   startPhaseLoop(video);
+  } else {
+   phaseWin = null;
+   stopPhaseLoop();
+   video.loop = true;
+   video.playbackRate = 1;
+   video.currentTime = 0;
+   if(label) label.textContent = clip.label;
+   if(body) body.hidden = true;
+   if(desc) desc.hidden = false;
+   if(tip) tip.hidden = false;
+   if(risk) risk.hidden = false;
+  }
+  const p = video.play();
+  if(p && p.catch) p.catch(()=>{});
+ }
+
+ /** 칩 줄을 세운다. 국면 자료가 없는 동작이면 줄 자체를 감춘다. */
+ function buildPhaseChips(clip, phases){
+  const chips = document.getElementById('phase-chips');
+  if(!chips) return;
+  chips.innerHTML = '';
+  if(!phases || !phases.length){ chips.hidden = true; return; }
+  chips.hidden = false;
+  const mk = (text, i)=>{
+   const b = document.createElement('button');
+   b.type = 'button';
+   b.className = 'phase-chip';
+   b.textContent = text;
+   b.setAttribute('aria-pressed', 'false');
+   b.addEventListener('click', ()=>{
+    try{ selectPhase(clip, phases, i); }catch(e){ console.error('phase select failed:', e); }
+   });
+   chips.appendChild(b);
+  };
+  mk(t(STATIC_UI.phaseAll), -1);
+  phases.forEach((ph, i)=> mk((i + 1) + '. ' + t(ph.name), i));
+ }
+
  function openVideoLightbox(clip){
  const lightbox = document.getElementById('video-lightbox');
  const video = document.getElementById('video-lightbox-video');
- const label = document.getElementById('video-lightbox-label');
  const desc = document.getElementById('video-lightbox-desc');
  const tip = document.getElementById('video-lightbox-tip');
  const risk = document.getElementById('video-lightbox-risk');
  if(!lightbox || !video) return;
  video.src = clipUrl(clip.file);
- if(label) label.textContent = clip.label;
  if(desc) desc.textContent = clip.desc;
  if(tip) tip.textContent = clip.tip;
  if(risk) risk.textContent = clip.risk || '';
+ const phases = phasesFor(clip.key);
+ buildPhaseChips(clip, phases);
  lightbox.classList.add('on');
- const p = video.play();
- if(p && p.catch) p.catch(()=>{});
+ // 라벨·본문·재생은 '전체' 를 고른 것과 같다. 한 곳에서만 정하게 두면
+ // 여는 길과 칩을 누르는 길이 서로 다른 상태를 만들 수 없다.
+ selectPhase(clip, phases, -1);
+ lightbox.scrollTop = 0;
  }
  function closeVideoLightbox(){
  const lightbox = document.getElementById('video-lightbox');
  const video = document.getElementById('video-lightbox-video');
- if(video){ video.pause(); video.removeAttribute('src'); video.load(); }
+ phaseWin = null;
+ stopPhaseLoop();
+ if(video){ video.pause(); video.playbackRate = 1; video.removeAttribute('src'); video.load(); }
  if(lightbox) lightbox.classList.remove('on');
  }
 
@@ -3629,6 +3828,23 @@ try{
  }
 }catch(e){ console.error('install banner setup failed:', e); }
 try{ loadProfile(); }catch(e){ console.error('loadProfile failed:', e); }
+// 알은 프로필의 xp 로 그린다. 그래서 loadProfile 뒤에 있어야 한다.
+try{ renderPetCard(); }catch(e){ console.error('pet card boot render failed:', e); }
+
+// 홈의 알 → 성장 창.
+try{
+ const petCard = document.getElementById('pet-card');
+ const petOverlay = document.getElementById('pet-overlay');
+ const petCloseBtn = document.getElementById('pet-close-btn');
+ const closePet = ()=>{ if(petOverlay) petOverlay.classList.remove('on'); };
+ if(petCard) petCard.addEventListener('click', ()=>{
+  try{ openPetDetail(); }catch(e){ console.error('pet detail open failed:', e); }
+ });
+ if(petCloseBtn) petCloseBtn.addEventListener('click', closePet);
+ // 상자 밖(어두운 막)을 누르면 닫는다. 상자 안을 누른 것까지 닫으면
+ // 글자를 짚어 읽는 동안 창이 사라진다.
+ if(petOverlay) petOverlay.addEventListener('click', (e)=>{ if(e.target === petOverlay) closePet(); });
+}catch(e){ console.error('pet card setup failed:', e); }
 
 // 운동 알림(FR-03).
 // 권한은 토글을 켤 때만 묻는다 — 부팅하자마자 물으면 대부분 거절하고,

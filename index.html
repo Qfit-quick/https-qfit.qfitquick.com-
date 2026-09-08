@@ -36,8 +36,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-rUq1uO6t.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-Cq5aBcB_.css">
+  <script type="module" crossorigin src="./assets/index-CdtG-huN.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BT1-KjvL.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -105,12 +105,25 @@
  <p class="hero-line" data-i18n="heroLine">1분이면 끝. 귀찮지 않은 운동.</p>
  </div>
 
+ <!-- 이번 주 칸과 알을 한 줄에 세운다. 알은 눌러서 성장 창을 여는
+      버튼이고, 이 줄에서는 그림과 레벨 두 가지만 말한다 — 홈에서
+      필요한 것은 "얼마나 컸나" 하나이고, 나머지는 창 안에 있다. -->
+ <div class="home-status-row">
  <div class="card week-card">
  <div class="week-head">
  <span class="week-title" data-i18n="thisWeek">이번 주</span>
  <span class="dim" id="streak-line"></span>
  </div>
  <div class="week-strip" id="week-strip"></div>
+ </div>
+
+ <button class="card pet-card" id="pet-card" type="button" aria-label="Q-fit">
+ <span class="pet-visual">
+ <img class="pet-img" id="pet-img" alt="">
+ <span class="pet-emoji" id="pet-emoji" aria-hidden="true"></span>
+ </span>
+ <span class="pet-level" id="pet-level">Lv. 1</span>
+ </button>
  </div>
 
  <!-- 오늘 두 칸(설계에 없던 카드).
@@ -828,7 +841,28 @@
  <div class="video-lightbox" id="video-lightbox">
  <button class="video-lightbox-close" id="video-lightbox-close" data-icon="close"></button>
  <video id="video-lightbox-video" muted loop playsinline webkit-playsinline></video>
+
+ <!-- 국면 칩. 이 동작에 국면 자료(src/data/exercise-phases.js)가 있을 때만
+      나온다. 누르면 그 국면의 구간만 느리게 반복 재생하고, 아래 글이
+      그 구간에서 할 말로 바뀐다. 맨 앞 '전체' 는 예전 그대로의 재생이다 —
+      기본값을 국면으로 두면 처음 여는 사람이 동작 전체를 한 번도 못 본다. -->
+ <div class="phase-chips" id="phase-chips" hidden></div>
+
  <div class="video-lightbox-label" id="video-lightbox-label"></div>
+
+ <!-- 국면을 고른 동안만 보인다. 아래 desc/tip/risk 와는 번갈아 뜬다 —
+      둘을 같이 띄우면 지금 읽어야 할 줄이 어느 것인지 알 수 없다. -->
+ <div class="phase-body" id="phase-body" hidden>
+ <p class="phase-line">
+ <span class="phase-kick" data-i18n="phaseForm">자세</span>
+ <span class="phase-text" id="phase-form"></span>
+ </p>
+ <p class="phase-line">
+ <span class="phase-kick phase-kick-breath" data-i18n="phaseBreath">호흡</span>
+ <span class="phase-text" id="phase-breath"></span>
+ </p>
+ </div>
+
  <div class="video-lightbox-desc" id="video-lightbox-desc"></div>
  <div class="video-lightbox-tip" id="video-lightbox-tip"></div>
  <div class="video-lightbox-risk" id="video-lightbox-risk"></div>
@@ -1050,6 +1084,32 @@
  <button class="btn-restart" id="retry-same-btn" data-i18n="retrySame">방금 운동 다시</button>
  <button class="btn-home" id="retry-new-btn" data-i18n="retryNew">새로 운동 정하기</button>
  <button class="link-btn" id="retry-cancel-btn" data-i18n="cancelBtn">취소</button>
+ </div>
+</div>
+
+<!-- 알 성장 창.
+     홈의 알을 누르면 뜬다. 한 축에 여섯 가지만 세운다 —
+     그림 · 이름 · 레벨 · 막대 · 이번 레벨의 XP · 다음 진화까지.
+
+     예전에는 여기에 이름 짓기 입력칸과 "그리고 운동을 끝내면 / +20 XP /
+     진화까지 N XP" 예고 상자가 더 있었다. 셋 다 이미 위에서 한 말을
+     다시 하는 것이었고(진화까지 남은 XP 를 두 번 적었다), 입력칸은
+     성장을 보러 연 창에서 유일하게 키보드를 부르는 요소였다.
+
+     .pause-box 는 글자만 가운데로 두고 상자 안의 요소는 늘여 놓는다.
+     그래서 그림과 막대가 왼쪽에 붙어 있었다 — .pet-box 가 축을 세운다. -->
+<div class="pause-overlay" id="pet-overlay">
+ <div class="pause-box pet-box">
+ <div class="pet-visual pet-visual-lg">
+ <img class="pet-img" id="pet-detail-img" alt="">
+ <span class="pet-emoji" id="pet-detail-emoji" aria-hidden="true"></span>
+ </div>
+ <div class="pet-name" id="pet-detail-name"></div>
+ <div class="pet-lv" id="pet-detail-level">Lv. 1</div>
+ <div class="pet-bar"><div class="pet-bar-fill" id="pet-detail-bar"></div></div>
+ <div class="pet-xp" id="pet-detail-xp"></div>
+ <div class="pet-next" id="pet-detail-next"></div>
+ <button class="btn-restart" id="pet-close-btn" type="button" data-i18n="closeBtn">닫기</button>
  </div>
 </div>
 

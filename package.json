@@ -23,6 +23,7 @@
     "reminder": "node scripts/reminder.mjs",
     "plan": "node scripts/plan.mjs",
     "stale": "node scripts/stale.mjs",
+    "phases": "node scripts/phases.mjs",
     "deploy": "npm run build && npx --yes wrangler deploy"
   },
   "devDependencies": {

@@ -50,9 +50,11 @@
     npm run i18n       # 번역 누락
     npm run coverage   # 스타일 없는 클래스
     npm run contrast   # 명도 대비
+    npm run phases     # 동작 국면 시각이 클립과 맞는지
     npm run smoke      # playwright 로 실제 브라우저
 
-앞의 셋은 브라우저 없이 돌고 CI 에서도 돈다.
+앞의 셋은 브라우저 없이 돌고 CI 에서도 돈다. `phases` 도 브라우저 없이 돌지만
+`ffmpeg-static` 이 있어야 클립 길이까지 본다(없으면 나머지만 검사한다).
 
 ## 배포
 

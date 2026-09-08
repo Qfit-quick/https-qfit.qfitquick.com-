@@ -65,6 +65,86 @@
 
 /* 주간 카드 — 설계: 여백 14/12, 머리줄 0 4px 10px */
 .week-card { padding: 14px 12px; }
+
+/* ── 알 (성장 펫) ──────────────────────────────────────
+ *
+ * 홈에서는 주간 카드 옆의 좁은 칸이다. 5:2 로 둔다 — 예전 배포본은 5:4 라
+ * 알이 달력과 같은 무게였고, 요일 일곱 칸이 그만큼 좁아져 있었다.
+ * 이 줄의 주인공은 이번 주이고 알은 그 옆의 표식이다.
+ */
+.home-status-row { display: flex; align-items: stretch; gap: var(--s-3); }
+.week-card { flex: 5; min-width: 0; }
+.pet-card {
+  flex: 2;
+  min-width: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 14px 8px;
+}
+.pet-card:active { transform: scale(0.97); }
+
+/* 그림을 받치는 판.
+ *
+ * 두 그림이 고정색이다 — 알은 거의 흰색, 큐피드는 거의 검정. 판을 테마에
+ * 맡기면 한쪽 테마에서 그림이 통째로 사라진다(라이트에서 흰 알, 다크에서
+ * 검은 큐피드). 그래서 판만은 테마와 무관하게 밝은 민트로 고정한다. */
+.pet-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-full);
+  background: color-mix(in oklch, var(--mint) 16%, white);
+}
+.pet-img { width: 74%; height: 74%; object-fit: contain; }
+/* 그림이 없는 단계(아기 큐피드)는 이모지로 선다. 둘 중 하나만 보인다 —
+   어느 쪽을 보일지는 app.js 의 단계 표가 정한다. */
+.pet-emoji { font-size: 26px; line-height: 1; }
+.pet-level {
+  font-family: var(--font-num);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+/* 성장 창 — 그림·글자·막대가 모두 한 축에 선다.
+   .pause-box 는 text-align 만 가운데라 블록 요소는 왼쪽에 붙는다. */
+.pet-box { align-items: center; gap: var(--s-3); }
+.pet-visual-lg { width: 128px; height: 128px; }
+.pet-visual-lg .pet-emoji { font-size: 68px; }
+.pet-name { font-size: var(--t-xl); font-weight: 800; letter-spacing: -0.02em; }
+.pet-lv {
+  font-family: var(--font-num);
+  font-size: var(--t-2xl);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-text);
+}
+.pet-bar {
+  width: 100%;
+  max-width: 220px;
+  height: 8px;
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.pet-bar-fill {
+  height: 100%;
+  width: 0;
+  border-radius: var(--r-full);
+  background: var(--mint);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+.pet-xp { font-family: var(--font-num); font-size: var(--t-sm); color: var(--text-dim); }
+.pet-next { font-size: var(--t-sm); font-weight: 700; }
+.pet-box .btn-restart { width: 100%; max-width: 220px; margin-top: var(--s-2); }
 .week-head {
   display: flex;
   align-items: baseline;
@@ -440,6 +520,96 @@
 .video-lightbox-tip,
 .video-lightbox-risk { max-width: 420px; font-size: var(--t-sm); color: rgb(255 214 10 / 0.92); }
 .video-lightbox-close { color: #fff; }
+
+/* ── 동작 국면 ─────────────────────────────────────────
+ *
+ * 국면 칩이 붙으면서 라이트박스가 화면보다 길어질 수 있다. 세로로 흐르게
+ * 열어 준다 — 안 열면 작은 화면에서 마지막 줄이 잘린 채 읽을 방법이 없다.
+ * justify-content 도 center 에서 풀어야 한다(가운데 정렬이면 넘친 쪽이
+ * 위아래로 잘려서 스크롤로도 못 닿는다).
+ */
+#video-lightbox {
+  justify-content: flex-start;
+  overflow-y: auto;
+  gap: var(--s-3);
+  padding-top: calc(var(--s-4) + var(--tap) + env(safe-area-inset-top));
+  padding-bottom: calc(var(--s-6) + env(safe-area-inset-bottom));
+}
+/* 폭에 맞추면 세로 영상이 화면 하나를 통째로 먹는다 — 그러면 국면 칩과
+   설명이 접혀서, 정작 이 화면을 연 이유가 안 보인다. 높이로 묶는다.
+   너비·높이를 둘 다 auto 로 두고 상한만 걸어야 한다. 한쪽을 고정하면
+   비율이 안 맞는 영상에서 검은 띠가 생긴다 — 클립이 대부분 세로인데
+   플랭크만 가로라 실제로 그랬다. */
+#video-lightbox video {
+  flex: none;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 40vh;
+}
+/* 덮개가 스크롤되므로 닫기는 붙박이여야 한다. absolute 로 두면 아래로
+   내려간 사이 닫기 버튼이 위로 사라져서 나갈 길이 없어 보인다. */
+#video-lightbox .video-lightbox-close { position: fixed; }
+
+/* 칩 줄. 국면이 다섯이면 390px 폭에 안 들어가므로 가로로 흐르게 둔다.
+   줄바꿈시키면 두 줄이 되어 영상이 화면 밖으로 밀린다. */
+.phase-chips {
+  display: flex;
+  flex: none;
+  gap: var(--s-2);
+  width: 100%;
+  max-width: 420px;
+  padding-bottom: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.phase-chips::-webkit-scrollbar { display: none; }
+.phase-chip {
+  flex: none;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: var(--r-full);
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(255 255 255 / 0.86);
+  font-family: inherit;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.phase-chip.on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* 국면 글. '자세'·'호흡' 두 줄뿐이다 — 국면마다 열 줄씩 적으면
+   영상을 보는 화면이 아니라 읽는 화면이 된다. */
+.phase-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  width: 100%;
+  max-width: 420px;
+  padding: 14px;
+  border-radius: var(--r-lg);
+  background: rgb(255 255 255 / 0.08);
+}
+.phase-line { display: flex; gap: 10px; align-items: baseline; }
+.phase-kick {
+  flex: none;
+  min-width: 3.2em;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--t-xs);
+  font-weight: 800;
+  text-align: center;
+}
+.phase-kick-breath { background: var(--mint); color: var(--on-mint); }
+.phase-text { font-size: var(--t-sm); line-height: 1.6; color: #fff; }
 
 /* ── 운동 고르기 (설계 03) ─────────────────────────────
    화면을 세 토막으로 나눈다: 머리·검색/칩(고정) · 카드 목록(스크롤) ·

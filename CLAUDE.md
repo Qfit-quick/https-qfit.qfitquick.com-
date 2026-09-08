@@ -103,3 +103,18 @@
 
 `smoke`·`flow`·`shot` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
 안 돌린다.
+
+`npm run phases` 는 브라우저 없이 돌지만 워크플로에는 아직 안 붙어 있다.
+`src/data/exercise-phases.js` 의 국면 시각이 실제 클립과 맞는지 본다.
+
+## 동작 국면 시각은 클립에 묶여 있다
+
+`src/data/exercise-phases.js` 는 **클립 안의 초**(`t0`/`t1`)를 적어 둔다.
+클립을 다시 인코딩하거나 갈아 끼우면 그 숫자가 통째로 거짓말이 되는데,
+**오류는 하나도 안 난다** — `t1` 이 길이를 넘으면 그 국면은 그냥 검은
+화면이 되고, 순서가 뒤집혀도 조용히 엉뚱한 구간이 돈다.
+
+    npm run phases              # 시각·순서·번역 검사
+    SHEET=1 npm run phases      # 국면마다 대표 프레임을 뽑아 눈으로 본다
+
+`public/media/clips/` 를 건드렸으면 반드시 돌린다.

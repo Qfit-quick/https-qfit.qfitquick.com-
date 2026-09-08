@@ -376,4 +376,13 @@ export const STATIC_UI = {
  logRecent: {ko:'최근 14일', en:'Last 14 days', zh:'最近14天'},
  logStreaks: {ko:'운동 %s일 · 식단 %s일 연속', en:'%s-day workout · %s-day diet streak', zh:'训练连续%s天 · 饮食连续%s天'},
  logMonthSum: {ko:'둘 다 %s일 · 운동만 %s일 · 식단만 %s일', en:'Both %s · workout only %s · diet only %s', zh:'都完成%s天 · 仅训练%s天 · 仅饮食%s天'},
+
+ // 동작 국면 코칭
+ phaseAll: {ko:'전체', en:'Full', zh:'完整'},
+ phaseForm: {ko:'자세', en:'Form', zh:'动作'},
+ phaseBreath: {ko:'호흡', en:'Breathing', zh:'呼吸'},
+
+ // 알 성장 창
+ petNext: {ko:'다음 진화까지 %s XP', en:'%s XP to the next evolution', zh:'距离下次进化还需 %s XP'},
+ petMax: {ko:'마지막 단계까지 키웠습니다', en:'Fully grown — this is the last stage', zh:'已经养到最后一个阶段'},
 };
