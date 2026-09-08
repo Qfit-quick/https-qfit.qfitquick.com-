@@ -12,7 +12,7 @@ import { clipUrl } from '../core/assets.js';
 
 export const clipFor = (key) => VIDEO_CLIPS.find((c) => c.key === key) || null;
 
-// 화면 밖의 영상까지 다 돌리면 안 된다. 클립이 12개에 합쳐서 8MB 라,
+// 화면 밖의 영상까지 다 돌리면 안 된다. 클립이 24개에 합쳐서 17MB 라,
 // 고르기 화면을 열자마자 전부 재생하면 저가 단말에서 프레임이 떨어진다.
 // 보이는 것만 돌리고 나가면 멈춘다.
 const seen =

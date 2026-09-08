@@ -313,6 +313,59 @@
   color: var(--text-dim);
 }
 
+/* 휴식 인증(번개 꾹 누르기). 카메라 없이 하는 최소한의 실재 확인 —
+   폰을 두고 자리를 뜨지 않았는지, 손이 갈 곳 하나를 만든다. */
+.rest-touch-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  margin-top: var(--s-3);
+}
+.rest-touch-zone {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.rest-touch-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.rest-touch-ring circle { fill: none; stroke-width: 5; }
+.rest-touch-ring .track { stroke: var(--line); }
+.rest-touch-ring .prog { stroke: var(--volt); stroke-linecap: round; }
+.rest-touch-zone.verified .rest-touch-ring .prog { stroke: var(--mint); }
+.rest-touch-icon {
+  position: relative;
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+.rest-touch-zone:active .rest-touch-icon { transform: scale(0.88); }
+.rest-touch-label {
+  margin: 0;
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--text);
+}
+.rest-touch-zone.verified ~ .rest-touch-label { color: var(--mint); }
+.rest-touch-caption {
+  margin: 0;
+  font-size: var(--t-xs);
+  color: var(--text-dim);
+  text-align: center;
+}
+
 .ex-name {
   margin-top: var(--s-3);
   font-size: var(--t-2xl);
@@ -380,6 +433,25 @@
 .ex-cue { font-size: var(--t-md); line-height: 1.5; color: var(--text); }
 .ex-warn { font-size: var(--t-xs); line-height: 1.5; color: var(--hot); }
 .ex-warn:empty { display: none; }
+
+/* 힘들면 이 세트만 쉬운 동작으로. 주 버튼처럼 크게 두지 않는다 — 늘
+   눌러야 하는 버튼이 아니라, 필요할 때만 찾는 보조 동작이다. */
+.easy-swap-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin: var(--s-2) 0;
+  padding: var(--s-1) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--t-xs);
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.easy-swap-btn:active { transform: scale(0.98); }
 
 /* 3단 */
 .gz-bottom {

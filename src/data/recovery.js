@@ -205,6 +205,12 @@ export const INJURY_GUIDES = [
   ],
   warn:{ko:'병원 방문 신호: 체중을 전혀 실을 수 없거나, 심하게 붓고 변형된 것처럼 보이거나, 멍이 빠르게 번지면 골절 가능성도 있으니 바로 병원에 가보십시오.', en:'See a doctor if: you can\'t bear weight at all, it\'s badly swollen or looks deformed, or bruising spreads fast — a fracture is possible.', zh:'就医信号：完全无法承重、肿胀严重或看起来变形、淤青迅速扩散，可能骨折，请立即就医。'},
  },
+];
+
+// 대상별 가이드. 몸의 특정 부위가 아니라 '누구인가'로 나뉜다 — 위 부위별
+// 목록과 같은 화면에 섞여 있으면 '다이어트용' 칩이 '목' 옆에 나란히 붙어
+// 무엇이 부위이고 무엇이 대상인지 구별이 안 된다(2026-09-06 지적).
+export const SPECIAL_GUIDES = [
  { part:{ko:'노인을 위한 운동', en:'For older adults', zh:'老年人训练'},
   groups:[
    { h:{ko:'추천 동작', en:'Suggested moves', zh:'推荐动作'}, items:[
@@ -250,6 +256,11 @@ export const INJURY_GUIDES = [
   ],
   warn:{ko:'반동을 주지 말고 아주 천천히, 통증이 아닌 시원한 느낌까지만 늘리세요. 밤에 통증으로 잠을 깨거나 3~4주 이상 호전이 없으면 정형외과·재활의학과 진료를 받아보세요.', en:'No bouncing — go slowly and stretch only to a pleasant pull, never pain. If pain wakes you at night or there\'s no improvement after 3–4 weeks, see an orthopaedist or rehab specialist.', zh:'不要借助反弹，动作要慢，只拉伸到舒服的程度而非疼痛。若夜间被痛醒或3~4周仍无好转，请就诊骨科或康复科。'},
  },
+];
+
+// 식단 가이드. 부상 대처법이 아니라 목적별 식단 방향이라 위 두 목록과도
+// 다른 이야기다(2026-09-06 지적) — 별도 화면 자리를 준다.
+export const DIET_GUIDES = [
  { part:{ko:'다이어트용', en:'For weight loss', zh:'减脂'},
   groups:[
    { h:{ko:'방향', en:'Approach', zh:'方向'}, items:[

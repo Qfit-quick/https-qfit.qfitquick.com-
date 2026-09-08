@@ -1,4 +1,4 @@
-// 운동 12종.
+// 운동 24종.
 //
 // key 가 사진·영상·막대인간 애니메이션을 잇는 조인 키다. 바꾸면 셋이 한꺼번에 끊긴다.
 // met 은 칼로리 추정용(Compendium of Physical Activities), pro 는 초보/숙련 구분,
@@ -56,4 +56,57 @@ export const EXERCISES = [
  label:{ko:'파이크푸쉬업',en:'Pike Push-up',zh:'派克撑'},
  cue:{ko:'엉덩이 높이 들고 머리를 바닥 쪽으로 숙이기',en:'Hips high, lower your head toward the floor',zh:'臀部抬高，头部下压向地面'},
  tip:{ko:'목을 과도하게 젖히지 마십시오',en:"Don't overextend your neck",zh:'不要过度后仰颈部'} },
+
+ // src/ 개편(a62f95f) 때 통째로 빠졌던 12종 — 옛 빌드 번들에서 되살렸다
+ // (2026-09-08). 옛 판 그대로 premium:true 를 되살렸다 — 프리미엄이 아니면
+ // 못 고르는 잠금도 같이 복원한다(사용자 지시, 2026-09-08). 결제는 여전히
+ // 테스트 모드다(settings-premium-row 참고).
+ { key:'CALFRAISE', icon:'', type:'reps', pro:true, premium:true, met:3.0,
+ label:{ko:'카프레이즈',en:'Calf Raise',zh:'提踵'},
+ cue:{ko:'숙련자는 한 발씩 절반 나눠서 해보세요',en:'Advanced: try splitting it in half, one foot at a time',zh:'进阶者可以试试单脚各做一半'},
+ tip:{ko:'천천히 올라갔다가 천천히 내려오며 종아리에 힘을 느낍니다',en:'Rise and lower slowly, feeling your calves work',zh:'缓慢上提缓慢放下，感受小腿发力'} },
+ { key:'WIDEPUSHUP', icon:'', type:'reps', pro:true, premium:true, met:8.0,
+ label:{ko:'와이드 푸쉬업',en:'Wide Push-up',zh:'宽距俯卧撑'},
+ cue:{ko:'손을 넓게 짚고 팔로 몸 밀어올리기',en:'Hands wide, push your body up with your arms',zh:'双手宽距撑地，用手臂撑起身体'},
+ tip:{ko:'손목이 어깨보다 살짝 바깥에 오도록 넓게 짚습니다',en:'Place your hands slightly wider than your shoulders',zh:'双手比肩略宽撑地'} },
+ { key:'DIAMONDPUSHUP', icon:'', type:'reps', pro:true, premium:true, met:8.0,
+ label:{ko:'다이아몬드 푸쉬업',en:'Diamond Push-up',zh:'钻石俯卧撑'},
+ cue:{ko:'손을 모아 다이아몬드 모양으로 짚고 밀어올리기',en:'Hands together in a diamond shape, push up',zh:'双手合拢成钻石形撑地推起'},
+ tip:{ko:'양손 엄지·검지로 다이아몬드 모양을 만들어 가슴 중앙 아래에 짚습니다',en:'Form a diamond with your thumbs and index fingers under your chest',zh:'用双手拇指和食指组成钻石形，放在胸口正下方'} },
+ { key:'HIGHPLANK', icon:'', type:'hold', pro:true, premium:true, met:4.0,
+ label:{ko:'하이플랭크',en:'High Plank',zh:'高位平板支撑'},
+ cue:{ko:'팔을 편 채로 버티기',en:'Hold with your arms straight',zh:'手臂伸直坚持'},
+ tip:{ko:'어깨가 손목 바로 위에 오도록 하고 엉덩이가 처지지 않게 합니다',en:'Keep your shoulders stacked over your wrists and hips level',zh:'肩膀在手腕正上方，臀部不要下塌'} },
+ { key:'COSSACKSQUAT', icon:'', type:'reps', pro:true, premium:true, met:6.0,
+ label:{ko:'코사크스쿼트',en:'Cossack Squat',zh:'哥萨克深蹲'},
+ cue:{ko:'다리를 넓게 벌리고 한쪽 무릎을 굽혀 앉으며 반대쪽 다리는 곧게 펴기',en:'Feet wide, bend one knee down while keeping the other leg straight',zh:'双腿大幅张开，一侧屈膝下蹲，另一侧腿伸直'},
+ tip:{ko:'무게중심을 낮게 유지하며 좌우로 부드럽게 이동합니다',en:'Keep your center of gravity low and shift side to side smoothly',zh:'重心保持低位，左右平稳移动'} },
+ { key:'VUP', icon:'', type:'reps', pro:true, premium:true, met:4.0,
+ label:{ko:'V-up',en:'V-up',zh:'V字卷腹'},
+ cue:{ko:'누워서 팔다리를 동시에 들어올려 V자 만들기',en:'Lie down, raise arms and legs together into a V',zh:'平躺，同时抬起手臂和腿呈V字形'},
+ tip:{ko:'반동 없이 복부 힘으로 몸을 접어요',en:'Fold up using your abs, not momentum',zh:'不借助反弹，用腹部力量折叠身体'} },
+ { key:'DEADBUG', icon:'', type:'reps', pro:true, premium:true, met:3.5,
+ label:{ko:'데드버그',en:'Dead Bug',zh:'死虫式'},
+ cue:{ko:'누워서 반대쪽 팔다리를 동시에 뻗었다 되돌리기',en:'Lie down, extend opposite arm and leg together, then return',zh:'平躺，对侧手臂和腿同时伸展再收回'},
+ tip:{ko:'허리가 바닥에서 뜨지 않게 코어에 힘을 유지합니다',en:'Keep your core braced so your lower back stays on the floor',zh:'保持核心收紧，腰部不要离地'} },
+ { key:'PLANKPUSHUP', icon:'', type:'reps', pro:true, premium:true, met:6.5,
+ label:{ko:'플랭크푸쉬업',en:'Plank Push-up',zh:'平板支撑俯卧撑'},
+ cue:{ko:'팔뚝으로 플랭크 자세를 잡고 한쪽씩 팔을 펴며 푸쉬업 자세로 올라갔다 내려오기',en:'From forearm plank, press up one arm at a time into push-up position, then back down',zh:'用前臂做平板支撑，依次伸直手臂撑起为俯卧撑姿势再放下'},
+ tip:{ko:'몸통이 좌우로 흔들리지 않게 코어에 힘을 유지합니다',en:"Keep your core braced so your torso doesn't rock side to side",zh:'保持核心收紧，避免身体左右晃动'} },
+ { key:'YRAISE', icon:'', type:'reps', pro:true, premium:true, met:3.5,
+ label:{ko:'Y레이즈',en:'Y-Raise',zh:'Y字上举'},
+ cue:{ko:'엎드려서 양팔을 Y자로 뻗어 위로 들어올리기',en:'Lie face down, extend arms in a Y shape and raise them up',zh:'俯卧，双臂呈Y字形向上抬起'},
+ tip:{ko:'허리에 힘이 들어가지 않게 등 윗부분으로 들어올려요',en:'Lift with your upper back, not your lower back',zh:'用上背部发力，避免腰部用力'} },
+ { key:'ARMWALK', icon:'', type:'reps', pro:true, premium:true, met:7.0,
+ label:{ko:'암워킹',en:'Arm Walkout',zh:'手臂行走'},
+ cue:{ko:'서서 상체를 숙여 손으로 바닥을 짚고 걸어 나가 플랭크가 됐다가 다시 걸어 돌아와 일어서기',en:'From standing, bend down and walk your hands out to plank, then walk back and stand up',zh:'站立，弯腰用手撑地向前走成平板支撑，再走回并站起'},
+ tip:{ko:'허리를 둥글게 말지 말고 코어에 힘을 주고 진행합니다',en:"Keep your core braced — don't let your back round",zh:'收紧核心，不要弓背'} },
+ { key:'REVERSEPLANK', icon:'', type:'hold', pro:true, premium:true, met:4.0,
+ label:{ko:'리버스플랭크',en:'Reverse Plank',zh:'反向平板支撑'},
+ cue:{ko:'바닥에 앉아 양손을 뒤로 짚고 엉덩이를 들어올려 몸을 일직선으로 만들기',en:'Sit on the floor, place hands behind you, lift your hips into a straight line',zh:'坐地，双手向后撑地，抬起臀部使身体呈一条直线'},
+ tip:{ko:'고개를 뒤로 젖히지 말고 시선은 정면 위쪽을 봅니다',en:"Don't tip your head back — keep your gaze forward and up",zh:'不要仰头，视线看向前上方'} },
+ { key:'MOUNTAINCLIMBER', icon:'', type:'reps', pro:true, premium:true, met:8.0,
+ label:{ko:'마운틴클라이머',en:'Mountain Climber',zh:'登山跑'},
+ cue:{ko:'플랭크 자세에서 무릎을 번갈아 가슴 쪽으로 빠르게 당기기',en:'From plank, drive your knees toward your chest alternately',zh:'平板支撑姿势下，交替快速将膝盖拉向胸口'},
+ tip:{ko:'엉덩이가 너무 올라가지 않게 몸을 일직선으로 유지합니다',en:"Keep your body in a straight line — don't let your hips pike up",zh:'保持身体一条直线，臀部不要过高'} },
 ];

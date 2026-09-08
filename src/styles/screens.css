@@ -707,6 +707,24 @@
 }
 .ex-card-meta { display: block; padding: var(--s-1) var(--s-3) var(--s-3); }
 
+/* 프리미엄 잠금 카드. 흐리게 하지 않는다 — 흐린 카드는 '로딩 중'으로도
+   읽힌다. 대신 오른쪽 위에 별을 얹어 "여기 하나 더 있다"고만 말한다. */
+.ex-card.locked { position: relative; }
+.premium-lock {
+  position: absolute;
+  top: var(--s-2);
+  right: var(--s-2);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-full);
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 13px;
+}
+
 /* ── 회복 (설계 14) ────────────────────────────────────
    지금 아픈 사람이 여는 화면이다. 검색과 부위 칩이 맨 위에 오고,
    회복 습관은 그 아래로 내린다. */

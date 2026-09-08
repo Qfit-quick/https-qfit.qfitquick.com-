@@ -38,6 +38,27 @@ export const PHOTO_SEQUENCES = {
                                                                                             mode: 'loop', ms: 520 },
   // 버티기. 사진이 한 장뿐이고, 그게 맞다 — 플랭크는 안 움직이는 것이 동작이다.
   PLANK:      { frames: ['plank-1.webp'],                                                   mode: 'hold', ms: 0 },
+
+  // 12종 — src/ 개편 때 함께 빠졌다가 동작 자체와 같이 되살아난 사진들
+  // (2026-09-08). 이 사진들 자체는 옛 빌드에도 있었지만, frames/mode/ms
+  // 체계는 그 뒤에 새로 생긴 것이라 옛 판에 남은 값이 없다 — 옆 동작들의
+  // 결을 따라 새로 정했다.
+  CALFRAISE:       { frames: ['calfraise-1.webp', 'calfraise-2.webp'],                       mode: 'pingpong', ms: 900 },
+  WIDEPUSHUP:      { frames: ['widepushup-1.webp', 'widepushup-2.webp'],                     mode: 'pingpong', ms: 850 },
+  DIAMONDPUSHUP:   { frames: ['diamondpushup-1.webp', 'diamondpushup-2.webp'],               mode: 'pingpong', ms: 900 },
+  COSSACKSQUAT:    { frames: ['cossacksquat-1.webp', 'cossacksquat-2.webp', 'cossacksquat-3.webp'], mode: 'pingpong', ms: 850 },
+  VUP:             { frames: ['vup-1.webp', 'vup-2.webp'],                                   mode: 'pingpong', ms: 900 },
+  DEADBUG:         { frames: ['deadbug-1.webp', 'deadbug-2.webp', 'deadbug-3.webp'],         mode: 'pingpong', ms: 950 },
+  PLANKPUSHUP:     { frames: ['plankpushup-1.webp','plankpushup-2.webp','plankpushup-3.webp','plankpushup-4.webp','plankpushup-5.webp','plankpushup-6.webp','plankpushup-7.webp','plankpushup-8.webp','plankpushup-9.webp'], mode: 'pingpong', ms: 700 },
+  YRAISE:          { frames: ['yraise-1.webp', 'yraise-2.webp'],                             mode: 'pingpong', ms: 950 },
+  // 손으로 걸어 나갔다가 걸어 돌아오는 동작 — 왕복 자체가 동작이라 pingpong.
+  ARMWALK:         { frames: ['armwalk-1.webp', 'armwalk-2.webp', 'armwalk-3.webp', 'armwalk-4.webp'], mode: 'pingpong', ms: 750 },
+  // 버티기 둘. 하이플랭크·리버스플랭크 모두 안 움직이는 것이 동작이다.
+  HIGHPLANK:       { frames: ['highplank-1.webp'],                                           mode: 'hold', ms: 0 },
+  REVERSEPLANK:    { frames: ['reverseplank-1.webp'],                                        mode: 'hold', ms: 0 },
+  // 제자리 달리기처럼 좌우 다리가 번갈아 나온다 — loop 여야 같은 다리를
+  // 두 번 딛는 것처럼 안 보인다.
+  MOUNTAINCLIMBER: { frames: ['mountainclimber-1.webp', 'mountainclimber-2.webp'],           mode: 'loop', ms: 380 },
 };
 
 /**

@@ -183,6 +183,47 @@
 .settings-val { flex: none; font-size: var(--t-md); font-weight: 600; color: var(--text-dim); }
 .settings-danger .row-t { color: var(--danger); }
 
+/* 코치 목소리: 낮은 톤/높은 톤 두 갈래 세그먼트. 토글(.sw)과 달리 값이
+   둘 다 유효한 선택이라 스위치가 아니라 눌린 쪽을 채우는 버튼 쌍으로 둔다. */
+.voice-toggle-group { flex: none; display: flex; gap: var(--s-1); }
+.voice-toggle-btn {
+  min-height: 32px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--t-xs);
+  font-weight: 700;
+  cursor: pointer;
+}
+.voice-toggle-btn.active {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
+/* 친구 초대 배너. 로그인했을 때만 뜬다(익명 상태엔 ?ref= 에 넣을 아이디가
+   없다). 카드보다 옅게 — 매번 봐야 하는 목록 위에서 광고처럼 도드라지면
+   안 되니 그라데이션 테두리 정도로만 존재를 알린다. */
+.invite-friend-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--mint) 14%, transparent), color-mix(in srgb, var(--accent) 14%, transparent));
+  border: 1px solid var(--mint);
+  border-radius: var(--r-lg);
+  padding: var(--s-3);
+  margin-bottom: var(--s-3);
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+}
+.invite-icon { font-size: 22px; flex-shrink: 0; }
+.invite-title { font-size: var(--t-sm); font-weight: 800; color: var(--text); margin-bottom: 2px; }
+.invite-sub { font-size: var(--t-xs); color: var(--text-dim); line-height: 1.4; }
+
 /* 프로필 카드 — 지금 누구로 쓰고 있는지 한 장. */
 .profile-card { display: flex; align-items: center; gap: var(--s-3); padding: 14px; }
 .profile-avatar {
@@ -577,6 +618,15 @@
 .inapp-hint { font-size: var(--t-sm); color: var(--text-dim); }
 .inapp-hint b { color: var(--text); }
 .login-prompt-text { font-size: var(--t-md); color: var(--text-dim); }
+
+/* 프리미엄 게이팅(테스트 모드). .pause-box 를 그대로 쓰고 값 표시 몇 줄만
+   더한다 — 상자 자체를 새로 만들면 다른 덮개와 결이 어긋난다. */
+.premium-icon { font-size: 40px; line-height: 1; }
+.premium-desc { font-size: var(--t-md); color: var(--text-dim); }
+.premium-price-box { display: flex; align-items: baseline; justify-content: center; gap: var(--s-1); }
+.premium-price-amount { font-family: var(--font-num); font-size: var(--t-2xl); font-weight: 800; }
+.premium-price-unit { font-size: var(--t-sm); color: var(--text-dim); }
+.premium-fineprint { font-size: var(--t-xs); color: var(--text-dim); }
 
 .flash-overlay {
   position: fixed;

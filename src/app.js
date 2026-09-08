@@ -3,7 +3,7 @@ import { openSheet, closeSheet } from './ui/sheet.js';
 import { toast } from './ui/toast.js';
 import { getSupabase, hasStoredSession, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
 import * as reminder from './notify/reminder.js';
-import { RECOVERY_CARDS, INJURY_GUIDES } from './data/recovery.js';
+import { RECOVERY_CARDS, INJURY_GUIDES, SPECIAL_GUIDES, DIET_GUIDES } from './data/recovery.js';
 // Q-fit 앱 본체. legacy/index.html 의 IIFE 본문을 그대로 옮긴 것이다.
 // 화면별 분리는 라우터를 다시 짜는 단계에서 이어서 한다.
 
@@ -67,6 +67,37 @@ function cycleTheme(){
  applyTheme(THEMES[(THEMES.indexOf(currentTheme()) + 1) % THEMES.length]);
 }
 applyTheme(currentTheme());
+
+// 글자 크기: 작게 · 보통 · 크게. tokens.css 의 --t-xs/sm/md 만 이 값을 곱해
+// 쓴다 — 제목·통계 숫자까지 같이 키우면 카드 레이아웃이 줄바꿈으로 깨진다.
+const FONT_SCALES = ['sm', 'md', 'lg'];
+const FONT_SCALE_VALUE = { sm: 0.94, md: 1.06, lg: 1.2 };
+const FONT_SCALE_LABEL = {
+ sm: {ko:'작게', en:'Small', zh:'小'},
+ md: {ko:'보통', en:'Medium', zh:'中'},
+ lg: {ko:'크게', en:'Large', zh:'大'},
+};
+function currentFontScale(){
+ try{ const v = localStorage.getItem('wodrush_font_scale_v1'); return FONT_SCALES.includes(v) ? v : 'md'; }
+ catch(e){ return 'md'; }
+}
+function applyFontScale(name){
+ const v = FONT_SCALES.includes(name) ? name : 'md';
+ document.documentElement.style.setProperty('--font-scale', String(FONT_SCALE_VALUE[v]));
+ try{ localStorage.setItem('wodrush_font_scale_v1', v); }catch(e){}
+}
+function cycleFontScale(){
+ applyFontScale(FONT_SCALES[(FONT_SCALES.indexOf(currentFontScale()) + 1) % FONT_SCALES.length]);
+}
+applyFontScale(currentFontScale());
+
+// 친구 초대 링크(?ref=<보낸 사람 아이디>)로 들어온 경우, 나중에 이 사람이
+// 가입할 때 쓸 수 있도록 담아 둔다. 이미 담긴 게 있으면 덮어쓰지 않는다 —
+// 링크를 두 번 거치면(공유 → 재공유) 처음 보낸 사람 몫이 사라진다.
+try{
+ const ref = new URLSearchParams(location.search).get('ref');
+ if(ref && !localStorage.getItem('qfit_pending_ref')) localStorage.setItem('qfit_pending_ref', ref);
+}catch(e){}
 
 function setLang(lang){
  LANG = LANGS.includes(lang) ? lang : 'ko';
@@ -169,6 +200,10 @@ function applyStaticTranslations(){
  document.querySelectorAll('[data-i18n]').forEach(el => {
  const entry = STATIC_UI[el.dataset.i18n];
  if(entry) el.textContent = t(entry);
+ });
+ document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+ const entry = STATIC_UI[el.dataset.i18nPlaceholder];
+ if(entry) el.placeholder = t(entry);
  });
  try{ renderBodyparts(); }catch(e){ console.error('renderBodyparts failed:', e); }
  // 기록 화면 '최근 출석' 라벨도 인덱스로 집고 있었다. [0] 은 '이번 달' 이라
@@ -406,6 +441,11 @@ const coachLine = document.getElementById('coach-line');
 const breathWrap = document.getElementById('breath-wrap');
 const breathNum = document.getElementById('breath-num');
 const breathLabel = document.getElementById('breath-label');
+const restTouchCard = document.getElementById('rest-touch-card');
+const restTouchZone = document.getElementById('rest-touch-zone');
+const restTouchProg = document.getElementById('rest-touch-prog');
+const restTouchIcon = document.getElementById('rest-touch-icon');
+const restTouchLabelEl = document.getElementById('rest-touch-label');
 const photoDemoWrap = document.getElementById('photo-demo-wrap');
 const photoDemoA = document.getElementById('photo-demo-a');
 const photoDemoB = document.getElementById('photo-demo-b');
@@ -418,6 +458,7 @@ const holdNum = document.getElementById('hold-num');
 const exTargetNum = document.getElementById('ex-target-num');
 const missionTotalEl = document.getElementById('mission-total');
 const exWarn = document.getElementById('ex-warn');
+const easySwapBtn = document.getElementById('easy-swap-btn');
 
 // 남은 초를 두 자리에 같이 쓴다. 반복 동작은 큰 숫자로, 버티는 동작은 링 안에.
 // 이 앱은 횟수를 세지 않는다 — 카메라도 판정도 없이 전부 시간 기반이다(FR-02).
@@ -460,6 +501,10 @@ function showScreen(el){
   sub.textContent = n ? t(STATIC_UI.routinesSaved).replace('%s', n) : t(STATIC_UI.routinesNone);
  }
  updateBestBox();
+ // 초대 링크는 로그인해야 의미가 있다 — 익명 상태로는 ?ref= 에 넣을
+ // 내 아이디가 없다.
+ const inviteCard = document.getElementById('invite-friend-card');
+ if(inviteCard) inviteCard.style.display = currentUserId ? 'flex' : 'none';
  }catch(e){ console.error('more screen refresh failed:', e); }
  }
  if(el === startScreen){
@@ -538,17 +583,45 @@ if(window.speechSynthesis){
  refreshVoices();
  window.speechSynthesis.onvoiceschanged = refreshVoices;
 }
+// 설정 화면의 '코치 목소리' — 낮은 톤(male)/높은 톤(female, 기본값).
+// 기본값을 female 로 두는 이유: 이 앱은 원래부터 밝고 높은 코치 톤을 기본으로
+// 써 왔다(pickEnergeticVoice 의 여성향 가중치, u.pitch 의 높은 기본값들) —
+// 토글을 안 건드린 기존 사용자에게는 지금 들리는 소리가 그대로 나야 한다.
+const VOICE_PREFS = ['male', 'female'];
+function currentVoicePref(){
+ try{ const v = localStorage.getItem('wodrush_voice_pref_v1'); return VOICE_PREFS.includes(v) ? v : 'female'; }
+ catch(e){ return 'female'; }
+}
+function setVoicePref(name){
+ const v = VOICE_PREFS.includes(name) ? name : 'female';
+ try{ localStorage.setItem('wodrush_voice_pref_v1', v); }catch(e){}
+ syncVoiceToggle();
+}
+function syncVoiceToggle(){
+ const pref = currentVoicePref();
+ const maleBtn = document.getElementById('voice-male-btn');
+ const femaleBtn = document.getElementById('voice-female-btn');
+ if(maleBtn) maleBtn.classList.toggle('active', pref === 'male');
+ if(femaleBtn) femaleBtn.classList.toggle('active', pref === 'female');
+}
+// 남성 톤을 고르면 피치를 낮춘다 — 여성 톤은 기존 값 그대로.
+function voicePitch(base){
+ return currentVoicePref() === 'male' ? Math.max(0.7, base - 0.55) : base;
+}
 function pickEnergeticVoice(){
  const pool = LANG === 'en' ? cachedEnVoices : cachedKoVoices;
  if(!pool.length) return null;
- // score each voice — prefer higher-quality engines, and a bright/young
- // female-leaning voice for a cuter, more playful workout-coach feel
+ // score each voice — prefer higher-quality engines, and lean toward
+ // whichever gender tone is picked in settings for a more fitting coach feel
+ const preferMale = currentVoicePref() === 'male';
  const scoreOf = (v) => {
  const n = v.name.toLowerCase();
  let s = 0;
  if(/neural|natural|wavenet|online|google/.test(n)) s += 2;
- if(/female|woman|yuna|arin|jimin|siri/.test(n)) s += 3;
- if(/male|man|minsu|minho|철수|민수/.test(n)) s -= 3;
+ const femaleHit = /female|woman|yuna|arin|jimin|siri/.test(n);
+ const maleHit = /male|man|minsu|minho|철수|민수/.test(n);
+ if(preferMale){ if(maleHit) s += 3; if(femaleHit) s -= 3; }
+ else { if(femaleHit) s += 3; if(maleHit) s -= 3; }
  if(/compact/.test(n)) s -= 1;
  return s;
  };
@@ -566,7 +639,7 @@ function speakExercise(label, cue){
  const u = new SpeechSynthesisUtterance(text);
  u.lang = LANG === 'en' ? 'en-US' : 'ko-KR';
  u.rate = 1.15;
- u.pitch = 1.5;
+ u.pitch = voicePitch(1.5);
  u.volume = 1;
  const voice = pickEnergeticVoice();
  if(voice) u.voice = voice;
@@ -591,7 +664,7 @@ function speakTip(tipText){
  const u = new SpeechSynthesisUtterance(tipText);
  u.lang = LANG === 'en' ? 'en-US' : 'ko-KR';
  u.rate = 1.1;
- u.pitch = 1.4;
+ u.pitch = voicePitch(1.4);
  u.volume = 0.9;
  const voice = pickEnergeticVoice();
  if(voice) u.voice = voice;
@@ -609,7 +682,7 @@ function speakMotivation(){
  const u = new SpeechSynthesisUtterance(line);
  u.lang = LANG === 'en' ? 'en-US' : 'ko-KR';
  u.rate = 1.15;
- u.pitch = 1.55;
+ u.pitch = voicePitch(1.55);
  u.volume = 0.9;
  const voice = pickEnergeticVoice();
  if(voice) u.voice = voice;
@@ -688,6 +761,7 @@ try{
  Sound.stopBGM();
  stopPhotoDemo();
  stopBreath();
+ stopRestTouch();
  if(app) app.classList.remove('workout-mode');
  showScreen(startScreen);
  }
@@ -824,6 +898,84 @@ function startBreath(totalSec){
  flip();
 }
 
+// ---------- 휴식 인증 (번개 꾹 누르기) ----------
+//
+// 쉬는 동안 화면 앞에 실제로 있는지 카메라 없이 가볍게 확인한다. 번개를
+// 0.6초 꾹 누르고 있으면 원형 진행바가 차고 "인증 완료"로 바뀐다.
+// 이 앱은 휴식이 한 번뿐이라(runRest 는 게임당 한 번만 불린다) 그 한 번이
+// 곧 첫 휴식이다 — 따로 "첫 휴식인가"를 셀 필요가 없다.
+const REST_TOUCH_HOLD_MS = 600;
+const REST_TOUCH_R = 26;
+const REST_TOUCH_CIRC = 2 * Math.PI * REST_TOUCH_R;
+let restTouchActive = false;
+let restTouchVerified = false;
+let restTouchPressStart = 0;
+let restTouchRaf = null;
+
+function resetRestTouch(){
+ restTouchVerified = false;
+ restTouchPressStart = 0;
+ if(restTouchRaf){ cancelAnimationFrame(restTouchRaf); restTouchRaf = null; }
+ if(restTouchZone){
+ restTouchZone.style.display = '';
+ restTouchZone.classList.remove('verified');
+ }
+ if(restTouchProg){
+ restTouchProg.style.strokeDasharray = String(REST_TOUCH_CIRC);
+ restTouchProg.style.strokeDashoffset = String(REST_TOUCH_CIRC);
+ }
+ if(restTouchIcon) restTouchIcon.textContent = '⚡';
+ if(restTouchLabelEl) restTouchLabelEl.textContent = t(STATIC_UI.restTouchLabel);
+}
+
+function stepRestTouch(){
+ if(!restTouchActive || restTouchVerified || !restTouchPressStart) return;
+ const elapsed = Date.now() - restTouchPressStart;
+ const pct = Math.min(1, elapsed / REST_TOUCH_HOLD_MS);
+ if(restTouchProg) restTouchProg.style.strokeDashoffset = String(REST_TOUCH_CIRC * (1 - pct));
+ if(pct >= 1){
+ restTouchVerified = true;
+ restTouchPressStart = 0;
+ if(restTouchZone) restTouchZone.classList.add('verified');
+ if(restTouchIcon) restTouchIcon.textContent = '✅';
+ if(restTouchLabelEl) restTouchLabelEl.textContent = t(STATIC_UI.restTouchDone);
+ setTimeout(()=>{ if(restTouchZone) restTouchZone.style.display = 'none'; }, 500);
+ return;
+ }
+ restTouchRaf = requestAnimationFrame(stepRestTouch);
+}
+
+function endRestTouchPress(){
+ restTouchPressStart = 0;
+ if(restTouchRaf){ cancelAnimationFrame(restTouchRaf); restTouchRaf = null; }
+ if(!restTouchVerified && restTouchProg) restTouchProg.style.strokeDashoffset = String(REST_TOUCH_CIRC);
+}
+
+if(restTouchZone){
+ restTouchZone.addEventListener('pointerdown', (e)=>{
+ if(!restTouchActive || restTouchVerified) return;
+ e.preventDefault();
+ restTouchPressStart = Date.now();
+ restTouchRaf = requestAnimationFrame(stepRestTouch);
+ });
+ restTouchZone.addEventListener('pointerup', endRestTouchPress);
+ restTouchZone.addEventListener('pointerleave', endRestTouchPress);
+ restTouchZone.addEventListener('pointercancel', endRestTouchPress);
+}
+
+function startRestTouch(){
+ if(!restTouchCard) return;
+ restTouchCard.style.display = '';
+ restTouchActive = true;
+ resetRestTouch();
+}
+
+function stopRestTouch(){
+ restTouchActive = false;
+ endRestTouchPress();
+ if(restTouchCard) restTouchCard.style.display = 'none';
+}
+
 // ---------- 운동 중 사진 ----------
 //
 // 이 자리만 사진을 쓴다. 동작을 알려 주는 화면(고르기 카드, 미리보기 줄,
@@ -861,7 +1013,7 @@ function startPhotoDemo(key){
  const seq = PHOTO_SEQUENCES[key];
  const cycle = photoCycle(key);
  // 사진이 없으면 이 자리는 빈다. 예전에는 막대인간이 대신 섰지만
- // 그것을 걷어냈다 — 12종 전부 사진이 있고, npm run media 가 빠진 것을
+ // 그것을 걷어냈다 — 24종 전부 사진이 있고, npm run media 가 빠진 것을
  // 잡는다. 운동을 늘리면서 사진을 안 넣으면 그 검사에서 먼저 걸린다.
  if(!seq || cycle.length === 0 || !photoDemoWrap || !photoDemoA || !photoDemoB){ stopPhotoDemo(); return; }
 
@@ -1569,6 +1721,22 @@ try{
 }catch(e){ console.error('records button setup failed:', e); }
 
 try{
+ const inviteCard = document.getElementById('invite-friend-card');
+ if(inviteCard) inviteCard.addEventListener('click', async ()=>{
+ if(!currentUserId) return;
+ const link = location.href.split('#')[0].split('?')[0] + '?ref=' + encodeURIComponent(currentUserId);
+ const shareText = t(STATIC_UI.inviteShareText) + '\n' + link;
+ try{
+ if(navigator.share){ await navigator.share({ text: shareText, url: link }); return; }
+ }catch(e){}
+ try{
+ await navigator.clipboard.writeText(shareText);
+ toast(t(STATIC_UI.linkCopied));
+ }catch(e){ console.error('invite friend copy failed:', e); }
+ });
+}catch(e){ console.error('invite friend card wiring failed:', e); }
+
+try{
  document.querySelectorAll('.recovery-trigger-btn').forEach(btn=>{
  btn.addEventListener('click', ()=> showScreen(recoveryScreen));
  });
@@ -1716,7 +1884,7 @@ try{
  injurySearchInput.addEventListener('input', ()=>{
  const term = injurySearchInput.value.trim().toLowerCase();
  let visibleCount = 0;
- document.querySelectorAll('.injury-accordion').forEach(acc=>{
+ document.querySelectorAll('#injury-list .injury-accordion').forEach(acc=>{
  const summaryBtn = acc.querySelector('.injury-summary');
  const label = summaryBtn ? summaryBtn.textContent.toLowerCase() : '';
  const match = !term || label.includes(term);
@@ -1780,9 +1948,7 @@ function renderRecovery(){
  '</ol></div></div>'
  ).join('');
  }
- const list = document.getElementById('injury-list');
- if(list){
- list.innerHTML = INJURY_GUIDES.map(g =>
+ const guideHtml = (guides) => guides.map(g =>
  '<div class="injury-accordion">' +
  '<button type="button" class="injury-summary">' + t(g.part) + '</button>' +
  '<div class="injury-body">' +
@@ -1794,7 +1960,14 @@ function renderRecovery(){
  (g.warn ? '<p class="warn-line">' + t(g.warn) + '</p>' : '') +
  '</div></div>'
  ).join('');
- }
+ const list = document.getElementById('injury-list');
+ if(list) list.innerHTML = guideHtml(INJURY_GUIDES);
+ // 대상별 가이드(노인·어린이·부상 회복 중·오십견)와 식단(목적별)은 부위별
+ // 목록과 다른 이야기라 따로 그린다 — 검색·칩은 부위별에만 건다.
+ const specialList = document.getElementById('special-list');
+ if(specialList) specialList.innerHTML = guideHtml(SPECIAL_GUIDES);
+ const dietList = document.getElementById('diet-list');
+ if(dietList) dietList.innerHTML = guideHtml(DIET_GUIDES);
  renderInjuryChips();
 }
 
@@ -1972,11 +2145,19 @@ function renderExGrid(){
 
  filtered.forEach(ex=>{
  const checked = selectedExKeys.has(ex.key);
+ const locked = !!ex.premium && !myProfile.isPremium;
  const btn = document.createElement('button');
  btn.type = 'button';
- btn.className = 'ex-card' + (checked ? ' checked' : '') + (ex.pro ? ' pro' : '');
+ btn.className = 'ex-card' + (checked ? ' checked' : '') + (ex.pro ? ' pro' : '') + (locked ? ' locked' : '');
  btn.setAttribute('role', 'checkbox');
  btn.setAttribute('aria-checked', checked ? 'true' : 'false');
+
+ if(locked){
+ const lock = document.createElement('span');
+ lock.className = 'premium-lock';
+ lock.textContent = '✨';
+ btn.appendChild(lock);
+ }
 
  // 무엇을 하는 동작인지 알려 주는 자리다 — 영상을 쓴다.
  // 사진 한 장으로는 스쿼트와 '앉아 있는 사람' 이 구분되지 않는다.
@@ -2001,6 +2182,7 @@ function renderExGrid(){
 
  btn.append(shot, head, meta);
  btn.addEventListener('click', ()=>{
+ if(locked){ window.openPremiumUpsell?.(); return; }
  // 마지막 하나를 못 지우게 막지 않는다. 눌러도 아무 일이 없으면 고장으로
  // 읽히고, 왜 안 되는지도 알 수 없다. 대신 0개일 때 시작 버튼이 말한다.
  if(selectedExKeys.has(ex.key)) selectedExKeys.delete(ex.key);
@@ -2083,7 +2265,7 @@ try{
  // '고민 없이 4개 뽑기'(설계 02). 예전에는 열두 개를 통째로 넘겼는데,
  // 그러면 '랜덤' 이 아니라 '전부' 다 — 매번 같은 구성이 나온다.
  if(modeRandomBtn) modeRandomBtn.addEventListener('click', ()=>{
- const pool = EXERCISES.map(e=>e.key);
+ const pool = EXERCISES.filter(e=> !e.premium || myProfile.isPremium).map(e=>e.key);
  for(let i = pool.length - 1; i > 0; i--){
   const j = Math.floor(Math.random() * (i + 1));
   [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -2199,9 +2381,11 @@ try{
  const lv = QUIZ_LEVELS[quizAnswers.level] || QUIZ_LEVELS.normal;
  const pool = AI_GOAL_POOLS[quizAnswers.goal] || AI_GOAL_POOLS.full;
  let keys = pool.filter(k=>{
- if(lv.pro) return true;
  const ex = EXERCISES.find(e=>e.key===k);
- return ex && !ex.pro;
+ if(!ex) return false;
+ if(ex.premium && !myProfile.isPremium) return false;
+ if(lv.pro) return true;
+ return !ex.pro;
  });
  if(keys.length < 2) keys = pool; // fallback if filtering left too few
  selectedExKeys = pickSet(keys);
@@ -3022,6 +3206,7 @@ function runMission(){
  if(m.isBonus && !m.isBoss){ Sound.fanfare(); }
 
  stopBreath();
+ stopRestTouch();
  startPhotoDemo(m.ex.key);
  exName.textContent = t(m.ex.label) + (m.isBoss ? t({ko:' (보스)', en:' (BOSS)', zh:'（BOSS）'}) : '');
  // 버티는 동작(플랭크)은 링, 나머지는 큰 숫자. 둘 다 남은 초를 말한다 —
@@ -3064,8 +3249,81 @@ function runMission(){
  }, motivationDelayMs);
  }
 
+ syncEasySwapBtn(m);
  runTimer(m);
 }
+
+// ---------- 쉬운 동작 전환 ----------
+//
+// 힘들면 이 세트만 더 쉬운 동작으로 바꾼다. 보스 라운드는 빼고(난이도가
+// 곧 그 라운드의 뜻이다), 매핑이 없는 동작(이미 쉬운 축)에는 버튼 자체를
+// 감춘다. src/ 개편 때 통째로 빠졌다가 그 대상 동작 12종과 같이 되살렸다
+// (2026-09-08, 옛 빌드 번들에서 그대로 옮김).
+const EASY_ALT = {
+ DIAMONDPUSHUP:'PUSHUP', WIDEPUSHUP:'PUSHUP', PIKEPUSHUP:'PUSHUP',
+ HIGHPLANK:'PLANK', ARMYCRAWL:'PLANK',
+ JUMPSQUAT:'SQUAT', COSSACKSQUAT:'SQUAT', BURPEE:'SQUAT', LUNGE:'SQUAT',
+ LEGRAISE:'CRUNCH', VUP:'CRUNCH', DEADBUG:'CRUNCH',
+ PLANKPUSHUP:'PUSHUP', MOUNTAINCLIMBER:'RUNINPLACE', ARMWALK:'PLANKPUSHUP', REVERSEPLANK:'PLANK',
+};
+
+function syncEasySwapBtn(m){
+ if(!easySwapBtn) return;
+ if(!m || m.isBoss || !missionActive){ easySwapBtn.style.display = 'none'; return; }
+ if(m.easySwapOriginalKey){
+ easySwapBtn.style.display = '';
+ easySwapBtn.textContent = t(STATIC_UI.easySwapBackLabel);
+ } else if(EASY_ALT[m.ex.key]){
+ easySwapBtn.style.display = '';
+ easySwapBtn.textContent = t(STATIC_UI.easySwapBtnLabel);
+ } else {
+ easySwapBtn.style.display = 'none';
+ }
+}
+
+// runMission 의 화면 갱신 부분과 같은 자리를 건드린다 — 시간·진행률은
+// 그대로 두고 지금 뭘 하는지만 바꾼다.
+function applyMissionExercise(m, newEx, coachText){
+ m.ex = newEx;
+ startPhotoDemo(m.ex.key);
+ exName.textContent = t(m.ex.label) + (m.isBoss ? t({ko:' (보스)', en:' (BOSS)', zh:'（BOSS）'}) : '');
+ const isHold = m.ex.type === 'hold';
+ if(exTarget) exTarget.style.display = isHold ? 'none' : '';
+ if(holdRing) holdRing.style.display = isHold ? '' : 'none';
+ exCue.textContent = t(m.ex.cue);
+ if(exWarn) exWarn.textContent = m.ex.tip ? (t({ko:'주의 · ', en:'Careful · ', zh:'注意 · '}) + t(m.ex.tip)) : '';
+ setCoachLine(coachText);
+ syncEasySwapBtn(m);
+}
+
+function swapToEasier(){
+ if(!missionActive) return;
+ const m = missions[missionIndex];
+ if(!m || m.isBoss) return;
+ const altKey = EASY_ALT[m.ex.key];
+ if(!altKey) return;
+ const alt = EXERCISES.find(e=> e.key === altKey);
+ if(!alt) return;
+ m.easySwapOriginalKey = m.ex.key;
+ applyMissionExercise(m, alt, {ko:'좋아요, 이걸로 가봐요! 💪', en:"Good call — let's do this one! 💪", zh:'好的，就选这个吧！💪'});
+}
+
+function revertEasySwap(){
+ if(!missionActive) return;
+ const m = missions[missionIndex];
+ if(!m || !m.easySwapOriginalKey) return;
+ const original = EXERCISES.find(e=> e.key === m.easySwapOriginalKey);
+ m.easySwapOriginalKey = null;
+ if(original) applyMissionExercise(m, original, {ko:'좋아요, 다시 도전해봐요! 🔥', en:"Alright, let's take it on again! 🔥", zh:'好的，再挑战一次吧！🔥'});
+}
+
+try{
+ easySwapBtn?.addEventListener('click', ()=>{
+ Sound.unlock();
+ const m = missions[missionIndex];
+ if(m && m.easySwapOriginalKey) revertEasySwap(); else swapToEasier();
+ });
+}catch(e){ console.error('easy swap button setup failed:', e); }
 
 function setCoachLine(text){
  if(coachEmoji) coachEmoji.textContent = selectedCoach.emoji;
@@ -3162,6 +3420,7 @@ function completeMission(m){
  // rest screen doesn't add anything
  stopPhotoDemo();
  stopBreath();
+ stopRestTouch();
  exTarget.style.display = 'none';
  const upcoming = missions[missionIndex + 1];
  const upcomingIsRest = (missionIndex + 1) === midRestIndex && !midRestGiven;
@@ -3203,6 +3462,7 @@ function runRest(){
 
  if(breathNum) breathNum.textContent = String(REST_DURATION);
  startBreath(REST_DURATION);
+ startRestTouch();
 
  let elapsed = 0;
  clearInterval(missionInterval);
@@ -3214,6 +3474,7 @@ function runRest(){
  if(elapsed >= REST_DURATION){
  clearInterval(missionInterval);
  stopBreath();
+ stopRestTouch();
  Sound.markIntensified(); // 휴식 후엔 좀 더 신나는 템포로 — 실제 전환은 곧 이어질 runMission()의 세트별 재시작에서 처리
  runMission();
  }
@@ -3249,6 +3510,7 @@ function finishGame(){
  Sound.stopBGM();
  stopPhotoDemo();
  stopBreath();
+ stopRestTouch();
  Sound.fanfare();
 
  finalSub.textContent = t({ko:missions.length + '개 미션 완주', en:missions.length + ' missions completed', zh:'完成' + missions.length + '个动作'}) + ' · +20 XP';
@@ -3839,6 +4101,39 @@ try{
 // 운동 알림(FR-03).
 // 권한은 토글을 켤 때만 묻는다 — 부팅하자마자 물으면 대부분 거절하고,
 // 브라우저가 그 거절을 기억해서 나중에 켜고 싶어도 못 켜게 된다.
+// 프리미엄 게이팅(테스트 모드 — 실제 결제는 연결 안 됨). 설정 줄과 덮개
+// 안의 값을 한 곳에서 채운다 — settings-premium-row 를 열 때도, 잠긴 카드를
+// 눌러 바로 열 때도 이 함수부터 부른다.
+function refreshPremiumUI(){
+ const isPremium = !!myProfile.isPremium;
+ const premiumCount = EXERCISES.filter(e=> e.premium).length;
+ const label = document.getElementById('settings-premium-label');
+ if(label) label.textContent = t(isPremium ? STATIC_UI.settingsPremiumOnLabel : STATIC_UI.settingsPremiumNotLabel);
+ const activateBtn = document.getElementById('premium-activate-btn');
+ if(activateBtn){
+ activateBtn.style.display = isPremium ? 'none' : '';
+ activateBtn.disabled = false;
+ activateBtn.textContent = t(STATIC_UI.premiumStartBtn);
+ }
+ const priceBox = document.getElementById('premium-price-box');
+ if(priceBox) priceBox.style.display = isPremium ? 'none' : 'flex';
+ const fineprint = document.getElementById('premium-fineprint');
+ if(fineprint){
+ fineprint.style.display = isPremium ? 'none' : '';
+ fineprint.textContent = t(STATIC_UI.premiumFineprint);
+ }
+ const title = document.getElementById('premium-title');
+ if(title) title.textContent = t(isPremium ? STATIC_UI.premiumTitleOn : STATIC_UI.premiumTitleOff);
+ const desc = document.getElementById('premium-desc');
+ if(desc) desc.textContent = isPremium ? t(STATIC_UI.premiumDescOn) : t(STATIC_UI.premiumDescOff).replace('%s', premiumCount);
+}
+window.refreshPremiumUI = refreshPremiumUI;
+window.openPremiumUpsell = function(){
+ refreshPremiumUI();
+ const overlay = document.getElementById('premium-overlay');
+ if(overlay) overlay.classList.add('on');
+};
+
 try{
  // ---- 설정 화면의 나머지 (설계 17) ----
  // 프로필 카드 · 기본 세트 수 · 언어 · 테마 · 내보내기 · 삭제.
@@ -3860,6 +4155,8 @@ try{
  if(langVal) langVal.textContent = LANG_LABEL[LANG];
  const themeVal = document.getElementById('settings-theme-val');
  if(themeVal) themeVal.textContent = t(THEME_LABEL[currentTheme()]);
+ const fontSizeVal = document.getElementById('settings-fontsize-val');
+ if(fontSizeVal) fontSizeVal.textContent = t(FONT_SCALE_LABEL[currentFontScale()]);
  };
  syncSettings();
  document.addEventListener('qfit:lang', ()=>{ try{ syncSettings(); }catch(e){} });
@@ -3887,6 +4184,31 @@ try{
  document.getElementById('settings-theme-btn')?.addEventListener('click', ()=>{
  cycleTheme();
  syncSettings();
+ });
+ document.getElementById('settings-fontsize-btn')?.addEventListener('click', ()=>{
+ cycleFontScale();
+ syncSettings();
+ });
+ syncVoiceToggle();
+ document.getElementById('voice-male-btn')?.addEventListener('click', ()=> setVoicePref('male'));
+ document.getElementById('voice-female-btn')?.addEventListener('click', ()=> setVoicePref('female'));
+ refreshPremiumUI();
+ document.getElementById('settings-premium-row')?.addEventListener('click', ()=> window.openPremiumUpsell());
+ document.getElementById('premium-activate-btn')?.addEventListener('click', function(){
+ if(this.disabled) return;
+ this.disabled = true;
+ this.textContent = t(STATIC_UI.premiumProcessing);
+ myProfile.isPremium = true;
+ saveProfile();
+ setTimeout(()=>{
+ refreshPremiumUI();
+ const desc = document.getElementById('premium-desc');
+ if(desc) desc.textContent = t(STATIC_UI.premiumActivatedMsg);
+ }, 500);
+ });
+ document.getElementById('premium-close-btn')?.addEventListener('click', ()=>{
+ const overlay = document.getElementById('premium-overlay');
+ if(overlay) overlay.classList.remove('on');
  });
  document.getElementById('settings-export-btn')?.addEventListener('click', exportHistoryCsv);
  document.getElementById('settings-wipe-btn')?.addEventListener('click', wipeAllData);
@@ -3992,6 +4314,13 @@ try{
  return;
  }
  currentUserId = data.user.id;
+ try{
+ const pendingRef = localStorage.getItem('qfit_pending_ref');
+ if(pendingRef && pendingRef !== currentUserId){
+ myProfile.referredBy = pendingRef;
+ localStorage.removeItem('qfit_pending_ref');
+ }
+ }catch(e){}
  await syncProfileToCloud(); // push whatever local progress this device already has
  updateAccountUI();
  showScreen(startScreen);

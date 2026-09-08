@@ -168,7 +168,7 @@ export const STATIC_UI = {
  startNote: {ko:'준비운동 포함 · 세트 %s · %s초', en:'Warm-up included · %s sets · %ss', zh:'含热身 · %s组 · %s秒'},
  startSheetTitle: {ko:'어떻게 시작할까요?', en:'How do you want to start?', zh:'想怎么开始？'},
  sheetBackNote: {ko:'뒤로가기 한 번은 시트만 닫습니다.', en:'One back press just closes this sheet.', zh:'按一次返回只会关闭这个面板。'},
- modeManualSub: {ko:'동작 12개에서 고르기', en:'Pick from 12 exercises', zh:'从12个动作中挑选'},
+ modeManualSub: {ko:'동작 24개에서 고르기', en:'Pick from 24 exercises', zh:'从24个动作中挑选'},
  modeRandomSub: {ko:'고민 없이 4개 뽑기', en:'Four picked for you', zh:'随机抽4个'},
  aiModeSub: {ko:'질문 2개로 끝', en:'Two questions, done', zh:'两个问题就够'},
  andMore: {ko:' 외 %s개', en:' +%s more', zh:' 等%s个'},
@@ -212,7 +212,7 @@ export const STATIC_UI = {
  calMiss: {ko:'미완', en:'Missed', zh:'未完成'},
  calToday: {ko:'오늘', en:'Today', zh:'今天'},
  calDoneDays: {ko:'완주 %s일', en:'%s days done', zh:'完成%s天'},
- movesSub: {ko:'12개 · 영상', en:'12 moves · video', zh:'12个动作 · 视频'},
+ movesSub: {ko:'24개 · 영상', en:'24 moves · video', zh:'24个动作 · 视频'},
  movesCount: {ko:'%s개', en:'%s moves', zh:'%s个'},
  recoverySub: {ko:'부위별 대처법 · 회복 습관', en:'By body part · recovery habits', zh:'按部位处理 · 恢复习惯'},
  settingsSub: {ko:'소리 · 진동 · 알림 · 언어', en:'Sound · haptics · reminders · language', zh:'声音 · 震动 · 提醒 · 语言'},
@@ -385,6 +385,55 @@ export const STATIC_UI = {
  // 휴식 호흡 안내
  breatheIn: {ko:'들이쉬기', en:'Breathe in', zh:'吸气'},
  breatheOut: {ko:'내쉬기', en:'Breathe out', zh:'呼气'},
+
+ // 휴식 인증 (번개 꾹 누르기)
+ restTouchLabel: {ko:'⚡ 위 번개를 꾹 눌러요!', en:'⚡ Hold the bolt above!', zh:'⚡ 长按上方闪电！'},
+ restTouchCaption: {ko:'인증을 위해 첫휴식에만 화면 위 번개를 눌러주세요!', en:'For verification, tap the lightning bolt above — only on your first rest!', zh:'仅在第一次休息时，点击屏幕上方的闪电以完成验证！'},
+ restTouchDone: {ko:'인증 완료!', en:'Charged!', zh:'验证完成！'},
+
+ // 프리미엄 게이팅 (테스트 모드 — 실제 결제는 연결 안 됨)
+ settingsPremiumNotLabel: {ko:'✨ 프리미엄 아님 — 눌러서 보기', en:'✨ Not premium — tap to view', zh:'✨ 非高级会员 — 点击查看'},
+ settingsPremiumOnLabel: {ko:'✨ 프리미엄 회원', en:'✨ Premium Member', zh:'✨ 高级会员'},
+ premiumStartBtn: {ko:'✨ 프리미엄 시작하기', en:'✨ Start Premium', zh:'✨ 开通高级会员'},
+ premiumProcessing: {ko:'처리 중...', en:'Processing...', zh:'处理中...'},
+ premiumPriceUnit: {ko:'/ 월', en:'/ mo', zh:'/ 月'},
+ premiumFineprint: {ko:'테스트 모드 — 실제 결제는 아직 연결되지 않았어요', en:"Test mode — real payment isn't wired up yet", zh:'测试模式 — 尚未接入实际支付功能'},
+ premiumTitleOn: {ko:'✨ 프리미엄 회원이에요', en:"✨ You're a premium member", zh:'✨ 你是高级会员'},
+ premiumTitleOff: {ko:'프리미엄 전용 운동', en:'Premium-Only Exercise', zh:'仅限高级会员的动作'},
+ premiumDescOn: {ko:'모든 프리미엄 운동을 이용할 수 있어요. 감사합니다!', en:'You have access to every premium exercise. Thank you!', zh:'你可以使用所有高级会员动作，感谢支持！'},
+ premiumDescOff: {ko:'프리미엄 전용 고강도 운동 %s종이 더 있어요. 같은 운동만 반복하지 않고 질리지 않게 운동할 수 있어요!', en:'Unlock %s more high-intensity premium exercises — never get stuck doing the same moves on repeat.', zh:'解锁 %s 种更多高强度高级会员动作 — 不用一直重复同样的动作，运动更有新鲜感！'},
+ premiumActivatedMsg: {ko:'🎉 프리미엄이 활성화됐어요! (테스트 모드 — 실제 결제는 아직 연결 안 됨)', en:"🎉 Premium activated! (test mode — real payment isn't wired up yet)", zh:'🎉 高级会员已激活！（测试模式 — 尚未接入实际支付功能）'},
+
+ // 쉬운 동작 전환
+ easySwapBtnLabel: {ko:'😵 힘들어요 → 쉬운 동작으로', en:'😵 Too hard → switch to an easier move', zh:'😵 太难了 → 换成简单动作'},
+ easySwapBackLabel: {ko:'🔄 다시 원래 동작으로', en:'🔄 Switch back to the original move', zh:'🔄 换回原本的动作'},
+
+ // 회복 화면 소제목 (부위별/대상별/식단 셋으로 나눈다)
+ injuryByPartTitle: {ko:'부위별 회복', en:'Recovery by body part', zh:'按部位恢复'},
+ specialGuidesTitle: {ko:'대상별 가이드', en:'Guides by group', zh:'按人群指南'},
+ dietGuidesTitle: {ko:'식단', en:'Diet', zh:'饮食'},
+ dietGuidesIntro: {ko:'목적에 맞는 식단 방향을 간단히 정리했어요. 개인 건강 상태에 따라 다를 수 있으니 참고용으로만 봐주세요.', en:'A quick direction for eating by goal. It can vary by individual health, so treat this as a general reference.', zh:'按目标简单整理了饮食方向。因个人健康状况而异，仅供参考。'},
+
+ // 친구 초대
+ inviteFriendTitle: {ko:'친구 초대하고 한정판 뱃지 받기', en:'Invite a friend, get a limited badge', zh:'邀请好友，获得限定徽章'},
+ inviteFriendSub: {ko:'친구가 내 링크로 가입해 3분 운동을 끝내면, 나도 친구도 챌린지 메이트 뱃지 획득!', en:'If a friend signs up with your link and finishes a 3-minute workout, you both get the Challenge Mate badge!', zh:'好友通过你的链接注册并完成3分钟运动后，你们都会获得挑战伙伴徽章！'},
+ inviteShareText: {ko:'Q-fit 같이 하자! 이 링크로 가입하고 운동 한 번만 완주하면 우리 둘 다 +30 XP!', en:'Join me on Q-fit! Sign up with this link and finish one workout — we both get +30 XP!', zh:'一起来玩 Q-fit 吧！用这个链接注册并完成一次训练，我们俩都能获得 +30 XP！'},
+
+ // 코치 목소리 (낮은 톤/높은 톤)
+ setVoice: {ko:'코치 목소리', en:'Coach voice', zh:'教练声音'},
+ voiceMaleBtn: {ko:'낮은 톤', en:'Low pitch', zh:'低音'},
+ voiceFemaleBtn: {ko:'높은 톤', en:'High pitch', zh:'高音'},
+
+ // 글자 크기 설정
+ setFontSize: {ko:'글자 크기', en:'Text size', zh:'字体大小'},
+ setFontSizeSub: {ko:'본문 글자 크기를 조정합니다', en:'Adjusts the size of body text', zh:'调整正文字体大小'},
+
+ // 검색·로그인 입력칸 placeholder (data-i18n-placeholder 가 채운다)
+ exSearchPlaceholder: {ko:'동작 검색 (예: 스쿼트)', en:'Search exercises (e.g. squat)', zh:'搜索动作（例如：深蹲）'},
+ injurySearchPlaceholder: {ko:'부위 또는 증상 검색', en:'Search body part or symptom', zh:'搜索部位或症状'},
+ loginEmailPlaceholder: {ko:'이메일', en:'Email', zh:'邮箱'},
+ loginPwPlaceholder: {ko:'비밀번호', en:'Password', zh:'密码'},
+ signupPwPlaceholder: {ko:'비밀번호 (6자리 이상)', en:'Password (6+ characters)', zh:'密码（至少6位）'},
 
  // 알 성장 창
  petNext: {ko:'다음 진화까지 %s XP', en:'%s XP to the next evolution', zh:'距离下次进化还需 %s XP'},

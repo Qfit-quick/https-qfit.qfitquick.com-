@@ -190,6 +190,15 @@
       앞선 그림이라, 여기서는 요구사항이 이긴다. -->
  <button class="repeat-chip repeat-trigger-btn" id="repeat-trigger-more" style="display:none;" data-i18n="repeatLast">지난 루틴 다시 시작</button>
 
+ <!-- 로그인했을 때만 뜬다(showScreen 의 more-screen 분기). 익명 상태로는
+      ?ref= 에 넣을 내 아이디가 없다. -->
+ <button class="invite-friend-card" id="invite-friend-card" type="button" style="display:none;">
+ <span class="invite-icon">🌟</span>
+ <div class="invite-text">
+ <div class="invite-title" id="invite-friend-title" data-i18n="inviteFriendTitle">친구 초대하고 한정판 뱃지 받기</div>
+ <div class="invite-sub" id="invite-friend-sub" data-i18n="inviteFriendSub">친구가 내 링크로 가입해 3분 운동을 끝내면, 나도 친구도 챌린지 메이트 뱃지 획득!</div>
+ </div>
+ </button>
 
  <!-- 줄마다 아래에 한 줄을 붙인다(설계 16). 이름만 늘어놓으면 다섯 줄이
       다 같아 보여서 무엇을 누를지 매번 하나씩 눌러 확인하게 된다.
@@ -431,6 +440,17 @@
       눌러도 아무 일이 없는 버튼보다 없는 버튼이 낫다. -->
  <button class="primary profile-login" id="settings-login-btn" data-i18n="loginOrSignup">로그인 / 가입</button>
 
+ <!-- 프리미엄 게이팅(테스트 모드 — 실제 결제는 아직 연결 안 됨). src/ 개편
+      때 통째로 빠졌다가 프리미엄 동작 12종과 같이 되살렸다(2026-09-08). -->
+ <div class="settings-group">
+ <div class="settings-list">
+ <button type="button" class="settings-row settings-link" id="settings-premium-row">
+ <span class="row-main"><span class="row-t" id="settings-premium-label">✨ 프리미엄 아님 — 눌러서 보기</span></span>
+ <span class="settings-val">›</span>
+ </button>
+ </div>
+ </div>
+
  <div class="settings-group">
  <div class="kick" data-i18n="setGroupWorkout">운동</div>
  <div class="settings-list">
@@ -464,6 +484,13 @@
  <input type="checkbox" id="settings-vibration-toggle" class="sw-input" checked>
  <span class="sw" aria-hidden="true"><i></i></span>
  </label>
+ <div class="settings-row settings-voice-row">
+ <span class="row-main"><span class="row-t" data-i18n="setVoice">코치 목소리</span></span>
+ <div class="voice-toggle-group">
+ <button type="button" class="voice-toggle-btn" id="voice-male-btn" data-i18n="voiceMaleBtn">낮은 톤</button>
+ <button type="button" class="voice-toggle-btn" id="voice-female-btn" data-i18n="voiceFemaleBtn">높은 톤</button>
+ </div>
+ </div>
  </div>
  </div>
 
@@ -489,6 +516,10 @@
  <button class="settings-row settings-link" id="settings-theme-btn" type="button">
  <span class="row-main"><span class="row-t" data-i18n="setTheme">테마</span><span class="row-d dim" data-i18n="setThemeSub">시스템 설정을 따릅니다</span></span>
  <span class="settings-val" id="settings-theme-val"></span>
+ </button>
+ <button class="settings-row settings-link" id="settings-fontsize-btn" type="button">
+ <span class="row-main"><span class="row-t" data-i18n="setFontSize">글자 크기</span><span class="row-d dim" data-i18n="setFontSizeSub">본문 글자 크기를 조정합니다</span></span>
+ <span class="settings-val" id="settings-fontsize-val"></span>
  </button>
  </div>
  </div>
@@ -530,7 +561,7 @@
  <div class="select-tools">
  <label class="inp-wrap">
  <span class="inp-ic" data-icon="search"></span>
- <input type="text" id="ex-search-input" class="inp ex-search-input" placeholder="동작 검색 (예: 스쿼트)" aria-label="동작 검색">
+ <input type="text" id="ex-search-input" class="inp ex-search-input" placeholder="동작 검색 (예: 스쿼트)" data-i18n-placeholder="exSearchPlaceholder" aria-label="동작 검색">
  </label>
  <div class="chip-row" id="group-row"></div>
  </div>
@@ -557,15 +588,15 @@
  </div>
 
  <div id="account-login-form" class="auth-form">
- <input type="email" id="account-login-email" class="auth-input" placeholder="이메일" autocomplete="email">
- <input type="password" id="account-login-pw" class="auth-input" placeholder="비밀번호" autocomplete="current-password">
+ <input type="email" id="account-login-email" class="auth-input" placeholder="이메일" data-i18n-placeholder="loginEmailPlaceholder" autocomplete="email">
+ <input type="password" id="account-login-pw" class="auth-input" placeholder="비밀번호" data-i18n-placeholder="loginPwPlaceholder" autocomplete="current-password">
  <button class="primary" id="account-login-btn" data-i18n="accountBtn">로그인</button>
  <div class="auth-error" id="account-login-error"></div>
  </div>
 
  <div id="account-signup-form" class="auth-form" style="display:none;">
- <input type="email" id="account-signup-email" class="auth-input" placeholder="이메일" autocomplete="email">
- <input type="password" id="account-signup-pw" class="auth-input" placeholder="비밀번호 (6자리 이상)" autocomplete="new-password">
+ <input type="email" id="account-signup-email" class="auth-input" placeholder="이메일" data-i18n-placeholder="loginEmailPlaceholder" autocomplete="email">
+ <input type="password" id="account-signup-pw" class="auth-input" placeholder="비밀번호 (6자리 이상)" data-i18n-placeholder="signupPwPlaceholder" autocomplete="new-password">
  <button class="primary" id="account-signup-btn" data-i18n="signupBtn">회원가입</button>
  <div class="auth-error" id="account-signup-error"></div>
  </div>
@@ -796,9 +827,12 @@
         지금 아픈 사람이 여는 화면이므로 검색과 부위 칩이 맨 위에 온다. -->
    <p class="recovery-lead" data-i18n="recoveryLead">아픈 데를 먼저 찾으세요.</p>
 
+   <!-- "목부터 발목은 부위별 회복으로" 지적(2026-09-06) — 검색·칩·목록이
+        전부 목~발목(부위) 대상이라는 게 소제목 없이는 안 드러났었다. -->
+   <div class="injury-section-title" data-i18n="injuryByPartTitle">부위별 회복</div>
    <label class="inp-wrap">
    <span class="inp-ic" data-icon="search"></span>
-   <input type="text" id="injury-search-input" class="inp search-input" placeholder="부위 또는 증상 검색" aria-label="부위 검색">
+   <input type="text" id="injury-search-input" class="inp search-input" placeholder="부위 또는 증상 검색" data-i18n-placeholder="injurySearchPlaceholder" aria-label="부위 검색">
    </label>
    <div class="chip-row" id="injury-chip-row"></div>
    <div class="search-empty" id="injury-search-empty" style="display:none;" data-i18n="searchEmpty">검색 결과가 없습니다</div>
@@ -808,6 +842,17 @@
    <div class="recovery-warn-t" data-i18n="recoveryWarnT">통증이 48시간 넘게 남으면</div>
    <p class="dim" data-i18n="recoveryWarnD">앱의 스트레칭을 멈추고 전문가를 만나세요. 이 목록은 진단이 아닙니다.</p>
    </div>
+
+   <!-- 노인/어린이/부상 회복 중/오십견은 부위별 회복과 다른 대상별 안내라
+        따로 둔다(2026-09-06, src/data/recovery.js 의 SPECIAL_GUIDES 를 읽어 그린다). -->
+   <div class="injury-section-title" data-i18n="specialGuidesTitle">대상별 가이드</div>
+   <div id="special-list"></div>
+
+   <!-- 식단(목적별)은 부상 대처법과 다른 이야기라 따로 둔다(2026-09-06,
+        src/data/recovery.js 의 DIET_GUIDES 를 읽어 그린다). -->
+   <div class="injury-section-title" data-i18n="dietGuidesTitle">식단</div>
+   <p class="injury-intro" data-i18n="dietGuidesIntro">목적에 맞는 식단 방향을 간단히 정리했어요. 개인 건강 상태에 따라 다를 수 있으니 참고용으로만 봐주세요.</p>
+   <div id="diet-list"></div>
 
    <div class="injury-section-title" id="injury-section-anchor" data-i18n="recoveryHabits">회복 습관</div>
    <p class="injury-intro" data-i18n="recoveryIntro">운동은 절반, 회복은 나머지 절반입니다. 아래 습관들로 다음 WOD를 더 가볍게 시작해봅니다.</p>
@@ -828,7 +873,7 @@
  <h2 class="lb-title" data-i18n="movesBtn">운동동작 소개</h2>
  <label class="inp-wrap">
  <span class="inp-ic" data-icon="search"></span>
- <input type="text" id="video-search-input" class="inp search-input" placeholder="동작 검색 (예: 스쿼트)" aria-label="동작 검색">
+ <input type="text" id="video-search-input" class="inp search-input" placeholder="동작 검색 (예: 스쿼트)" data-i18n-placeholder="exSearchPlaceholder" aria-label="동작 검색">
  </label>
  <div class="video-gallery-grid" id="video-gallery-grid"></div>
  <div class="search-empty" id="video-search-empty" style="display:none;" data-i18n="searchEmpty">검색 결과가 없습니다</div>
@@ -956,6 +1001,20 @@
           <span class="breath-label" id="breath-label"></span>
         </div>
       </div>
+
+      <!-- 휴식마다 뜬다(이 앱은 휴식이 한 번뿐이라 그게 곧 첫 휴식). 카메라 없이
+           사람이 화면 앞에 있는지 가볍게 확인한다 — 번개를 0.6초 꾹 누르면 찬다. -->
+      <div class="rest-touch-card" id="rest-touch-card" style="display:none;">
+        <div class="rest-touch-zone" id="rest-touch-zone" role="button" tabindex="0" aria-label="인증">
+          <svg class="rest-touch-ring" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="track" cx="32" cy="32" r="26"></circle>
+            <circle class="prog" id="rest-touch-prog" cx="32" cy="32" r="26"></circle>
+          </svg>
+          <span class="rest-touch-icon" id="rest-touch-icon">⚡</span>
+        </div>
+        <p class="rest-touch-label" id="rest-touch-label" data-i18n="restTouchLabel">⚡ 위 번개를 꾹 눌러요!</p>
+        <p class="rest-touch-caption" data-i18n="restTouchCaption">인증을 위해 첫휴식에만 화면 위 번개를 눌러주세요!</p>
+      </div>
       <div class="photo-demo-wrap" id="photo-demo-wrap" style="display:none;">
         <img class="photo-demo-layer" id="photo-demo-a" alt="">
         <img class="photo-demo-layer" id="photo-demo-b" alt="">
@@ -976,6 +1035,10 @@
       </div>
 
       <p class="ex-cue" id="ex-cue">제자리에서 위로 점프</p>
+      <!-- 이 세트만 더 쉬운 동작으로 바꾼다(보스 라운드는 제외). src/data
+           의 EASY_ALT 가 무엇으로 바꿀지 정한다 — 매핑이 없는 동작(이미
+           쉬운 축에 속하는 것들)에는 이 버튼이 안 뜬다. -->
+      <button class="easy-swap-btn" id="easy-swap-btn" type="button" style="display:none;" data-i18n="easySwapBtnLabel">😵 힘들어요 → 쉬운 동작으로</button>
       <p class="ex-warn" id="ex-warn"></p>
     </div>
 
@@ -1105,6 +1168,23 @@
  <div class="pet-xp" id="pet-detail-xp"></div>
  <div class="pet-next" id="pet-detail-next"></div>
  <button class="btn-restart" id="pet-close-btn" type="button" data-i18n="closeBtn">닫기</button>
+ </div>
+</div>
+
+<!-- 프리미엄 게이팅(테스트 모드 — 실제 결제는 아직 연결 안 됨). 설정의
+     settings-premium-row와 고르기 화면의 잠긴 카드가 이걸 연다. -->
+<div class="pause-overlay" id="premium-overlay">
+ <div class="pause-box premium-box">
+ <div class="premium-icon">✨</div>
+ <div class="pause-title" id="premium-title">프리미엄 전용 운동</div>
+ <p class="premium-desc" id="premium-desc">이 운동은 프리미엄 회원만 이용할 수 있어요. 프리미엄에 가입하면 더 다양한 고강도 운동을 즐길 수 있어요.</p>
+ <div class="premium-price-box" id="premium-price-box">
+ <span class="premium-price-amount" id="premium-price-amount">₩3,900</span>
+ <span class="premium-price-unit">/ 월</span>
+ </div>
+ <button class="btn-restart" id="premium-activate-btn" type="button">✨ 프리미엄 시작하기</button>
+ <p class="premium-fineprint" id="premium-fineprint">테스트 모드 — 실제 결제는 아직 연결되지 않았어요</p>
+ <button class="link-btn" id="premium-close-btn" type="button" data-i18n="closeBtn">닫기</button>
  </div>
 </div>
 

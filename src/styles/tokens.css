@@ -17,13 +17,18 @@
   --font: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', system-ui, sans-serif;
   --font-num: 'Barlow Condensed', 'Noto Sans KR', sans-serif;
 
+  /* 설정 화면 '글자 크기'(작게/보통/크게)가 이 값을 바꾼다(src/app.js 의
+     applyFontScale). 작은 라벨·캡션류만 키우고 --t-lg 이상은 고정한다 —
+     제목까지 같이 키우면 카드 레이아웃이 줄바꿈으로 깨진다. */
+  --font-scale: 1.06;
+
   /* ── 글자 크기 ────────────────────────────────────────
    * rem 이라 OS 글꼴 크기 설정을 따라간다. px 로 박으면 눈이 어두운 사람이
    * 시스템에서 글자를 키워도 이 앱만 그대로다.
    * 하한은 13px. 그 아래는 이 표에 없다 — 없어야 안 쓰게 된다. */
-  --t-xs: 0.8125rem;   /* 13px — 하한. 라벨·캡션 */
-  --t-sm: 0.875rem;    /* 14px */
-  --t-md: 0.9375rem;   /* 15px — 본문 기준선 */
+  --t-xs: calc(0.8125rem * var(--font-scale));   /* 13px — 하한. 라벨·캡션 */
+  --t-sm: calc(0.875rem * var(--font-scale));    /* 14px */
+  --t-md: calc(0.9375rem * var(--font-scale));   /* 15px — 본문 기준선 */
   --t-lg: 1.125rem;    /* 18px */
   --t-xl: 1.5rem;      /* 24px */
   --t-2xl: 2rem;       /* 32px */
