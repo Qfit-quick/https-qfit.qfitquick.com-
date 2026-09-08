@@ -38,7 +38,7 @@ const PATTERNS = [/^workbox-[\w-]+\.js$/];
 const KEEP = new Set([
   'src', 'scripts', 'app', 'public', 'legacy', 'node_modules', '.git',
   'package.json', 'package-lock.json', 'vite.config.js', '.gitignore',
-  'NOTES.md', 'README.md', '.nojekyll', 'screenshots', 'dist',
+  'NOTES.md', 'README.md', 'CLAUDE.md', 'docs', '.nojekyll', 'screenshots', 'dist',
 ]);
 
 let gone = 0;

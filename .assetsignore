@@ -28,7 +28,12 @@ legacy
 
 # ── 개발용 부산물 ──────────────────────────────────────────────
 screenshots
-NOTES.md
+
+# 문서. 저장소를 읽는 사람에게 필요한 것이지 사이트에 필요한 것이 아니다.
+# 빼지 않으면 qfit.qfitquick.com/CLAUDE.md 로 그대로 공개된다.
+*.md
+docs
+
 package.json
 package-lock.json
 vite.config.js
