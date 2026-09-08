@@ -69,7 +69,6 @@ button {
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  transform: translateX(var(--shake));
 }
 
 /* ── 화면 ────────────────────────────────────────────────
@@ -136,7 +135,6 @@ button {
    그것까지 끄면 화면에 정지한 사람 하나만 남는다. */
 @media (prefers-reduced-motion: reduce) {
   .confetti-layer, .flash-overlay { display: none; }
-  #app { transform: none; }
   .screen { transition: none; transform: none; }
   .clear-banner, .boss-banner, .bonus-banner, .pr-badge { animation: none; }
 }

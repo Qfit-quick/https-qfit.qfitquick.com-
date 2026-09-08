@@ -36,8 +36,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-BU7swsEI.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-Dj-DL386.css">
+  <script type="module" crossorigin src="./assets/index-BQbnHNgg.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CaWs6bHb.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -947,16 +947,13 @@
     <div class="mission-zone" id="mission-zone">
       <div class="clear-banner" id="clear-banner">CLEAR!</div>
 
-      <!-- 휴식 때 이 자리에 뜬다. 예전에는 막대인간이 서 있었는데, 그건
-           운동을 흉내 내는 그림이라 '쉬라' 는 화면에서 할 말이 없었다.
-           원이 커지면 들이쉬고 작아지면 내쉰다 — 쉬는 시간에 실제로
-           해야 하는 한 가지를 그대로 보여 준다. -->
-      <div class="breath-wrap" id="breath-wrap" style="display:none;">
-        <div class="breath-ring" aria-hidden="true"></div>
-        <div class="breath-core">
-          <b class="breath-num" id="breath-num">11</b>
-          <span class="breath-label" id="breath-label"></span>
-        </div>
+      <!-- 세트 사이 쉬는 자리. 로고가 로딩 표시처럼 훑고 지나간다 —
+           쉬는 시간은 결국 기다리는 시간이고, 기다리는 화면의 관용어가
+           로딩이다. 끝나면 숫자 대신 '눌러서 시작' 이 뜬다. -->
+      <div class="rest-wrap" id="rest-wrap" style="display:none;">
+        <span class="rest-logo" aria-hidden="true">Q-fit<i class="logo-dot">.</i></span>
+        <b class="rest-num" id="rest-num">11</b>
+        <span class="rest-go" id="rest-go" hidden data-i18n="restTap">화면을 눌러 시작</span>
       </div>
       <div class="photo-demo-wrap" id="photo-demo-wrap" style="display:none;">
         <img class="photo-demo-layer" id="photo-demo-a" alt="">

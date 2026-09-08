@@ -382,9 +382,8 @@ export const STATIC_UI = {
  phaseForm: {ko:'자세', en:'Form', zh:'动作'},
  phaseBreath: {ko:'호흡', en:'Breathing', zh:'呼吸'},
 
- // 휴식 호흡 안내
- breatheIn: {ko:'들이쉬기', en:'Breathe in', zh:'吸气'},
- breatheOut: {ko:'내쉬기', en:'Breathe out', zh:'呼气'},
+ // 세트 사이 휴식
+ restTap: {ko:'화면을 눌러 시작', en:'Tap anywhere to start', zh:'点击屏幕开始'},
 
  // 휴식 인증 (번개 꾹 누르기)
  restTouchLabel: {ko:'⚡ 위 번개를 꾹 눌러요!', en:'⚡ Hold the bolt above!', zh:'⚡ 长按上方闪电！'},
