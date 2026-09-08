@@ -34,6 +34,15 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # 시크릿은 if: 안에서 직접 못 읽는다. 여기서 env 로 한 번 받아 두고
+    # 아래 단계들이 그 값의 유무로 갈린다.
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # 배포가 끝나면 이 주소를 실제로 받아 와서 저장소와 같은지 확인한다.
+      LIVE_URL: https://qfit.qfitquick.com/
+
     steps:
       - uses: actions/checkout@v4
 
@@ -47,6 +56,33 @@ jobs:
       # md5 가 실제 파일과 어긋나고, 사용자에게 영원히 옛 판이 나간다.
       - name: 줄바꿈 변환 끄기
         run: git config core.autocrlf false
+
+      # ── 토큰이 없으면 여기서 끝낸다 ──────────────────────────────
+      #
+      # 예전에는 토큰이 없으면 배포만 조용히 건너뛰고 워크플로는 초록불로
+      # 끝났다. 그래서 실행 3번이 전부 "success" 인데 qfit.qfitquick.com 은
+      # 계속 옛 판이었다 — 실패가 성공으로 보이니 알아챌 방법이 없었다.
+      # 이제는 여기서 빨간불로 세운다. 빌드에 시간을 쓰기 전에 세워서
+      # 무엇이 빠졌는지가 로그 맨 위에 남는다.
+      - name: 클라우드플레어 자격증명 확인
+        if: ${{ env.CF_TOKEN == '' }}
+        run: |
+          echo "::error::CLOUDFLARE_API_TOKEN 시크릿이 없다. 이게 없으면 qfit.qfitquick.com 은 영원히 옛 판으로 남는다."
+          {
+            echo "## 배포할 수 없다"
+            echo ""
+            echo "\`CLOUDFLARE_API_TOKEN\` 시크릿이 비어 있다."
+            echo ""
+            echo "저장소 **Settings → Secrets and variables → Actions → New repository secret** 에서 두 개를 넣는다."
+            echo ""
+            echo "| 이름 | 어디서 얻나 |"
+            echo "| --- | --- |"
+            echo "| \`CLOUDFLARE_API_TOKEN\` | Cloudflare 대시보드 → My Profile → API Tokens → **Edit Cloudflare Workers** 템플릿 |"
+            echo "| \`CLOUDFLARE_ACCOUNT_ID\` | Workers & Pages 개요 화면 오른쪽 |"
+            echo ""
+            echo "넣고 나서 이 워크플로를 **Re-run** 하면 된다."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       - run: npm ci
 
@@ -84,27 +120,108 @@ jobs:
       # Pages 기본 주소(dupz-web.github.io/...)는 새 판을 서빙하는데 커스텀
       # 도메인은 옛 판이었고, 새 자산 파일은 404 였다.
       #
-      # 아래가 그 구멍을 막는다. 토큰이 없으면 조용히 건너뛴다 — 토큰을
-      # 넣는 순간부터 push 마다 사이트가 저절로 따라온다.
-      #
-      # 넣는 법: 저장소 Settings → Secrets and variables → Actions 에
-      #   CLOUDFLARE_API_TOKEN   (Cloudflare 대시보드 → My Profile →
-      #                           API Tokens → "Edit Cloudflare Workers" 템플릿)
-      #   CLOUDFLARE_ACCOUNT_ID  (Workers & Pages 개요 오른쪽에 있는 값)
-      - name: 클라우드플레어에 배포 (토큰이 있을 때만)
-        if: ${{ env.CF_TOKEN != '' }}
-        env:
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      # wrangler 판을 4 로 못 박는다. 판을 비워 두면 실행할 때마다 그때의
+      # 최신을 받아 오므로, 어제 되던 배포가 오늘 깨져도 원인을 못 찾는다.
+      # 올릴 파일 목록은 .assetsignore 가 정한다(루트 전체가 대상이므로).
+      - name: 클라우드플레어에 배포
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4"
+          command: deploy
 
-      - name: 토큰이 없으면 알린다
-        if: ${{ env.CF_TOKEN == '' }}
+      # ── 올린 것이 진짜 떴는지 두 곳을 본다 ───────────────────────
+      #
+      # 두 주소를 나눠 보는 데는 이유가 있다. 실패가 두 종류인데 증상이
+      # 똑같아서, 한 곳만 보면 어느 쪽인지 알 수 없다.
+      #
+      #   workers.dev 가 옛 판  → 배포 자체가 안 된 것. 이 워크플로의 문제.
+      #   workers.dev 는 새 판인데 커스텀 도메인이 옛 판
+      #                        → 올라가긴 했는데 그 도메인이 이 워커를
+      #                          안 가리키는 것. 클라우드플레어 쪽 설정 문제.
+      #
+      # 2026-09-08 확인 시점의 실제 상태가 두 번째였다. qfit-quickfitness 에
+      # 붙은 커스텀 도메인이 0개였고, 배포 계정(kim3106611@gmail.com)에는
+      # 존이 하나도 없었다 — qfitquick.com 은 **다른 클라우드플레어 계정**에
+      # 있다(네임서버는 remy/desiree.ns.cloudflare.com). 커스텀 도메인은
+      # 워커와 같은 계정의 존에만 붙일 수 있으므로, 그 계정에서 붙이기
+      # 전까지 이 단계는 계속 빨간불이다. 그게 맞는 동작이다 —
+      # 사람이 보는 주소가 옛 판이면 초록불이면 안 된다.
+      - name: 배포 결과 확인
         env:
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # 워커 주소를 적어 두지 않는다. workers.dev 주소는
+          # <워커이름>.<계정 서브도메인>.workers.dev 인데, 계정 서브도메인은
+          # 대시보드에서 언제든 바뀐다(계정 전체에 걸린 이름이라 다른 워커
+          # 주소까지 같이 바뀐다). 적어 두면 그날 이 검사가 헛되이 빨간불이 된다.
+          # wrangler-action 이 방금 배포한 주소를 그대로 내놓으므로 그걸 쓴다.
+          WORKERS_DEV_URL: ${{ steps.deploy.outputs.deployment-url }}
         run: |
-          echo "::warning::CLOUDFLARE_API_TOKEN 이 없어 qfit.qfitquick.com 은 갱신되지 않았다."
-          echo "Pages 기본 주소는 새 판이지만 커스텀 도메인은 옛 판으로 남는다."
-          echo "손으로 올리려면: npx wrangler login  그리고  npm run deploy"
+          want=$(md5sum index.html | cut -d' ' -f1)
+          echo "저장소의 index.html: $want"
+
+          # 엣지 캐시가 도는 데 잠깐 걸리므로 몇 번 다시 본다.
+          fetch_md5() {
+            curl -sSL --max-time 30 -H 'Cache-Control: no-cache' "$1?ci=$(date +%s)" | md5sum | cut -d' ' -f1
+          }
+          settled() {
+            for i in 1 2 3 4 5 6; do
+              got=$(fetch_md5 "$1")
+              echo "  시도 $i — $got"
+              [ "$got" = "$want" ] && return 0
+              sleep 15
+            done
+            return 1
+          }
+
+          if [ -z "$WORKERS_DEV_URL" ]; then
+            echo "::warning::wrangler 가 배포 주소를 안 내놨다 — 워커 주소 확인은 건너뛰고 사람이 보는 주소만 본다."
+          else
+            echo "1) 워커 주소 $WORKERS_DEV_URL"
+            if ! settled "$WORKERS_DEV_URL"; then
+              echo "::error::배포가 실제로 반영되지 않았다 — $WORKERS_DEV_URL 가 아직 옛 판이다."
+              {
+                echo "## 배포가 반영되지 않았다"
+                echo ""
+                echo "- 저장소: \`$want\`"
+                echo "- $WORKERS_DEV_URL: \`$got\`"
+                echo ""
+                echo "wrangler 는 성공했다는데 워커 주소가 안 바뀌었다."
+                echo "\`.assetsignore\` 가 올릴 파일을 잘못 걸러내고 있는지 본다"
+                echo "(\`npx wrangler deploy --dry-run\` 으로 로컬에서 재현된다)."
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+            echo "✅ 워커에는 이번 판이 올라갔다."
+          fi
+
+          echo "2) 사람이 보는 주소 $LIVE_URL"
+          if settled "$LIVE_URL"; then
+            echo "✅ $LIVE_URL 가 이번 판을 서빙한다."
+            echo "✅ \`$LIVE_URL\` 갱신 확인 (\`$want\`)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "::error::워커에는 올라갔는데 $LIVE_URL 는 아직 옛 판이다 — 도메인이 이 워커를 안 가리킨다."
+          {
+            echo "## 올라가긴 했는데 도메인이 안 따라온다"
+            echo ""
+            echo "| 주소 | index.html |"
+            echo "| --- | --- |"
+            echo "| 저장소 | \`$want\` |"
+            echo "| $WORKERS_DEV_URL | \`$want\` ✅ |"
+            echo "| $LIVE_URL | \`$got\` ❌ |"
+            echo ""
+            echo "배포는 됐다. \`qfit.qfitquick.com\` 이 워커 \`qfit-quickfitness\` 에 안 붙어 있다는 뜻이다."
+            echo ""
+            echo "커스텀 도메인은 **워커와 같은 계정의 존에만** 붙는다."
+            echo "\`qfitquick.com\` 존을 가진 클라우드플레어 계정에서:"
+            echo ""
+            echo "1. Workers & Pages → **qfit-quickfitness** → Settings → Domains & Routes → Add → Custom domain"
+            echo "2. \`qfit.qfitquick.com\` 입력"
+            echo ""
+            echo "존이 배포 계정과 다른 계정에 있으면 워커를 그 계정으로 옮기거나,"
+            echo "그 계정에서 만든 \`CLOUDFLARE_API_TOKEN\`/\`CLOUDFLARE_ACCOUNT_ID\` 로 시크릿을 바꾼다."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
