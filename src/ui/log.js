@@ -46,8 +46,10 @@ function paintStatus(dateStr) {
   const status = dayStatus(day);
   const diet = dietState(day);
 
-  const chip = (on, partial, label) =>
-    `<span class="log-chip${on ? ' on' : partial ? ' partial' : ''}">` +
+  // kind 가 색을 가른다. 월간 캘린더에서 운동은 민트, 식단은 노랑인데
+  // 여기만 둘 다 민트였다 — 같은 화면에서 같은 것을 두 색으로 부르고 있었다.
+  const chip = (on, partial, label, kind) =>
+    `<span class="log-chip ${kind}${on ? ' on' : partial ? ' partial' : ''}">` +
     `<span class="log-chip-mark" aria-hidden="true">${on ? ICON.check : ICON.minus}</span>` +
     `<span>${esc(label)}</span></span>`;
 
@@ -56,8 +58,8 @@ function paintStatus(dateStr) {
     `<div class="kick">${esc(t(S.logToday))}</div>` +
     `<div class="log-status-line">${esc(t(S[STATUS_TEXT[status]]))}</div>` +
     '<div class="log-chips">' +
-    chip(!!day.workout, false, t(S.logWorkout)) +
-    chip(diet === 'done', diet === 'partial', t(S.logDiet)) +
+    chip(!!day.workout, false, t(S.logWorkout), 'w') +
+    chip(diet === 'done', diet === 'partial', t(S.logDiet), 'd') +
     '</div>' +
     (diet === 'partial'
       ? `<p class="dim log-partial">${esc(t(S.logDietPartial))}</p>`
@@ -266,8 +268,8 @@ export function renderTodayCard() {
   const status = dayStatus(day);
   const diet = dietState(day);
 
-  const mark = (on, partial) =>
-    `<span class="tc-mark${on ? ' on' : partial ? ' partial' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span>`;
+  const mark = (on, partial, kind) =>
+    `<span class="tc-mark ${kind}${on ? ' on' : partial ? ' partial' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span>`;
 
   card.dataset.status = status;
   card.innerHTML =
@@ -276,8 +278,8 @@ export function renderTodayCard() {
     `<span class="dim tc-status">${esc(t(S[STATUS_TEXT[status]]))}</span>` +
     '</div>' +
     '<div class="tc-rows">' +
-    `<span class="tc-row">${mark(!!day.workout, false)}<span>${esc(t(S.logWorkout))}</span></span>` +
-    `<span class="tc-row">${mark(diet === 'done', diet === 'partial')}<span>${esc(t(S.logDiet))}` +
+    `<span class="tc-row">${mark(!!day.workout, false, 'w')}<span>${esc(t(S.logWorkout))}</span></span>` +
+    `<span class="tc-row">${mark(diet === 'done', diet === 'partial', 'd')}<span>${esc(t(S.logDiet))}` +
     (diet === 'partial' ? ` <em>${esc(t(S.logDietPartialShort))}</em>` : '') +
     '</span></span>' +
     '</div>' +

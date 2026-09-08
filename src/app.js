@@ -403,9 +403,9 @@ const bossBanner = document.getElementById('boss-banner');
 const bonusBanner = document.getElementById('bonus-banner');
 const coachEmoji = document.getElementById('coach-emoji');
 const coachLine = document.getElementById('coach-line');
-const breathWrap = document.getElementById('breath-wrap');
-const breathNum = document.getElementById('breath-num');
-const breathLabel = document.getElementById('breath-label');
+const restWrap = document.getElementById('rest-wrap');
+const restNum = document.getElementById('rest-num');
+const restGo = document.getElementById('rest-go');
 const photoDemoWrap = document.getElementById('photo-demo-wrap');
 const photoDemoA = document.getElementById('photo-demo-a');
 const photoDemoB = document.getElementById('photo-demo-b');
@@ -441,11 +441,6 @@ const bestScoreVal = document.getElementById('best-score-val');
 function showScreen(el){
  [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
- // safety net: a leftover shake() animation frame can occasionally get
- // orphaned (e.g. tab backgrounded mid-shake) and leave the whole #app
- // permanently offset sideways — force it back to 0 on every screen
- // change so this can never persist across a navigation.
- if(app) app.style.setProperty('--shake', '0px');
  if(el === moreScreen){
  try{
  const savedPrefs = loadSetupPrefs();
@@ -687,7 +682,7 @@ try{
  clearInterval(missionInterval);
  Sound.stopBGM();
  stopPhotoDemo();
- stopBreath();
+ stopRest();
  if(app) app.classList.remove('workout-mode');
  showScreen(startScreen);
  }
@@ -744,26 +739,7 @@ try{
  });
 }catch(e){ console.error('settings screen setup failed:', e); }
 
-// ---------- SCREEN SHAKE / FLASH ----------
-let shakeResetTimer = null;
-function shake(){
- let n = 0;
- const kick = ()=>{
- n++;
- const amt = (n % 2 === 0) ? 6 : -6;
- app.style.setProperty('--shake', amt * (1 - n/6) + 'px');
- if(n < 6) requestAnimationFrame(()=>setTimeout(kick, 16));
- else app.style.setProperty('--shake','0px');
- };
- kick();
- // Guaranteed reset independent of the animation chain above — if the
- // tab gets backgrounded mid-shake (common on mobile), the rAF/setTimeout
- // chain can stall partway through and never reach the reset branch,
- // leaving the whole screen permanently offset sideways. This timer
- // always fires and snaps it back, no matter what happened above.
- clearTimeout(shakeResetTimer);
- shakeResetTimer = setTimeout(()=>{ app.style.setProperty('--shake','0px'); }, 250);
-}
+// ---------- FLASH ----------
 function flash(color){
  flashOverlay.style.background = color || '#fff';
  flashOverlay.style.opacity = '0.35';
@@ -792,36 +768,39 @@ function fireConfetti(){
  }
 }
 
-// ---------- 휴식 호흡 ----------
+// ---------- 세트 사이 휴식 ----------
 //
-// 쉬는 시간에 이 원이 뜬다. 커지면 들이쉬고 작아지면 내쉰다.
-// 예전에는 이 자리에 막대인간이 서 있었다. 운동 동작을 흉내 내는 그림이라
-// '쉬라' 고 말하는 화면에서는 할 말이 없었다 — 쉬는 동안 실제로 해야 하는
-// 한 가지가 호흡이므로 그것을 보여 준다.
-let breathTimer = null;
+// 쉬는 동안 이 자리에 로고가 뜬다. 예전에는 막대인간이 서 있었다 —
+// 운동 동작을 흉내 내는 그림이라 '쉬라' 고 말하는 화면에서는 할 말이 없었다.
+// 쉬는 시간은 결국 기다리는 시간이므로 기다리는 화면의 관용어를 쓴다.
+//
+// 끝나도 저절로 넘어가지 않는다. 예전에는 0 이 되는 순간 다음 세트가
+// 시작됐는데, 물 마시러 간 사이에 한 세트가 지나가 있었다.
+let restTapHandler = null;
 
-function stopBreath(){
- if(breathTimer){ clearTimeout(breathTimer); breathTimer = null; }
- if(breathWrap) breathWrap.style.display = 'none';
+function stopRest(){
+ if(restWrap) restWrap.style.display = 'none';
+ if(restGo) restGo.hidden = true;
+ if(restNum) restNum.hidden = false;
+ if(restTapHandler){
+ gameScreen.removeEventListener('click', restTapHandler);
+ restTapHandler = null;
+ }
 }
 
-function startBreath(totalSec){
- if(!breathWrap) return;
- // 호흡이 쉬는 시간 안에서 딱 떨어지도록 주기를 나눈다. 4초씩 고정으로 넣으면
- // 11초 휴식이 들숨 도중에 끊기는데, 끝을 못 맺는 호흡은 안 하느니만 못하다.
- const cycles = Math.max(1, Math.round(totalSec / 5));
- const half = totalSec / cycles / 2;
- breathWrap.style.setProperty('--breath-half', half + 's');
- breathWrap.style.display = '';
- // 라벨은 반주기마다 바꾼다. 1초 타이머에 얹으면 최대 1초까지 어긋나는데,
- // 원이 이미 움직이고 있어서 그 어긋남이 그대로 눈에 보인다.
- let inhale = true;
- const flip = ()=>{
- if(breathLabel) breathLabel.textContent = t(inhale ? STATIC_UI.breatheIn : STATIC_UI.breatheOut);
- inhale = !inhale;
- breathTimer = setTimeout(flip, half * 1000);
+// 남은 초가 0 이 되면 부른다. 화면을 누를 때까지 기다린다.
+function waitForTapToResume(){
+ if(restNum) restNum.hidden = true;
+ if(restGo) restGo.hidden = false;
+ restTapHandler = (e)=>{
+ // 조작 버튼(일시정지 등)은 제 일을 하게 둔다. 여기서 같이 걸리면
+ // 멈추려고 누른 것이 운동을 시작시킨다.
+ if(e.target.closest('button')) return;
+ stopRest();
+ Sound.markIntensified();
+ runMission();
  };
- flip();
+ gameScreen.addEventListener('click', restTapHandler);
 }
 
 // ---------- 운동 중 사진 ----------
@@ -883,8 +862,10 @@ function startPhotoDemo(key){
  //
  // 버티기(ms:0)는 여기서 1500 이 된다 — 바꿀 프레임이 없으니 화면 흐름만
  // 아주 느리게 돈다. 플랭크에서 화면이 빨리 흐르면 버티는 30초가 더 길게 느껴진다.
- const hold = seq.ms || 1500;
- const fade = Math.round(Math.min(700, Math.max(180, hold * 0.55)));
+ const hold = seq.ms || 1800;
+ // 머무는 시간의 0.7 배까지 겹친다. 짧게 잡으면 '떠 있다가 툭 바뀐다' 로
+ // 읽히는데, 길게 겹쳐 두면 거의 항상 넘어가는 중이라 한 장면으로 이어진다.
+ const fade = Math.round(Math.min(1100, Math.max(220, hold * 0.7)));
  photoDemoWrap.style.setProperty('--photo-fade', fade + 'ms');
  photoDemoWrap.style.setProperty('--photo-hold', hold + 'ms');
 
@@ -3021,7 +3002,7 @@ function runMission(){
  else { setCoachLine(pickVariant(t(selectedCoach.start))); }
  if(m.isBonus && !m.isBoss){ Sound.fanfare(); }
 
- stopBreath();
+ stopRest();
  startPhotoDemo(m.ex.key);
  exName.textContent = t(m.ex.label) + (m.isBoss ? t({ko:' (보스)', en:' (BOSS)', zh:'（BOSS）'}) : '');
  // 버티는 동작(플랭크)은 링, 나머지는 큰 숫자. 둘 다 남은 초를 말한다 —
@@ -3102,7 +3083,6 @@ function runTimer(m){
  missionTimebarFill.style.width = ((1-pct) * 100) + '%';
  if(remain === 3){ Sound.chaseThump(); }
  Sound.holdTick();
- shake();
 
  if(remain === 1) setCoachLine(selectedCoach.last);
  else if(remain === Math.ceil(m.duration/2)) setCoachLine(selectedCoach.push);
@@ -3161,7 +3141,7 @@ function completeMission(m){
  // break is next, since a "next: rest" preview right before the actual
  // rest screen doesn't add anything
  stopPhotoDemo();
- stopBreath();
+ stopRest();
  exTarget.style.display = 'none';
  const upcoming = missions[missionIndex + 1];
  const upcomingIsRest = (missionIndex + 1) === midRestIndex && !midRestGiven;
@@ -3201,21 +3181,22 @@ function runRest(){
  exCue.textContent = t({ko:'숨 고르기', en:'Catch your breath', zh:'调整呼吸'});
  setCoachLine(t({ko:'잠깐 숨 고르고 가자', en:'Take a quick breather', zh:'先喘口气'}));
 
- if(breathNum) breathNum.textContent = String(REST_DURATION);
- startBreath(REST_DURATION);
+ if(restNum) restNum.textContent = String(REST_DURATION);
+ if(restWrap) restWrap.style.display = '';
+ if(restGo) restGo.hidden = true;
+ if(restNum) restNum.hidden = false;
 
  let elapsed = 0;
  clearInterval(missionInterval);
  missionInterval = setInterval(()=>{
  elapsed++;
  const remain = REST_DURATION - elapsed;
- if(breathNum) breathNum.textContent = String(Math.max(0, remain));
+ if(restNum) restNum.textContent = String(Math.max(0, remain));
  Sound.holdTick();
  if(elapsed >= REST_DURATION){
  clearInterval(missionInterval);
- stopBreath();
- Sound.markIntensified(); // 휴식 후엔 좀 더 신나는 템포로 — 실제 전환은 곧 이어질 runMission()의 세트별 재시작에서 처리
- runMission();
+ // 여기서 바로 다음 세트를 시작하지 않는다. 누를 때까지 기다린다.
+ waitForTapToResume();
  }
  }, 1000);
 }
@@ -3248,7 +3229,7 @@ function finishGame(){
  if(app) app.classList.remove('workout-mode');
  Sound.stopBGM();
  stopPhotoDemo();
- stopBreath();
+ stopRest();
  Sound.fanfare();
 
  finalSub.textContent = t({ko:missions.length + '개 미션 완주', en:missions.length + ' missions completed', zh:'完成' + missions.length + '个动作'}) + ' · +20 XP';
@@ -3693,7 +3674,6 @@ try{
 document.addEventListener('visibilitychange', ()=>{
  if(document.visibilityState === 'visible'){
  Sound.unlock();
- try{ if(app) app.style.setProperty('--shake', '0px'); }catch(e){}
  }
 });
 window.addEventListener('pageshow', ()=> Sound.unlock());

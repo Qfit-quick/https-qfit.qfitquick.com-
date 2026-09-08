@@ -382,9 +382,8 @@ export const STATIC_UI = {
  phaseForm: {ko:'자세', en:'Form', zh:'动作'},
  phaseBreath: {ko:'호흡', en:'Breathing', zh:'呼吸'},
 
- // 휴식 호흡 안내
- breatheIn: {ko:'들이쉬기', en:'Breathe in', zh:'吸气'},
- breatheOut: {ko:'내쉬기', en:'Breathe out', zh:'呼气'},
+ // 세트 사이 휴식
+ restTap: {ko:'화면을 눌러 시작', en:'Tap anywhere to start', zh:'点击屏幕开始'},
 
  // 알 성장 창
  petNext: {ko:'다음 진화까지 %s XP', en:'%s XP to the next evolution', zh:'距离下次进化还需 %s XP'},

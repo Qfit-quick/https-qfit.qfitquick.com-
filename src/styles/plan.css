@@ -347,7 +347,7 @@ body.gated { overflow: hidden; }
 }
 .pm-kcal { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; }
 /* 이미 먹은 끼니. 줄을 그어 지우지 않는다 — 지운 줄은 '취소' 로 읽힌다. */
-.plan-meal-mini-row.done .pm-name { color: var(--mint-text); }
+.plan-meal-mini-row.done .pm-name { color: var(--accent-text); }
 .plan-meal-mini-row.done .pm-name::after { content: ' ✓'; }
 .plan-diet-sum { font-size: var(--t-sm); word-break: keep-all; }
 .plan-jump { margin-top: var(--s-2); height: var(--tap); }
@@ -430,7 +430,7 @@ body.gated { overflow: hidden; }
   font-weight: 700;
   letter-spacing: -0.03em;
 }
-.plan-meal.done { border-color: var(--mint); }
+.plan-meal.done { border-color: var(--accent); }
 .plan-meal-rows { display: flex; flex-direction: column; gap: 1px; }
 .pmr {
   display: grid;
@@ -509,9 +509,11 @@ body.gated { overflow: hidden; }
 }
 .tc-mark svg { width: 16px; height: 16px; }
 .tc-mark.on { border-color: var(--mint); background: var(--mint); }
+.tc-mark.d.on { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
 /* 반만 채운 것(세 끼 중 일부)은 색이 아니라 채움으로 구별한다 —
    색을 하나 더 만들면 범례를 봐야 읽히는 화면이 된다. */
 .tc-mark.partial { border-color: var(--mint); background: var(--surface-2); }
+.tc-mark.d.partial { border-color: var(--accent); }
 .tc-open { margin-top: var(--s-1); height: var(--tap); }
 
 /* 기록지 맨 위 한 줄. 이 화면이 답하는 질문의 답이 여기다. */
@@ -538,8 +540,13 @@ body.gated { overflow: hidden; }
 }
 .log-chip-mark { display: flex; }
 .log-chip-mark svg { width: 15px; height: 15px; }
-.log-chip.on { border-color: var(--mint); background: var(--mint); color: var(--on-mint); }
-.log-chip.partial { border-color: var(--mint); color: var(--mint-text); }
+/* 식단은 노랑, 운동은 민트. 월간 캘린더(.log-cal-marks)가 그렇게 부르고
+   있으므로 같은 것을 가리키는 자리는 전부 같은 색이어야 한다 — 화면마다
+   색이 달라지면 색은 정보가 아니라 장식이 된다. */
+.log-chip.w.on { border-color: var(--mint); background: var(--mint); color: var(--on-mint); }
+.log-chip.w.partial { border-color: var(--mint); color: var(--mint-text); }
+.log-chip.d.on { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.log-chip.d.partial { border-color: var(--accent); color: var(--accent-text); }
 .log-partial { font-size: var(--t-sm); line-height: 1.6; word-break: keep-all; }
 
 /* 체크칸. 운동 하나와 끼니 넷. */
@@ -556,6 +563,8 @@ body.gated { overflow: hidden; }
   min-width: 0;
 }
 .log-row.on { border-color: var(--mint); }
+/* 끼니 네 칸은 식단이다. 운동 한 칸만 민트로 남는다. */
+.log-row[data-check='meal'].on { border-color: var(--accent); }
 .log-box {
   display: flex;
   align-items: center;
@@ -569,6 +578,11 @@ body.gated { overflow: hidden; }
 }
 .log-box svg { width: 18px; height: 18px; }
 .log-row.on .log-box { border-color: var(--mint); background: var(--mint); }
+.log-row[data-check='meal'].on .log-box {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
 /* components.css 의 .row-d 는 한 줄로 잘라 말줄임을 붙인다(목록 줄에서는
    그게 맞다). 여기는 규칙을 설명하는 문장이 들어가는 자리라, 잘리면
    정작 읽어야 할 말이 '…' 뒤로 사라진다. */

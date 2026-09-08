@@ -141,9 +141,10 @@
   /* 화면 흐름은 장식이라 끈다. 프레임이 넘어가는 것은 남긴다 —
      그건 '이 동작이 이렇게 움직인다' 는 설명이라 정보다. */
   .photo-demo-wrap.flowing .photo-demo-layer { animation: none; }
-  /* 호흡 원도 멈춘다. 들숨·날숨은 글자(.breath-label)가 계속 말해 주므로
-     안내 자체는 남는다 — 움직임만 빠진다. */
-  .breath-ring { animation: none; transform: scale(0.85); }
+  /* 로고를 훑는 빛과 '눌러서 시작' 의 깜빡임을 끈다. 둘 다 장식이고,
+     남은 초와 문구가 같은 것을 글자로 이미 말하고 있다. */
+  .rest-logo { animation: none; }
+  .rest-go { animation: none; }
 }
 
 /* ── 운동 화면 · 3단 위계 ─────────────────────────────
@@ -222,8 +223,11 @@
      화면 밖으로 밀려나는데, 그 두 줄이 초보자에게 제일 필요한 안내다.
      세로가 짧은 기기에서만 줄어든다. */
   flex: none;
-  height: 190px;
-  max-height: 34vh;
+  /* 190px 이었다. 자세를 보라고 띄우는 사진인데 그 크기로는 손발 각도가
+     안 읽혔다. 아래 큐와 주의 두 줄이 밀려나지 않는 선까지만 키운다 —
+     390x664(아이폰 12)에서 확인한 상한이 이 값이다. */
+  height: 248px;
+  max-height: 42vh;
   border-radius: var(--r-xl);
   overflow: hidden;
   background: var(--surface-2);
@@ -262,55 +266,71 @@
   animation: photoFlow calc(var(--photo-hold, 900ms) * 6) ease-in-out infinite;
 }
 
-/* ── 휴식 호흡 원 ─────────────────────────────────────
+/* ── 세트 사이 휴식 ───────────────────────────────────
    운동 중 사진(.photo-demo-wrap)과 같은 자리를 번갈아 쓴다. 높이를 같게
-   두지 않으면 세트에서 휴식으로 넘어갈 때 아래 글자들이 통째로 튄다.
-
-   커지면 들이쉬고 작아지면 내쉰다. 한 주기의 길이는 JS 가 넣는다
-   (--breath-half) — 쉬는 시간 안에서 호흡이 딱 떨어져야 해서 고정할 수 없다. */
-.breath-wrap {
+   두지 않으면 세트에서 휴식으로 넘어갈 때 아래 글자들이 통째로 튄다. */
+.rest-wrap {
   position: relative;
   flex: none;
-  height: 190px;
-  max-height: 34vh;
+  height: 248px;
+  max-height: 42vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--s-2);
 }
-.breath-ring {
-  position: absolute;
-  width: min(148px, 30vh);
-  height: min(148px, 30vh);
-  border-radius: var(--r-full);
-  border: 3px solid var(--accent);
-  /* 테두리만 있으면 작아졌을 때 화면에서 사라진 것처럼 읽힌다.
-     아주 옅은 면을 깔아 두면 크기가 변하는 것이 면적으로도 읽힌다. */
-  background: var(--surface-2);
-  animation: breathe calc(var(--breath-half, 2.75s) * 2) ease-in-out infinite;
-}
-@keyframes breathe {
-  0%   { transform: scale(0.58); }
-  50%  { transform: scale(1); }
-  100% { transform: scale(0.58); }
-}
-.breath-core {
-  position: relative;
-  text-align: center;
-  line-height: 1.1;
-}
-.breath-num {
-  display: block;
+
+/* 로고 위를 빛이 훑고 지나간다. 로딩 표시의 관용어를 그대로 쓴 것이다 —
+   쉬는 시간은 결국 다음 세트를 기다리는 시간이라 '진행 중' 으로 읽혀야 한다.
+
+   background-clip:text 를 못 쓰는 브라우저에서는 글자가 통째로 사라지므로
+   (color:transparent 만 남는다) @supports 안에서만 켠다. 밖에서는 그냥
+   회색 로고가 뜬다 — 효과는 없지만 읽히기는 한다. */
+.rest-logo {
   font-family: var(--font-num);
-  font-size: var(--t-3xl);
+  font-size: var(--t-title);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--text-dim);
+}
+.rest-logo .logo-dot { font-style: normal; color: var(--accent-text); }
+
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .rest-logo {
+    background-image: linear-gradient(100deg,
+      var(--text-dim) 38%, var(--text) 50%, var(--text-dim) 62%);
+    background-size: 260% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: restSweep 1.7s linear infinite;
+  }
+}
+@keyframes restSweep {
+  from { background-position: 165% 0; }
+  to   { background-position: -65% 0; }
+}
+
+.rest-num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-2xl);
   font-weight: 800;
   color: var(--text);
 }
-.breath-label {
-  display: block;
-  margin-top: var(--s-1);
-  font-size: var(--t-sm);
+/* 다 쉬었다는 신호. 숫자 자리를 그대로 물려받아서, 0 이 되는 순간
+   눈이 다른 데를 찾을 필요가 없다. */
+.rest-go {
+  font-size: var(--t-md);
   font-weight: 700;
-  color: var(--text-dim);
+  color: var(--accent-text);
+  animation: restGoPulse 1.4s ease-in-out infinite;
+}
+@keyframes restGoPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
 }
 
 .ex-name {

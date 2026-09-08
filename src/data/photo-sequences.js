@@ -18,24 +18,29 @@
 //
 // ms 는 한 프레임이 머무는 시간이다. 동작의 실제 속도를 따라간다 —
 // 점프스쿼트와 레그레이즈가 같은 박자로 넘어가면 둘 다 거짓말이 된다.
+//
+// 처음에는 실제 운동 속도(스쿼트 950ms)에 맞췄는데 화면에서는 너무 빨랐다.
+// 사진 두세 장으로 만드는 움직임은 실물보다 느려야 한 장 한 장이 자세로
+// 읽힌다 — 실제 박자로 넘기면 자세가 아니라 깜빡임이 된다. 그래서 1.6배쯤
+// 늘렸다. 동작끼리의 상대적인 빠르기는 그대로 둔다.
 export const PHOTO_SEQUENCES = {
-  SQUAT:      { frames: ['squat-1.webp', 'squat-2.webp'],                                  mode: 'pingpong', ms: 950 },
-  PUSHUP:     { frames: ['pushup-1.webp', 'pushup-2.webp'],                                mode: 'pingpong', ms: 850 },
-  PIKEPUSHUP: { frames: ['pikepushup-1.webp', 'pikepushup-2.webp'],                        mode: 'pingpong', ms: 900 },
-  CRUNCH:     { frames: ['crunch-1.webp', 'crunch-2.webp'],                                mode: 'pingpong', ms: 850 },
-  LEGRAISE:   { frames: ['legraise-1.webp', 'legraise-2.webp'],                            mode: 'pingpong', ms: 1000 },
-  HIPBRIDGE:  { frames: ['hipbridge-1.webp', 'hipbridge-2.webp'],                          mode: 'pingpong', ms: 950 },
-  LUNGE:      { frames: ['lunge-1.webp', 'lunge-2.webp', 'lunge-3.webp'],                  mode: 'pingpong', ms: 900 },
+  SQUAT:      { frames: ['squat-1.webp', 'squat-2.webp'],                                  mode: 'pingpong', ms: 1500 },
+  PUSHUP:     { frames: ['pushup-1.webp', 'pushup-2.webp'],                                mode: 'pingpong', ms: 1350 },
+  PIKEPUSHUP: { frames: ['pikepushup-1.webp', 'pikepushup-2.webp'],                        mode: 'pingpong', ms: 1400 },
+  CRUNCH:     { frames: ['crunch-1.webp', 'crunch-2.webp'],                                mode: 'pingpong', ms: 1350 },
+  LEGRAISE:   { frames: ['legraise-1.webp', 'legraise-2.webp'],                            mode: 'pingpong', ms: 1600 },
+  HIPBRIDGE:  { frames: ['hipbridge-1.webp', 'hipbridge-2.webp'],                          mode: 'pingpong', ms: 1500 },
+  LUNGE:      { frames: ['lunge-1.webp', 'lunge-2.webp', 'lunge-3.webp'],                  mode: 'pingpong', ms: 1400 },
   // 버피와 점프스쿼트는 빠르다. 느리게 넘기면 '폭발적으로' 라고 써 놓고
   // 화면은 느긋한 모순이 된다.
-  BURPEE:     { frames: ['burpee-1.webp', 'burpee-2.webp', 'burpee-3.webp'],               mode: 'pingpong', ms: 620 },
-  JUMPSQUAT:  { frames: ['jumpsquat-1.webp', 'jumpsquat-2.webp'],                          mode: 'pingpong', ms: 620 },
+  BURPEE:     { frames: ['burpee-1.webp', 'burpee-2.webp', 'burpee-3.webp'],               mode: 'pingpong', ms: 1000 },
+  JUMPSQUAT:  { frames: ['jumpsquat-1.webp', 'jumpsquat-2.webp'],                          mode: 'pingpong', ms: 1000 },
   // 제자리 달리기는 좌우 다리가 번갈아 나온다. 왕복시키면 같은 다리를
   // 두 번 딛는 모양이 되어 박자가 깨진다.
-  RUNINPLACE: { frames: ['runinplace-1.webp', 'runinplace-2.webp'],                        mode: 'loop', ms: 380 },
+  RUNINPLACE: { frames: ['runinplace-1.webp', 'runinplace-2.webp'],                        mode: 'loop', ms: 650 },
   // 앞으로 나아가는 동작. loop 여야 한다.
   ARMYCRAWL:  { frames: ['armycrawl-1.webp', 'armycrawl-2.webp', 'armycrawl-3.webp', 'armycrawl-4.webp'],
-                                                                                            mode: 'loop', ms: 520 },
+                                                                                            mode: 'loop', ms: 850 },
   // 버티기. 사진이 한 장뿐이고, 그게 맞다 — 플랭크는 안 움직이는 것이 동작이다.
   PLANK:      { frames: ['plank-1.webp'],                                                   mode: 'hold', ms: 0 },
 };
