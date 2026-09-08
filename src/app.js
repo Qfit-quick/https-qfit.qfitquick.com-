@@ -403,7 +403,9 @@ const bossBanner = document.getElementById('boss-banner');
 const bonusBanner = document.getElementById('bonus-banner');
 const coachEmoji = document.getElementById('coach-emoji');
 const coachLine = document.getElementById('coach-line');
-const figureWrap = document.getElementById('figure-wrap');
+const breathWrap = document.getElementById('breath-wrap');
+const breathNum = document.getElementById('breath-num');
+const breathLabel = document.getElementById('breath-label');
 const photoDemoWrap = document.getElementById('photo-demo-wrap');
 const photoDemoA = document.getElementById('photo-demo-a');
 const photoDemoB = document.getElementById('photo-demo-b');
@@ -684,8 +686,8 @@ try{
  missionActive = false;
  clearInterval(missionInterval);
  Sound.stopBGM();
- stopLegSync();
  stopPhotoDemo();
+ stopBreath();
  if(app) app.classList.remove('workout-mode');
  showScreen(startScreen);
  }
@@ -790,44 +792,36 @@ function fireConfetti(){
  }
 }
 
-// ---------- SYNCED LEGS (JS-driven, guarantees both legs move as one unit) ----------
-let legSyncRAF = null;
-function startLegSync(periodMs){
- stopLegSync();
- const legL = figureWrap.querySelector('.legL');
- const legR = figureWrap.querySelector('.legR');
- if(!legL || !legR) return;
- // draw both legs from the SAME hip point to the SAME moving foot point —
- // they are geometrically identical at every instant, so there is only
- // ever one visible leg-shape. Cannot read as "one leg at a time" because
- // there is structurally only one line being drawn (twice, on top of itself).
- const restX = 50, restY = 118;
- const upX = 50, upY = 42;
- const t0 = performance.now();
- function tick(now){
- const t = ((now - t0) % periodMs) / periodMs;
- let phase;
- if(t < 0.3) phase = t / 0.3;
- else if(t < 0.7) phase = 1;
- else phase = Math.max(0, (1 - t) / 0.3);
- const x = restX + (upX - restX) * phase;
- const y = restY + (upY - restY) * phase;
- [legL, legR].forEach(el=>{
- el.setAttribute('x1', '50');
- el.setAttribute('y1', '82');
- el.setAttribute('x2', x);
- el.setAttribute('y2', y);
- });
- legSyncRAF = requestAnimationFrame(tick);
- }
- legSyncRAF = requestAnimationFrame(tick);
+// ---------- 휴식 호흡 ----------
+//
+// 쉬는 시간에 이 원이 뜬다. 커지면 들이쉬고 작아지면 내쉰다.
+// 예전에는 이 자리에 막대인간이 서 있었다. 운동 동작을 흉내 내는 그림이라
+// '쉬라' 고 말하는 화면에서는 할 말이 없었다 — 쉬는 동안 실제로 해야 하는
+// 한 가지가 호흡이므로 그것을 보여 준다.
+let breathTimer = null;
+
+function stopBreath(){
+ if(breathTimer){ clearTimeout(breathTimer); breathTimer = null; }
+ if(breathWrap) breathWrap.style.display = 'none';
 }
-function stopLegSync(){
- if(legSyncRAF){ cancelAnimationFrame(legSyncRAF); legSyncRAF = null; }
- const legL = figureWrap.querySelector('.legL');
- const legR = figureWrap.querySelector('.legR');
- if(legL){ legL.style.transform = ''; legL.setAttribute('x2','35'); legL.setAttribute('y2','118'); }
- if(legR){ legR.style.transform = ''; legR.setAttribute('x2','65'); legR.setAttribute('y2','118'); }
+
+function startBreath(totalSec){
+ if(!breathWrap) return;
+ // 호흡이 쉬는 시간 안에서 딱 떨어지도록 주기를 나눈다. 4초씩 고정으로 넣으면
+ // 11초 휴식이 들숨 도중에 끊기는데, 끝을 못 맺는 호흡은 안 하느니만 못하다.
+ const cycles = Math.max(1, Math.round(totalSec / 5));
+ const half = totalSec / cycles / 2;
+ breathWrap.style.setProperty('--breath-half', half + 's');
+ breathWrap.style.display = '';
+ // 라벨은 반주기마다 바꾼다. 1초 타이머에 얹으면 최대 1초까지 어긋나는데,
+ // 원이 이미 움직이고 있어서 그 어긋남이 그대로 눈에 보인다.
+ let inhale = true;
+ const flip = ()=>{
+ if(breathLabel) breathLabel.textContent = t(inhale ? STATIC_UI.breatheIn : STATIC_UI.breatheOut);
+ inhale = !inhale;
+ breathTimer = setTimeout(flip, half * 1000);
+ };
+ flip();
 }
 
 // ---------- 운동 중 사진 ----------
@@ -861,22 +855,20 @@ function stopPhotoDemo(){
  if(photoDemoTimer){ clearTimeout(photoDemoTimer); photoDemoTimer = null; }
  photoDemoKey = null;
  if(photoDemoWrap){ photoDemoWrap.style.display = 'none'; photoDemoWrap.classList.remove('flowing'); }
- if(figureWrap) figureWrap.style.display = '';
 }
 
 function startPhotoDemo(key){
  const seq = PHOTO_SEQUENCES[key];
  const cycle = photoCycle(key);
- // 사진이 없는 동작은 막대인간으로 돌아간다. 지금 12종은 전부 있으므로
- // 사실상 안 쓰는 길이지만, 운동을 늘렸는데 사진을 안 넣은 날 화면이
- // 비는 것보다는 막대인간이라도 나오는 편이 낫다.
+ // 사진이 없으면 이 자리는 빈다. 예전에는 막대인간이 대신 섰지만
+ // 그것을 걷어냈다 — 12종 전부 사진이 있고, npm run media 가 빠진 것을
+ // 잡는다. 운동을 늘리면서 사진을 안 넣으면 그 검사에서 먼저 걸린다.
  if(!seq || cycle.length === 0 || !photoDemoWrap || !photoDemoA || !photoDemoB){ stopPhotoDemo(); return; }
 
  if(photoDemoTimer){ clearTimeout(photoDemoTimer); photoDemoTimer = null; }
  photoDemoKey = key;
  warmPhotos(seq.frames);
 
- if(figureWrap) figureWrap.style.display = 'none';
  photoDemoWrap.style.display = 'block';
  photoDemoWrap.classList.add('flowing');
 
@@ -3029,8 +3021,7 @@ function runMission(){
  else { setCoachLine(pickVariant(t(selectedCoach.start))); }
  if(m.isBonus && !m.isBoss){ Sound.fanfare(); }
 
- figureWrap.className = 'figure-wrap anim-' + m.ex.key.toLowerCase();
- if(m.ex.key === 'LEGRAISE'){ startLegSync(1600); } else { stopLegSync(); }
+ stopBreath();
  startPhotoDemo(m.ex.key);
  exName.textContent = t(m.ex.label) + (m.isBoss ? t({ko:' (보스)', en:' (BOSS)', zh:'（BOSS）'}) : '');
  // 버티는 동작(플랭크)은 링, 나머지는 큰 숫자. 둘 다 남은 초를 말한다 —
@@ -3133,7 +3124,6 @@ function skipMission(){
  if(!missionActive) return;
  missionActive = false;
  clearInterval(missionInterval);
- stopLegSync();
  missionIndex++;
  if(missionIndex >= missions.length){
  finishGame();
@@ -3171,7 +3161,7 @@ function completeMission(m){
  // break is next, since a "next: rest" preview right before the actual
  // rest screen doesn't add anything
  stopPhotoDemo();
- figureWrap.className = 'figure-wrap';
+ stopBreath();
  exTarget.style.display = 'none';
  const upcoming = missions[missionIndex + 1];
  const upcomingIsRest = (missionIndex + 1) === midRestIndex && !midRestGiven;
@@ -3201,29 +3191,29 @@ function completeMission(m){
 function runRest(){
  bossBanner.classList.remove('on');
  gameScreen.classList.remove('boss');
- figureWrap.className = 'figure-wrap';
  stopPhotoDemo();
  exName.textContent = t({ko:'휴식', en:'Rest', zh:'休息'});
- exTarget.style.display = '';
- exTarget.textContent = t({ko:'숨 고르기', en:'Catch your breath', zh:'调整呼吸'});
- exCue.textContent = '';
+ // 남은 초는 호흡 원 안에 하나만 둔다. 예전에는 큰 숫자와 링이 자리를
+ // 나눠 갖고 있었는데, 링은 앞 동작이 버티기였을 때만 보이는 상태였다 —
+ // 반복 동작 뒤에 쉬면 남은 초가 아예 안 보였다.
+ exTarget.style.display = 'none';
+ if(holdRing) holdRing.style.display = 'none';
+ exCue.textContent = t({ko:'숨 고르기', en:'Catch your breath', zh:'调整呼吸'});
  setCoachLine(t({ko:'잠깐 숨 고르고 가자', en:'Take a quick breather', zh:'先喘口气'}));
 
- const r = 65, circumference = 2*Math.PI*r;
- holdRingProg.style.strokeDasharray = circumference;
- holdRingProg.style.strokeDashoffset = 0;
- holdNum.textContent = REST_DURATION;
+ if(breathNum) breathNum.textContent = String(REST_DURATION);
+ startBreath(REST_DURATION);
 
  let elapsed = 0;
  clearInterval(missionInterval);
  missionInterval = setInterval(()=>{
  elapsed++;
  const remain = REST_DURATION - elapsed;
- holdNum.textContent = Math.max(0, remain);
- holdRingProg.style.strokeDashoffset = circumference * Math.min(1, elapsed / REST_DURATION);
+ if(breathNum) breathNum.textContent = String(Math.max(0, remain));
  Sound.holdTick();
  if(elapsed >= REST_DURATION){
  clearInterval(missionInterval);
+ stopBreath();
  Sound.markIntensified(); // 휴식 후엔 좀 더 신나는 템포로 — 실제 전환은 곧 이어질 runMission()의 세트별 재시작에서 처리
  runMission();
  }
@@ -3257,8 +3247,8 @@ function finishGame(){
  bossBanner.classList.remove('on');
  if(app) app.classList.remove('workout-mode');
  Sound.stopBGM();
- stopLegSync();
  stopPhotoDemo();
+ stopBreath();
  Sound.fanfare();
 
  finalSub.textContent = t({ko:missions.length + '개 미션 완주', en:missions.length + ' missions completed', zh:'完成' + missions.length + '个动作'}) + ' · +20 XP';

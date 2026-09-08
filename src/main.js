@@ -9,7 +9,6 @@ import './styles/components.css';
 import './styles/screens.css';
 import './styles/game.css';
 import './styles/result.css';
-import './styles/figures.css';
 // 관문·계획·기록지의 스타일. 맨 뒤에 온다 — 위 일곱 장의 규칙을 덮어쓰는
 // 곳이 있어서(카드 안쪽 여백 등) 순서가 바뀌면 그 자리부터 틀어진다.
 import './styles/plan.css';
