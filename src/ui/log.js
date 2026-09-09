@@ -357,10 +357,6 @@ export function initLog({ translate, STATIC_UI, onShowScreen } = {}) {
       renderLogScreen();
       goScreen('log-screen');
     });
-    el('open-log-btn-more')?.addEventListener('click', () => {
-      renderLogScreen();
-      goScreen('log-screen');
-    });
   } catch (e) {
     console.error('today card setup failed:', e);
   }

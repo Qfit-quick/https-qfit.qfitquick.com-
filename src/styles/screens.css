@@ -504,7 +504,12 @@
 .video-lightbox-desc { max-width: 420px; font-size: var(--t-sm); color: rgb(255 255 255 / 0.82); }
 .video-lightbox-tip,
 .video-lightbox-risk { max-width: 420px; font-size: var(--t-sm); color: rgb(255 214 10 / 0.92); }
-.video-lightbox-close { color: #fff; }
+/* 밝은 영상 프레임 위로는 흰 선만으로 잘 안 보일 때가 있다. 상자를 두르지
+   않고 그림자만 살짝 둬서, 어떤 배경 위에서도 자연스럽게 드러나게 한다. */
+.video-lightbox-close {
+  color: #fff;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.65)) drop-shadow(0 0 6px rgb(0 0 0 / 0.35));
+}
 
 /* ── 동작 국면 ─────────────────────────────────────────
  *

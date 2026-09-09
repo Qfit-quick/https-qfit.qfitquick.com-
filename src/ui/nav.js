@@ -17,11 +17,13 @@ import { closeSheet, isSheetOpen } from './sheet.js';
 // 회복은 탭에서 뺐다. 다칠 때만 여는 화면이고 홈 타일과 더보기 줄로 이미
 // 두 길이 있는데, 매일 쓰는 계획·체크를 그 자리 때문에 못 올리는 것이
 // 순서가 뒤바뀐 것이었다.
+//
+// 기록도 탭에서 뺐다. 더보기 줄에 이미 있는 것과 같은 화면이라, 하단에
+// 고정으로 자리를 차지할 이유가 없었다 — 매일 쓰는 홈·계획·체크만 남긴다.
 const TABS = [
   { id: 'start-screen', label: '홈', icon: 'home', via: null },
   { id: 'plan-screen', label: '계획', icon: 'plan', via: null },
   { id: 'log-screen', label: '체크', icon: 'checklist', via: '#today-card-open' },
-  { id: 'records-screen', label: '기록', icon: 'chart', via: '#open-records-btn' },
   { id: 'more-screen', label: '더보기', icon: 'more', via: '#open-more-btn' },
 ];
 
@@ -37,10 +39,11 @@ const BELONGS_TO = {
   'settings-screen': 'more-screen',
   'routines-screen': 'more-screen',
   'account-screen': 'more-screen',
-  // 회복과 동작 소개는 탭에서 내려왔다. 탭을 하나도 안 켜 두면 지금 어디에
+  // 회복·동작 소개·기록은 탭에서 내려왔다. 탭을 하나도 안 켜 두면 지금 어디에
   // 있는지 알려 주는 것이 없어지므로, 들어온 문인 '더보기' 를 켜 둔다.
   'recovery-screen': 'more-screen',
   'video-gallery-screen': 'more-screen',
+  'records-screen': 'more-screen',
   // 신체정보는 계획을 만들기 위한 입력이다. 더보기에서도 들어올 수 있지만
   // 저장하면 계획으로 나가므로, 켜 둘 탭은 계획이다.
   'body-screen': 'plan-screen',

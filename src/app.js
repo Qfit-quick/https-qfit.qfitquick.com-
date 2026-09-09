@@ -365,6 +365,12 @@ const app = document.getElementById('app');
 // 주소·키와 '언제 받을지'는 cloud/supabase.js 가 들고 있다.
 let currentUserId = null;
 
+// 설정은 홈 톱니와 더보기 줄, 두 곳에서 들어올 수 있다. 뒤로가기는 들어온
+// 문으로 그대로 나가야 한다 — 더보기에서 들어왔는데 홈으로 나가면
+// 뒤로가기가 두 칸을 건너뛴 것처럼 느껴진다. 두 진입점이 서로 멀리 떨어진
+// try 블록에 있어서, 블록 스코프 밖인 여기 모듈 스코프에 둔다.
+let settingsEnteredFromMore = false;
+
 const accountScreen = document.getElementById('account-screen');
 const openAccountBtn = document.getElementById('open-account-btn');
 // 클라우드를 잠갔으면 들어가는 문도 없앤다. 눌러도 아무 일이 없는 버튼은
@@ -788,8 +794,8 @@ try{
  if(sfxToggle) sfxToggle.checked = sfxOn;
  if(vibrationToggle) vibrationToggle.checked = vibrationEnabled;
 
- if(openSettingsBtn) openSettingsBtn.addEventListener('click', ()=> showScreen(settingsScreen));
- if(settingsBackBtn) settingsBackBtn.addEventListener('click', ()=> showScreen(startScreen));
+ if(openSettingsBtn) openSettingsBtn.addEventListener('click', ()=>{ settingsEnteredFromMore = false; showScreen(settingsScreen); });
+ if(settingsBackBtn) settingsBackBtn.addEventListener('click', ()=> showScreen(settingsEnteredFromMore ? moreScreen : startScreen));
  if(bgmToggle) bgmToggle.addEventListener('change', ()=>{
  Sound.setBgmMuted(!bgmToggle.checked);
  try{ localStorage.setItem('wodrush_bgm_v1', bgmToggle.checked ? 'on' : 'off'); }catch(e){}
@@ -1689,7 +1695,7 @@ try{
  renderRecordsScreen();
  showScreen(recordsScreen);
  });
- if(recordsBackBtn) recordsBackBtn.addEventListener('click', ()=> showScreen(startScreen));
+ if(recordsBackBtn) recordsBackBtn.addEventListener('click', ()=> showScreen(moreScreen));
 }catch(e){ console.error('records button setup failed:', e); }
 
 try{
@@ -2678,7 +2684,7 @@ try{
 // 더보기에서도 설정으로 갈 수 있다 — FR-11 로 가이드가 여기로 모였다
 try{
  const moreSettingsBtn = document.getElementById('open-settings-btn-more');
- if(moreSettingsBtn) moreSettingsBtn.addEventListener('click', ()=> showScreen(settingsScreen));
+ if(moreSettingsBtn) moreSettingsBtn.addEventListener('click', ()=>{ settingsEnteredFromMore = true; showScreen(settingsScreen); });
 }catch(e){ console.error('more settings button failed:', e); }
 
 // 기록이 없을 때의 '1분 시작'. 화면을 옮기고 시트를 여는 것까지 홈과 같아야
