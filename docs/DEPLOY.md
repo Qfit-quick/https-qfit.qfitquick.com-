@@ -13,7 +13,7 @@
 | --- | --- | --- |
 | `qfit.qfitquick.com` | **다른 클라우드플레어 계정**의 무언가 | 지금은 갱신 경로가 없다 |
 | `qfit-quickfitness.monster-rpg.workers.dev` | 워커 `qfit-quickfitness` | `wrangler deploy` |
-| `dupz-web.github.io/https-qfit.qfitquick.com-` | GitHub Pages | main 에 push |
+| `qfit.github.io/https-qfit.qfitquick.com-` | GitHub Pages | main 에 push |
 
 세 곳이 **서로 다른 것을 서빙할 수 있다.** 실제로 그랬다. 여기가 이 문서의
 핵심이다.
@@ -121,7 +121,7 @@ workers.dev 주소의 가운데(계정 서브도메인)는 대시보드에서 �
 - `qfitquick.com` 존을 가진 계정에서 워커를 배포하고, Workers & Pages →
   qfit-quickfitness → Settings → Domains & Routes 에서 `qfit.qfitquick.com`
   추가. CI 시크릿도 그 계정 것으로 바꾼다.
-- 또는 그 계정의 DNS 에서 `qfit` 을 `dupz-web.github.io` 로 CNAME.
+- 또는 그 계정의 DNS 에서 `qfit` 을 `qfit.github.io` 로 CNAME.
   Pages 는 이미 최신을 서빙 중이므로 이쪽이 더 빠르다.
 
 ## workers.dev 주소의 `monster-rpg` 는 무엇인가

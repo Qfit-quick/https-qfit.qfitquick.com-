@@ -12,7 +12,7 @@
 | --- | --- |
 | https://qfit.qfitquick.com | 사람이 보는 주소. **지금은 옛 판을 서빙 중이다** — `docs/DEPLOY.md` 참고 |
 | https://qfit-quickfitness.monster-rpg.workers.dev | 클라우드플레어 워커. 배포하면 여기가 먼저 바뀐다 |
-| https://dupz-web.github.io/https-qfit.qfitquick.com- | GitHub Pages. push 마다 자동 갱신 |
+| https://qfit.github.io/https-qfit.qfitquick.com- | GitHub Pages. push 마다 자동 갱신 |
 
 ## 띄우기
 
