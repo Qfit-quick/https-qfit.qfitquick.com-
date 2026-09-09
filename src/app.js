@@ -234,16 +234,10 @@ function updateSetNote(){
  zh:'· 共' + selectedTotalSets + '组（第' + restAt + '组后休息）'});
 }
 
-// 시작 버튼 밑의 한 줄. 설계가 여기 둔 이유는 '누르면 무슨 일이 나는지' 를
-// 누르기 전에 알려 주기 위해서다 — 세트 수와 시간은 설정 화면에 들어가야만
-// 보이던 값이었다.
+// 시작 버튼 밑 한 줄은 홈 화면이 복잡하다는 피드백으로 없앴다(2026-09-09).
+// 세트 수·시간은 이제 설정 화면 요약 카드에서만 보인다 — 그래도 그 카드는
+// 같은 두 값(세트·초)을 쓰므로 여기서 계속 갱신해 준다.
 function updateStartNote(){
- const el = document.getElementById('start-note');
- if(!el) return;
- const secs = Math.round(getDurationPreset().base * selectedTotalSets);
- el.textContent = t(STATIC_UI.startNote).replace('%s', selectedTotalSets).replace('%s', secs);
- // 홈의 한 줄과 설정의 요약 카드는 같은 두 값(세트·초)을 말한다.
- // 값이 바뀌는 자리가 여럿이라, 한쪽만 갱신되는 일이 없게 여기서 같이 부른다.
  updateSetupSummary();
 }
 

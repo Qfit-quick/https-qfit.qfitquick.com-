@@ -352,7 +352,7 @@ export const STATIC_UI = {
  logTitle: {ko:'오늘 기록지', en:'Log for today', zh:'今日记录'},
  logSub: {ko:'운동 · 식단 체크 · 캘린더', en:'Workout & diet checks · calendar', zh:'训练与饮食打卡 · 日历'},
  logToday: {ko:'오늘', en:'Today', zh:'今天'},
- logOpen: {ko:'기록지 열기', en:'Open the log', zh:'打开记录表'},
+ logOpen: {ko:'체크하러 가기', en:'Open the log', zh:'打开记录表'},
  logWorkout: {ko:'운동', en:'Workout', zh:'训练'},
  logDiet: {ko:'식단', en:'Diet', zh:'饮食'},
  logStatusBoth: {ko:'운동과 식단, 둘 다 했습니다', en:'Both done — workout and diet', zh:'训练和饮食都完成了'},

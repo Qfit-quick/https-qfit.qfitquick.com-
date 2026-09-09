@@ -190,12 +190,12 @@ export const INJURY_GUIDES = [
     {ko:'발목 바깥쪽 또는 안쪽이 붓고 누르면 아픔', en:'Swelling and tenderness on the outside or inside of the ankle', zh:'脚踝外侧或内侧肿胀，按压疼痛'},
     {ko:'체중을 실을 때 시큰거리거나 절뚝이게 됨', en:'Aching when you put weight on it, or limping', zh:'承重时酸痛或跛行'},
    ] },
-   { h:{ko:'즉시 대처', en:'Right away', zh:'立即处理'}, items:[
-    {ko:'<b>보호</b> 추가 손상을 막기 위해 해당 부위를 보호합니다 (필요시 테이핑·보호대)', en:'<b>Protect</b> the area from further injury (tape or a brace if needed)', zh:'<b>保护</b> 保护受伤部位避免二次损伤（必要时用贴布或护具）'},
-    {ko:'<b>휴식</b> 즉시 운동을 멈추고 체중을 싣지 않습니다', en:'<b>Rest</b> Stop training and keep weight off it', zh:'<b>休息</b> 立即停止训练，不要负重'},
-    {ko:'<b>냉찜질</b> 15~20분씩, 2~3시간 간격으로 반복합니다 (첫 48시간)', en:'<b>Ice</b> 15–20 minutes every 2–3 hours (first 48 hours)', zh:'<b>冰敷</b> 冷敷15~20分钟，每2~3小时一次（前48小时）'},
-    {ko:'<b>압박</b> 붕대로 적당히 감싸줍니다 (너무 꽉 조이지 않게)', en:'<b>Compress</b> Wrap with moderate pressure (not too tight)', zh:'<b>加压</b> 用绷带适度加压（不要勒太紧）'},
-    {ko:'<b>올리기</b> 발목을 심장보다 높은 위치에 올려둡니다', en:'<b>Elevate</b> Keep the ankle above heart level', zh:'<b>抬高</b> 把脚踝抬到高于心脏的位置'},
+   { h:{ko:'즉시 대처 (PRICE)', en:'Right away (PRICE)', zh:'立即处理（PRICE）'}, items:[
+    {ko:'<b>보호(P)</b> 추가 손상을 막기 위해 해당 부위를 보호합니다 (필요시 테이핑·보호대)', en:'<b>Protect (P)</b> the area from further injury (tape or a brace if needed)', zh:'<b>保护(P)</b> 保护受伤部位避免二次损伤（必要时用贴布或护具）'},
+    {ko:'<b>휴식(R)</b> 즉시 운동을 멈추고 체중을 싣지 않습니다', en:'<b>Rest (R)</b> Stop training and keep weight off it', zh:'<b>休息(R)</b> 立即停止训练，不要负重'},
+    {ko:'<b>냉찜질(I)</b> 15~20분씩, 2~3시간 간격으로 반복합니다 (첫 48시간)', en:'<b>Ice (I)</b> 15–20 minutes every 2–3 hours (first 48 hours)', zh:'<b>冰敷(I)</b> 冷敷15~20分钟，每2~3小时一次（前48小时）'},
+    {ko:'<b>압박(C)</b> 붕대로 적당히 감싸줍니다 (너무 꽉 조이지 않게)', en:'<b>Compress (C)</b> Wrap with moderate pressure (not too tight)', zh:'<b>加压(C)</b> 用绷带适度加压（不要勒太紧）'},
+    {ko:'<b>올리기(E)</b> 발목을 심장보다 높은 위치에 올려둡니다', en:'<b>Elevate (E)</b> Keep the ankle above heart level', zh:'<b>抬高(E)</b> 把脚踝抬到高于心脏的位置'},
    ] },
    { h:{ko:'회복 관리', en:'Recovery', zh:'恢复与调整'}, items:[
     {ko:'부기가 빠지면 발목을 알파벳 쓰듯 천천히 돌리는 것부터 시작해 서서히 회복합니다', en:'Once swelling drops, start rehab by slowly tracing letters with the ankle', zh:'消肿后，从用脚踝慢慢“写字母”开始，慢慢恢复'},

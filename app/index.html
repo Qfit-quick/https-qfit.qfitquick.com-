@@ -133,7 +133,6 @@
 
  <div class="start-block">
  <button class="primary" id="one-min-start-btn" data-i18n="startCta">1분 시작</button>
- <p class="dim start-note" id="start-note"></p>
  </div>
 
  <!-- 시작 방식 시트(설계 02). 네 갈래를 같은 모양의 행 하나로 세운다 —
@@ -186,25 +185,32 @@
  </div>
  </button>
 
- <!-- 줄마다 아래에 한 줄을 붙인다(설계 16). 이름만 늘어놓으면 다섯 줄이
-      다 같아 보여서 무엇을 누를지 매번 하나씩 눌러 확인하게 된다. -->
+ <!-- 줄마다 아이콘을 붙인다. 흰 바탕에 검은 글자만 다섯 줄 이어지면
+      한 줄 한 줄을 구별할 실마리가 없다 — 시트의 .row44 가 이미 쓰는
+      아이콘 상자(.row-ic)를 그대로 가져와 자리마다 다른 표식을 준다. -->
  <div class="menu-box">
  <button class="menu-btn" id="open-body-btn">
+ <span class="row-ic" data-icon="body"></span>
  <span class="row-main"><span class="row-t" data-i18n="bodyTitle">신체정보</span><span class="row-d dim" id="body-summary-sub"></span></span>
  </button>
  <button class="menu-btn" id="open-records-btn">
+ <span class="row-ic" data-icon="chart"></span>
  <span class="row-main"><span class="row-t" data-i18n="recordsBtn">내 기록</span><span class="row-d dim" data-i18n="recordsSub">연속 · 월간 · 업적</span></span>
  </button>
  <button class="menu-btn" id="open-routines-btn">
+ <span class="row-ic" data-icon="repeat"></span>
  <span class="row-main"><span class="row-t" data-i18n="routinesBtn">내 루틴</span><span class="row-d dim" id="routines-count-sub"></span></span>
  </button>
  <button class="menu-btn video-gallery-trigger-btn" id="open-video-gallery-btn">
+ <span class="row-ic" data-icon="moves"></span>
  <span class="row-main"><span class="row-t" data-i18n="movesBtn">운동동작 소개</span><span class="row-d dim" data-i18n="movesSub">12개 · 영상</span></span>
  </button>
  <button class="menu-btn recovery-trigger-btn" id="open-recovery-btn">
+ <span class="row-ic" data-icon="heart"></span>
  <span class="row-main"><span class="row-t" data-i18n="recoveryBtn">회복 · SOS</span><span class="row-d dim" data-i18n="recoverySub">부위별 대처법 · 회복 습관</span></span>
  </button>
  <button class="menu-btn" id="open-settings-btn-more">
+ <span class="row-ic" data-icon="settings"></span>
  <span class="row-main"><span class="row-t" data-i18n="settingsBtn">설정</span><span class="row-d dim" data-i18n="settingsSub">소리 · 진동 · 알림 · 언어</span></span>
  </button>
  </div>
