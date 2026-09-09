@@ -55,7 +55,7 @@ export const INJURY_GUIDES = [
     {ko:'목을 억지로 꺾거나 스트레칭으로 늘리려 하지 않기', en:'Don\'t crank or force-stretch the neck', zh:'不要硬掰或强行拉伸颈部'},
    ] },
    { h:{ko:'회복 관리', en:'Recovery', zh:'恢复与调整'}, items:[
-    {ko:'통증이 가라앉으면 아주 천천히 좌우·상하로 작은 원을 그리듯 가동범위 회복', en:'Once pain eases, restore range slowly with small circles side to side and up and down', zh:'疼痛缓解后，慢慢做小幅度左右、上下画圈恢复活动度'},
+    {ko:'통증이 가라앉으면 아주 천천히 좌우·상하로 작은 원을 그리듯 목을 움직여봅니다', en:'Once pain eases, slowly move your neck again with small circles side to side and up and down', zh:'疼痛缓解后，慢慢左右、上下画小圈活动脖子'},
     {ko:'크런치·레그레이즈할 때는 손으로 머리를 당기지 말고 손은 관자놀이 옆에 가볍게만 대기', en:'In crunches and leg raises, rest your hands lightly by your temples instead of pulling', zh:'做卷腹、举腿时手轻放在太阳穴旁，不要拉头'},
     {ko:'2~3일은 목에 부담 가는 복근 운동(크런치, 레그레이즈) 강도를 낮추거나 쉬기', en:'Ease off or skip neck-loading ab work (crunches, leg raises) for 2–3 days', zh:'2~3天内减轻或暂停加重颈部负担的腹部动作（卷腹、举腿）'},
    ] },
@@ -79,7 +79,7 @@ export const INJURY_GUIDES = [
     {ko:'통증 있는 방향으로 팔 들어올리는 동작(특히 푸쉬업류) 며칠간 피하기', en:'Avoid raising the arm into the painful direction (especially push-up variants) for a few days', zh:'几天内避免朝疼痛方向抬臂的动作（尤其俯卧撑类）'},
    ] },
    { h:{ko:'회복 관리', en:'Recovery', zh:'恢复与调整'}, items:[
-    {ko:'통증 없는 범위 내에서 어깨 으쓱·돌리기 등 가벼운 가동 운동으로 뻣뻣함 방지', en:'Keep it from stiffening with light shrugs and circles, staying pain-free', zh:'在不痛的范围内做耸肩、绕肩等轻度活动，防止僵硬'},
+    {ko:'통증 없는 범위 내에서 어깨를 으쓱하거나 돌리는 등 가볍게 움직여 뻣뻣함을 막습니다', en:'Keep it from stiffening with light shrugs and circles, staying pain-free', zh:'在不痛的范围内做耸肩、绕肩等轻度活动，防止僵硬'},
     {ko:'복귀 시 무릎 대고 하는 푸쉬업처럼 강도를 낮춘 버전부터 시작', en:'Come back through easier versions first, like knee push-ups', zh:'复出时先从跪姿俯卧撑等低强度版本开始'},
     {ko:'팔꿈치를 몸통에서 45도 정도로 유지하며 어깨가 으쓱 올라가지 않게 신경쓰기', en:'Keep elbows about 45° from the body and don\'t let the shoulders shrug', zh:'肘部与身体约呈45度，注意不要耸肩'},
    ] },
@@ -190,15 +190,15 @@ export const INJURY_GUIDES = [
     {ko:'발목 바깥쪽 또는 안쪽이 붓고 누르면 아픔', en:'Swelling and tenderness on the outside or inside of the ankle', zh:'脚踝外侧或内侧肿胀，按压疼痛'},
     {ko:'체중을 실을 때 시큰거리거나 절뚝이게 됨', en:'Aching when you put weight on it, or limping', zh:'承重时酸痛或跛行'},
    ] },
-   { h:{ko:'즉시 대처 (PRICE)', en:'Right away (PRICE)', zh:'立即处理（PRICE）'}, items:[
-    {ko:'<b>P (Protection)</b> 추가 손상 막기 위해 해당 부위 보호 (필요시 테이핑·보호대)', en:'<b>P (Protection)</b> Protect the area from further injury (tape or a brace if needed)', zh:'<b>P（保护）</b> 保护受伤部位避免二次损伤（必要时用贴布或护具）'},
-    {ko:'<b>R (Rest)</b> 즉시 운동 중단, 체중 싣지 않기', en:'<b>R (Rest)</b> Stop training and keep weight off it', zh:'<b>R（休息）</b> 立即停止训练，不要负重'},
-    {ko:'<b>I (Ice)</b> 15~20분 냉찜질, 2~3시간 간격으로 반복 (첫 48시간)', en:'<b>I (Ice)</b> Ice 15–20 minutes every 2–3 hours (first 48 hours)', zh:'<b>I（冰敷）</b> 冷敷15~20分钟，每2~3小时一次（前48小时）'},
-    {ko:'<b>C (Compression)</b> 붕대로 적당히 압박 (너무 꽉 조이지 않게)', en:'<b>C (Compression)</b> Wrap with moderate pressure (not too tight)', zh:'<b>C（加压）</b> 用绷带适度加压（不要勒太紧）'},
-    {ko:'<b>E (Elevation)</b> 발목을 심장보다 높게 올려두기', en:'<b>E (Elevation)</b> Keep the ankle above heart level', zh:'<b>E（抬高）</b> 把脚踝抬到高于心脏的位置'},
+   { h:{ko:'즉시 대처', en:'Right away', zh:'立即处理'}, items:[
+    {ko:'<b>보호</b> 추가 손상을 막기 위해 해당 부위를 보호합니다 (필요시 테이핑·보호대)', en:'<b>Protect</b> the area from further injury (tape or a brace if needed)', zh:'<b>保护</b> 保护受伤部位避免二次损伤（必要时用贴布或护具）'},
+    {ko:'<b>휴식</b> 즉시 운동을 멈추고 체중을 싣지 않습니다', en:'<b>Rest</b> Stop training and keep weight off it', zh:'<b>休息</b> 立即停止训练，不要负重'},
+    {ko:'<b>냉찜질</b> 15~20분씩, 2~3시간 간격으로 반복합니다 (첫 48시간)', en:'<b>Ice</b> 15–20 minutes every 2–3 hours (first 48 hours)', zh:'<b>冰敷</b> 冷敷15~20分钟，每2~3小时一次（前48小时）'},
+    {ko:'<b>압박</b> 붕대로 적당히 감싸줍니다 (너무 꽉 조이지 않게)', en:'<b>Compress</b> Wrap with moderate pressure (not too tight)', zh:'<b>加压</b> 用绷带适度加压（不要勒太紧）'},
+    {ko:'<b>올리기</b> 발목을 심장보다 높은 위치에 올려둡니다', en:'<b>Elevate</b> Keep the ankle above heart level', zh:'<b>抬高</b> 把脚踝抬到高于心脏的位置'},
    ] },
    { h:{ko:'회복 관리', en:'Recovery', zh:'恢复与调整'}, items:[
-    {ko:'부기가 빠지면 발목을 알파벳 쓰듯 천천히 돌리는 가동 운동부터 재활', en:'Once swelling drops, start rehab by slowly tracing letters with the ankle', zh:'消肿后，从用脚踝慢慢“写字母”的活动度练习开始康复'},
+    {ko:'부기가 빠지면 발목을 알파벳 쓰듯 천천히 돌리는 것부터 시작해 서서히 회복합니다', en:'Once swelling drops, start rehab by slowly tracing letters with the ankle', zh:'消肿后，从用脚踝慢慢“写字母”开始，慢慢恢复'},
     {ko:'통증 없이 체중을 실을 수 있게 되면 제자리 걷기 → 스쿼트 순으로 복귀', en:'When you can bear weight painlessly, return via walking in place, then squats', zh:'能无痛承重后，按原地走路 → 深蹲的顺序恢复'},
     {ko:'점프스쿼트·버피 등 착지 동작은 가장 나중에, 쿠션 있는 신발과 안정된 바닥에서만 재개', en:'Bring landing moves like jump squats and burpees back last, in cushioned shoes on stable ground', zh:'跳跃深蹲、波比跳等落地动作最后恢复，且要穿有缓冲的鞋、在稳固地面上'},
    ] },
@@ -236,7 +236,7 @@ export const SPECIAL_GUIDES = [
   groups:[
    { h:{ko:'진행 방법', en:'How to go about it', zh:'进行方式'}, items:[
     {ko:'위의 부위별 부상 대처법에서 해당 부위를 먼저 확인해보세요', en:'Start by checking that body part in the injury guide above', zh:'先在上面的部位指南中查看相应部位'},
-    {ko:'통증이 전혀 없는 범위 내에서만, 아주 천천히 가동 범위 운동부터 시작하세요', en:'Begin with very slow range-of-motion work, staying completely pain-free', zh:'只在完全不痛的范围内，从非常缓慢的活动度练习开始'},
+    {ko:'통증이 전혀 없는 범위 내에서만, 아주 천천히 움직이는 것부터 시작하세요', en:'Begin by moving very slowly, staying completely pain-free', zh:'只在完全不痛的范围内，从非常缓慢的动作开始'},
    ] },
   ],
   warn:{ko:'이 내용은 일반적인 안내일 뿐, 의료 진단이나 물리치료를 대신할 수 없습니다. 부상 정도가 있다면 반드시 의사나 물리치료사와 상담 후 진행하세요.', en:'This is general guidance, not a diagnosis or physiotherapy. If you\'re injured, check with a doctor or physiotherapist first.', zh:'这些只是一般性建议，不能替代医疗诊断或物理治疗。如有伤情，请先咨询医生或理疗师。'},

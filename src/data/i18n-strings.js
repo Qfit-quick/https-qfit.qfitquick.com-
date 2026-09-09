@@ -155,7 +155,7 @@ export const STATIC_UI = {
  recoveryHabits: {ko:'회복 습관', en:'Recovery habits', zh:'恢复习惯'},
  recoveryWarnT: {ko:'통증이 48시간 넘게 남으면', en:'If pain lasts more than 48 hours', zh:'疼痛超过48小时'},
  recoveryWarnD: {ko:'앱의 스트레칭을 멈추고 전문가를 만나세요. 이 목록은 진단이 아닙니다.', en:'Stop the stretches here and see a professional. This list is not a diagnosis.', zh:'请停止这里的拉伸并咨询专业人士。此列表不是诊断。'},
- recoveryIntro: {ko:'운동은 절반, 회복은 나머지 절반입니다. 아래 습관들로 다음 WOD를 더 가볍게 시작해봅니다.', en:'Training is half of it; recovery is the other half. These habits make the next session easier.', zh:'训练只是一半，恢复是另一半。养成下面的习惯，下次会更轻松。'},
+ recoveryIntro: {ko:'운동은 절반, 회복은 나머지 절반입니다. 아래 습관들로 다음 운동을 더 가볍게 시작해봅니다.', en:'Training is half of it; recovery is the other half. These habits make the next session easier.', zh:'训练只是一半，恢复是另一半。养成下面的习惯，下次会更轻松。'},
  jumpToInjury: {ko:'부위별 부상 대처법 바로가기 ↓', en:'Jump to injury guide ↓', zh:'跳到部位处理指南 ↓'},
  recoveryNote: {ko:'※ 일반적인 운동 회복 상식을 정리한 내용이며, 통증이 며칠 이상 지속되거나 심하다면 전문가와 상담하는 걸 권장합니다.', en:'※ General recovery guidance. If pain lasts more than a few days or is severe, please see a professional.', zh:'※ 这些是一般性的恢复建议。疼痛持续数日或较严重时，请咨询专业人士。'},
  injuryTitle: {ko:'부위별 부상 대처법', en:'Injury guide by body part', zh:'各部位处理指南'},

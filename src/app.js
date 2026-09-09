@@ -1718,7 +1718,7 @@ try{
  document.querySelectorAll('.recovery-trigger-btn').forEach(btn=>{
  btn.addEventListener('click', ()=> showScreen(recoveryScreen));
  });
- if(recoveryBackBtn) recoveryBackBtn.addEventListener('click', ()=> showScreen(startScreen));
+ if(recoveryBackBtn) recoveryBackBtn.addEventListener('click', ()=> showScreen(moreScreen));
 
  const openMoreBtn = document.getElementById('open-more-btn');
  const moreBackBtn = document.getElementById('more-back-btn');
