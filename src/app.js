@@ -407,7 +407,6 @@ const openRecordsBtn = document.getElementById('open-records-btn');
 const langBtn = document.getElementById('lang-btn');
 const recordsBackBtn = document.getElementById('records-back-btn');
 const recoveryScreen = document.getElementById('recovery-screen');
-const openRecoveryBtn = document.getElementById('open-recovery-btn');
 const recoveryBackBtn = document.getElementById('recovery-back-btn');
 const videoGalleryScreen = document.getElementById('video-gallery-screen');
 const moreScreen = document.getElementById('more-screen');

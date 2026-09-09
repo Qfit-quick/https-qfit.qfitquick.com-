@@ -197,7 +197,9 @@
  <button class="menu-btn" id="open-log-btn-more">
  <span class="row-main"><span class="row-t" data-i18n="logTitle">오늘 기록지</span><span class="row-d dim" data-i18n="logSub">운동 · 식단 체크 · 캘린더</span></span>
  </button>
- <button class="menu-btn" id="open-records-btn">
+ <!-- 하단 탭바의 '기록' 탭이 이 버튼을 눌러 이동한다(src/ui/nav.js).
+      그래서 목록에서는 지우지 않고 숨긴다 — 지우면 탭바의 '기록'이 죽는다. -->
+ <button class="menu-btn" id="open-records-btn" hidden>
  <span class="row-main"><span class="row-t" data-i18n="recordsBtn">내 기록</span><span class="row-d dim" data-i18n="recordsSub">연속 · 월간 · 업적</span></span>
  </button>
  <button class="menu-btn" id="open-routines-btn">
@@ -205,9 +207,6 @@
  </button>
  <button class="menu-btn video-gallery-trigger-btn" id="open-video-gallery-btn">
  <span class="row-main"><span class="row-t" data-i18n="movesBtn">운동동작 소개</span><span class="row-d dim" data-i18n="movesSub">12개 · 영상</span></span>
- </button>
- <button class="menu-btn recovery-trigger-btn" id="open-recovery-btn">
- <span class="row-main"><span class="row-t" data-i18n="recoveryBtn">회복 · SOS</span><span class="row-d dim" data-i18n="recoverySub">부위별 대처법 · 회복 습관</span></span>
  </button>
  <button class="menu-btn" id="open-settings-btn-more">
  <span class="row-main"><span class="row-t" data-i18n="settingsBtn">설정</span><span class="row-d dim" data-i18n="settingsSub">소리 · 진동 · 알림 · 언어</span></span>
