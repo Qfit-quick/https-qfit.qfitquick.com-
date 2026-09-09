@@ -365,14 +365,6 @@ const app = document.getElementById('app');
 // 주소·키와 '언제 받을지'는 cloud/supabase.js 가 들고 있다.
 let currentUserId = null;
 
-// 홈의 두 바로가기는 더보기의 같은 버튼을 눌러 준다. 화면을 여는 논리가
-// 거기 한 벌로 있어서, 여기서 다시 부르면 두 벌이 되고 한쪽만 고쳐진다.
-[['home-recovery-btn', 'open-recovery-btn'], ['home-moves-btn', 'open-video-gallery-btn']]
- .forEach(([from, to])=>{
-  const a = document.getElementById(from), b = document.getElementById(to);
-  if(a && b) a.addEventListener('click', ()=> b.click());
- });
-
 const accountScreen = document.getElementById('account-screen');
 const openAccountBtn = document.getElementById('open-account-btn');
 // 클라우드를 잠갔으면 들어가는 문도 없앤다. 눌러도 아무 일이 없는 버튼은
