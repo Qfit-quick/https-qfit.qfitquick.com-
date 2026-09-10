@@ -667,7 +667,7 @@
  <input type="number" id="weight-input" class="inp" min="30" max="200" placeholder="65" inputmode="numeric">
  </label>
  </div>
- <p class="dim" data-i18n="weightHint">칼로리 추정 정확도를 높이는 데 쓰여요 (미입력 시 65kg 기준)</p>
+ <p class="dim" id="weight-hint" data-i18n="weightHint">칼로리 추정 정확도를 높이는 데 쓰여요 (미입력 시 65kg 기준)</p>
  </section>
 
  <div class="screen-foot">
@@ -686,12 +686,15 @@
  <button class="btn-home" id="setup-back-btn" data-i18n="backBtn" hidden>이전</button>
 
  <!-- 직접 입력 시트(설계 05). 세트 수와 동작 시간이 같은 판을 쓴다 —
-      두 벌로 만들면 한쪽만 고쳐진다. -->
+      두 벌로 만들면 한쪽만 고쳐진다.
+      숫자칸은 −/+ 뿐이었는데, 키보드로 바로 치고 싶다는 피드백(2026-09-10)으로
+      진짜 입력칸을 가운데 놓는다. −/+ 는 그대로 두어 한두 번 눌러 맞추는
+      길도 남긴다. -->
  <div class="stepper-panel" id="stepper-panel" style="display:none;">
  <p class="dim" id="stepper-range"></p>
  <div class="stepper">
  <button class="icb stepper-btn" id="stepper-down" type="button" aria-label="줄이기" data-icon="minus"></button>
- <div class="stepper-val" id="stepper-val">8</div>
+ <input class="stepper-val" id="stepper-val" type="number" inputmode="numeric" value="8">
  <button class="icb stepper-btn" id="stepper-up" type="button" aria-label="늘리기" data-icon="plus"></button>
  </div>
  <button class="primary" id="stepper-apply" data-i18n="applyBtn">적용</button>

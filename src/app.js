@@ -216,6 +216,10 @@ function applyStaticTranslations(){
  if(inappText) inappText.innerHTML = t(STATIC_UI.inappText);
  const inappHint = document.querySelector('.inapp-hint');
  if(inappHint) inappHint.innerHTML = t(STATIC_UI.inappHint);
+ // '칼로리' 를 강조해 달라는 피드백(2026-09-10) — 위 data-i18n 훑기는
+ // textContent 라 <b> 가 글자 그대로 찍힌다. 여기서 innerHTML 로 덮어쓴다.
+ const weightHintEl = document.getElementById('weight-hint');
+ if(weightHintEl) weightHintEl.innerHTML = t(STATIC_UI.weightHint);
 
 }
 
@@ -2227,17 +2231,16 @@ function pickModeAndGo(keys){
 try{
  const modeRandomBtn = document.getElementById('mode-random');
  const modeManualBtn = document.getElementById('mode-manual');
- // '고민 없이 4개 뽑기'(설계 02). 예전에는 열두 개를 통째로 넘겼는데,
- // 그러면 '랜덤' 이 아니라 '전부' 다 — 매번 같은 구성이 나온다.
- // pickSet() 의 4개 상한이 없어진 뒤로(2026-09-10)는 여기서 직접 자른다 —
- // 안 그러면 '랜덤'이 24개를 통째로 넘기는 예전과 같은 문제로 되돌아간다.
+ // 세트 수만큼 무작위로 고른다(2026-09-10) — 전체 24개 중에서, 세트가
+ // 6개면 6개를 뽑는 식. buildMissions() 가 이미 pool 을 세트 수만큼
+ // 무작위로 줄여 쓰므로, 여기서는 자르지 않고 전체를 그대로 넘긴다.
  if(modeRandomBtn) modeRandomBtn.addEventListener('click', ()=>{
  const pool = EXERCISES.filter(e=> !e.premium || myProfile.isPremium).map(e=>e.key);
  for(let i = pool.length - 1; i > 0; i--){
   const j = Math.floor(Math.random() * (i + 1));
   [pool[i], pool[j]] = [pool[j], pool[i]];
  }
- pickModeAndGo(pool.slice(0, 4));
+ pickModeAndGo(pool);
  });
  if(modeManualBtn) modeManualBtn.addEventListener('click', ()=>{
  Sound.unlock();
@@ -2355,9 +2358,9 @@ try{
  return !ex.pro;
  });
  if(keys.length < 2) keys = pool; // fallback if filtering left too few
- // pickSet() 의 4개 상한이 없어진 뒤로(2026-09-10)는 여기서 직접 자른다 —
- // 안 그러면 목표 풀 전체(최대 24개)가 그대로 넘어간다.
- selectedExKeys = pickSet(keys.slice(0, 4));
+ // 세트 수만큼 무작위로 고른다(2026-09-10, 랜덤과 같은 규칙) — 목표 풀
+ // 전체를 넘기면 buildMissions() 가 세트 수에 맞춰 무작위로 줄여 쓴다.
+ selectedExKeys = pickSet(keys);
 
  // 세기가 세트 수와 시간까지 정한다. 안 그러면 '세게' 를 골라도
  // 다음 화면의 요약 카드가 기본값 그대로라 고른 것이 무시된 것처럼 보인다.
@@ -2616,9 +2619,9 @@ try{
 }catch(e){ console.error('custom set count failed:', e); }
 
 // ---------- 직접 입력 시트 (설계 05) ----------
-// 숫자칸을 화면에 늘어놓는 대신 −/+ 두 버튼으로 만진다. 폰에서 숫자 키보드가
-// 올라오면 화면 절반이 가려지는데, 세트 수는 한두 번 눌러 맞추는 값이라
-// 키보드를 부를 일이 아니다. 범위 밖으로는 아예 못 가므로 오류 상태도 없다.
+// −/+ 두 버튼 옆에 진짜 입력칸을 둔다(2026-09-10 — 숫자칸이 없어서
+// 키보드로 못 친다는 피드백으로 되돌림). 가운데 칸이 실제 <input> 이라
+// 타이핑도 되고, −/+ 로 한두 번 눌러 맞추는 길도 그대로 남는다.
 try{
  const panel = document.getElementById('stepper-panel');
  const valEl = document.getElementById('stepper-val');
@@ -2634,7 +2637,9 @@ try{
 
  function paintStepper(){
  if(!bound || !valEl) return;
- valEl.textContent = bound.input.value;
+ // 지금 이 칸에 타이핑 중이면 값을 안 덮어쓴다 — 덮어쓰면 두 자리
+ // 숫자를 치는 도중에 커서가 튄다.
+ if(document.activeElement !== valEl) valEl.value = bound.input.value;
  if(rangeEl) rangeEl.textContent = t(STATIC_UI.betweenRange)
   .replace('%s', bound.range.min).replace('%s', bound.range.max) + ' ' + t(bound.unit);
  }
@@ -2649,12 +2654,24 @@ try{
  paintStepper();
  }
 
+ // 범위를 벗어난 채로 남겨 두지 않는다 — 시트를 나가는 순간(포커스 아웃,
+ // 적용) 한 번만 정리한다. 타이핑 중에 매 글자마다 고치면 애초에 두 자리
+ // 숫자를 못 친다(그게 이 시트를 다시 만든 이유다).
+ function finalizeStepper(){
+ if(!bound) return;
+ const v = clamp(valEl.value, bound.range, bound.range.min);
+ bound.input.value = v;
+ bound.input.dispatchEvent(new Event('input', { bubbles: true }));
+ paintStepper();
+ }
+
  function openStepper(kind, from){
  const f = FIELDS[kind];
  const input = document.getElementById(f.input);
  const toggle = document.getElementById(f.toggle);
  if(!panel || !input || !toggle) return;
  bound = { input, toggle, range: f.range, unit: f.unit };
+ if(valEl){ valEl.min = f.range.min; valEl.max = f.range.max; }
  // 칩을 누르는 것이 곧 '직접 입력을 켠다' 이다. 기존 change 핸들러가
  // 프리셋 칩의 켜짐을 끄고 선택 상태를 custom 으로 옮긴다.
  if(!toggle.checked){ toggle.checked = true; toggle.dispatchEvent(new Event('change', { bubbles: true })); }
@@ -2664,7 +2681,20 @@ try{
 
  document.getElementById('stepper-down')?.addEventListener('click', ()=> nudge(-1));
  document.getElementById('stepper-up')?.addEventListener('click', ()=> nudge(1));
- document.getElementById('stepper-apply')?.addEventListener('click', ()=> closeSheet());
+ if(valEl){
+ // 타이핑하는 족족 실제 input 으로 흘려보낸다 — 계산은 그쪽이 하고,
+ // 여기서는 clamp 하지 않는다(위 finalizeStepper 참고).
+ valEl.addEventListener('input', ()=>{
+  if(!bound) return;
+  bound.input.value = valEl.value;
+  bound.input.dispatchEvent(new Event('input', { bubbles: true }));
+ });
+ valEl.addEventListener('blur', finalizeStepper);
+ }
+ document.getElementById('stepper-apply')?.addEventListener('click', ()=>{
+ finalizeStepper();
+ closeSheet();
+ });
 
  const setsBtn = document.getElementById('custom-setcount-btn');
  const secsBtn = document.getElementById('custom-duration-btn');

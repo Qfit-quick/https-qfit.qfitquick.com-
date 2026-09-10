@@ -784,13 +784,21 @@
 .stepper-btn { border: 1px solid var(--line); border-radius: var(--r-md); }
 .stepper-val {
   flex: 1;
+  min-width: 0;
   text-align: center;
   font-family: var(--font-num);
   font-size: var(--t-stat);
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  border: none;
+  background: none;
+  color: var(--text);
+  -moz-appearance: textfield;
 }
+.stepper-val:focus { outline: 2px solid var(--mint); outline-offset: 2px; border-radius: var(--r-sm); }
+.stepper-val::-webkit-outer-spin-button,
+.stepper-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 /* 하단 바의 루틴 저장 체크. 토글(.sw)이 아니라 체크인 이유는 '지금 켜는 설정'
    이 아니라 '이번에 남길지' 라서다 — 토글은 상태, 체크는 이번 한 번. */
