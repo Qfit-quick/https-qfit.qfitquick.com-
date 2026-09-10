@@ -22,8 +22,8 @@ import { closeSheet, isSheetOpen } from './sheet.js';
 // 고정으로 자리를 차지할 이유가 없었다 — 매일 쓰는 홈·계획·체크만 남긴다.
 const TABS = [
   { id: 'start-screen', label: '홈', icon: 'home', via: null },
-  { id: 'plan-screen', label: '계획', icon: 'plan', via: null },
   { id: 'log-screen', label: '체크', icon: 'checklist', via: '#today-card-open' },
+  { id: 'plan-screen', label: '계획', icon: 'plan', via: null },
   { id: 'more-screen', label: '더보기', icon: 'more', via: '#open-more-btn' },
 ];
 
