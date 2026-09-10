@@ -180,6 +180,16 @@ function routineLine(exKeys) {
   return exKeys.map((k) => esc(t(EX_LABEL[k] || { ko: k }))).join(' · ');
 }
 
+// 오늘 카드의 동작 이름은 한 줄로 이어 붙이면 서로 안 구별된다(가독성
+// 피드백, 2026-09-10) — 동작마다 칩으로 나눠서 눈에 걸리는 자리를 준다.
+// 주간 판(routineLine)은 한 줄에 요일 일곱 개를 다 넣어야 해서 칩이 안
+// 맞으므로 그쪽은 그대로 둔다.
+function routineChips(exKeys) {
+  return '<div class="plan-day-chips">' +
+    exKeys.map((k) => `<span class="plan-day-chip">${esc(t(EX_LABEL[k] || { ko: k }))}</span>`).join('') +
+    '</div>';
+}
+
 // ── 오늘 판 ───────────────────────────────────────────────────
 
 function paintToday(body, nut, week, meals) {
@@ -213,7 +223,7 @@ function paintToday(body, nut, week, meals) {
     html += '<div class="card plan-day-card">' +
       `<div class="kick">${esc(t(S.planTodayWorkout))}</div>` +
       `<div class="plan-day-t">${esc(t(FOCUS_LABEL[day.focus]))}</div>` +
-      `<p class="plan-day-list">${routineLine(day.exKeys)}</p>` +
+      routineChips(day.exKeys) +
       `<p class="dim plan-day-meta">${esc(
         t(S.planDayMeta).replace('%s', day.sets).replace('%s', day.secPerSet).replace('%s', day.kcal)
       )}</p>` +

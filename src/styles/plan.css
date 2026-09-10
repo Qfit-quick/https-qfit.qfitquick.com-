@@ -309,7 +309,17 @@ body.gated { overflow: hidden; }
 }
 
 .plan-day-t { font-size: var(--t-xl); font-weight: 800; letter-spacing: -0.02em; }
-.plan-day-list { font-size: var(--t-md); line-height: 1.5; word-break: keep-all; }
+/* 동작 이름을 한 줄로 이으면 서로 안 구별된다 — 칩으로 나눠 하나씩 눈에
+   걸리게 한다. 운동은 민트(.log-chip.w 와 같은 색 약속). */
+.plan-day-chips { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.plan-day-chip {
+  padding: 6px var(--s-3);
+  border: 1px solid var(--mint);
+  border-radius: var(--r-full);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--mint-text);
+}
 .plan-day-meta { font-size: var(--t-sm); }
 .plan-start-btn { margin-top: var(--s-2); }
 /* 앱 세션 위에 얹는 걷기·스트레칭. 앱만으로는 주간 권장량에 못 닿는다는
@@ -325,18 +335,22 @@ body.gated { overflow: hidden; }
 .plan-add::before { content: '+'; font-family: var(--font-num); font-size: var(--t-md); }
 .plan-day-card.rest .plan-day-t { color: var(--text-dim); }
 
-/* 오늘 식단 요약 네 줄. 이름 · 음식 · 칼로리로 세 칸이다. */
-.plan-meal-mini { display: flex; flex-direction: column; gap: 1px; }
+/* 오늘 식단 요약 네 줄. 이름 · 음식 · 칼로리로 세 칸이다.
+   카드 배경(--surface)이 흰 바탕과 같은 색이라(설계 의도 — tokens.css 참고),
+   줄 사이 가는 선만으로는 경계가 잘 안 보인다는 피드백. 줄마다 옅은
+   --surface-2 바탕을 얹어 나눈다 — 이미 .row-ic 등에 쓰는 색이라 새 색을
+   들이지 않는다. */
+.plan-meal-mini { display: flex; flex-direction: column; gap: var(--s-1); }
 .plan-meal-mini-row {
   display: grid;
   grid-template-columns: 3.5em 1fr auto;
   gap: var(--s-2);
   align-items: baseline;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--line);
+  padding: 7px var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
   font-size: var(--t-sm);
 }
-.plan-meal-mini-row:last-child { border-bottom: 0; }
 .pm-name { font-weight: 700; }
 .pm-food {
   color: var(--text-dim);
