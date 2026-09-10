@@ -23,7 +23,7 @@ import { closeSheet, isSheetOpen } from './sheet.js';
 const TABS = [
   { id: 'start-screen', label: '홈', icon: 'home', via: null },
   { id: 'log-screen', label: '체크', icon: 'checklist', via: '#today-card-open' },
-  { id: 'plan-screen', label: '계획', icon: 'plan', via: null },
+  { id: 'plan-screen', label: '목표', icon: 'plan', via: null },
   { id: 'more-screen', label: '더보기', icon: 'more', via: '#open-more-btn' },
 ];
 
