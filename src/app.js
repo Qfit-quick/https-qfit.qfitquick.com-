@@ -2045,15 +2045,14 @@ function syncPlayBtn(){
 // 그 묶음으로 통째로 갈아 끼워져서, 지금까지 고른 것이 조용히 사라졌다.
 let exFilter = 'all';
 
-// 한 판에 고르는 동작의 상한(설계 03). 세트 수와는 다른 축이다 —
-// 동작 넷을 여러 세트 도는 것이지, 동작 수를 늘리는 게 아니다.
-const MAX_PICKS = 4;
+// 한 판에 고르는 동작 수는 상한이 없다(설계 03의 4개 제한을 2026-09-10 에
+// 없앴다). buildMissions() 가 세트 수(regularSetCount)에 맞춰 pool 에서
+// 뽑거나 채워 넣으므로, pool 이 1개든 24개든 그대로 돈다.
 
 // 고른 목록을 만드는 유일한 문. 랜덤·AI·저장된 루틴·공유 링크가 전부
-// 여기를 지난다 — 상한을 한 곳에서만 지켜야 어느 길로 들어와도 같다.
-// 예전에 저장해 둔 다섯 개짜리 루틴을 불러와도 여기서 넷으로 잘린다.
+// 여기를 지난다.
 function pickSet(keys){
- return new Set((Array.isArray(keys) ? keys : []).slice(0, MAX_PICKS));
+ return new Set(Array.isArray(keys) ? keys : []);
 }
 
 // 거르는 칩은 다섯 개다: 전체 + 부위 넷(설계 03).
@@ -2158,12 +2157,6 @@ function renderExGrid(){
  // 마지막 하나를 못 지우게 막지 않는다. 눌러도 아무 일이 없으면 고장으로
  // 읽히고, 왜 안 되는지도 알 수 없다. 대신 0개일 때 시작 버튼이 말한다.
  if(selectedExKeys.has(ex.key)) selectedExKeys.delete(ex.key);
- else if(selectedExKeys.size >= MAX_PICKS){
-  // 상한에서 막을 때는 반드시 말해 준다. 눌렀는데 체크가 안 켜지기만 하면
-  // 카드가 고장 난 것으로 읽힌다(설계 03의 '4개 초과' 규칙).
-  toast(t(STATIC_UI.maxPicks).replace('%s', MAX_PICKS));
-  return;
- }
  else selectedExKeys.add(ex.key);
  renderExGrid();
  renderGroupRow();
@@ -2181,7 +2174,7 @@ function renderExGrid(){
 function syncSelectCount(){
  const el = document.getElementById('select-count');
  if(el){
- el.textContent = selectedExKeys.size + ' / ' + MAX_PICKS;
+ el.textContent = t(STATIC_UI.selectedCount).replace('%s', selectedExKeys.size);
  el.setAttribute('aria-live', 'polite');
  el.setAttribute('aria-label', t(STATIC_UI.selectedCount).replace('%s', selectedExKeys.size));
  }
@@ -2236,13 +2229,15 @@ try{
  const modeManualBtn = document.getElementById('mode-manual');
  // '고민 없이 4개 뽑기'(설계 02). 예전에는 열두 개를 통째로 넘겼는데,
  // 그러면 '랜덤' 이 아니라 '전부' 다 — 매번 같은 구성이 나온다.
+ // pickSet() 의 4개 상한이 없어진 뒤로(2026-09-10)는 여기서 직접 자른다 —
+ // 안 그러면 '랜덤'이 24개를 통째로 넘기는 예전과 같은 문제로 되돌아간다.
  if(modeRandomBtn) modeRandomBtn.addEventListener('click', ()=>{
  const pool = EXERCISES.filter(e=> !e.premium || myProfile.isPremium).map(e=>e.key);
  for(let i = pool.length - 1; i > 0; i--){
   const j = Math.floor(Math.random() * (i + 1));
   [pool[i], pool[j]] = [pool[j], pool[i]];
  }
- pickModeAndGo(pool);
+ pickModeAndGo(pool.slice(0, 4));
  });
  if(modeManualBtn) modeManualBtn.addEventListener('click', ()=>{
  Sound.unlock();
@@ -2360,7 +2355,9 @@ try{
  return !ex.pro;
  });
  if(keys.length < 2) keys = pool; // fallback if filtering left too few
- selectedExKeys = pickSet(keys);
+ // pickSet() 의 4개 상한이 없어진 뒤로(2026-09-10)는 여기서 직접 자른다 —
+ // 안 그러면 목표 풀 전체(최대 24개)가 그대로 넘어간다.
+ selectedExKeys = pickSet(keys.slice(0, 4));
 
  // 세기가 세트 수와 시간까지 정한다. 안 그러면 '세게' 를 골라도
  // 다음 화면의 요약 카드가 기본값 그대로라 고른 것이 무시된 것처럼 보인다.
