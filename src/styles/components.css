@@ -56,7 +56,9 @@
    종류가 셋뿐이다: 채운 것, 테두리만 있는 것, 글자만 있는 것.
    넷째를 만들고 싶어지면 그건 위계가 흐려졌다는 뜻이다. */
 
-/* (1) 채운 것 — 화면에서 제일 중요한 행동 하나 */
+/* (1) 채운 것 — 화면에서 제일 중요한 행동 하나.
+   단색 대신 브랜드 두 색(민트·노랑)을 살짝 섞는다(2026-09-11) — 이 앱의
+   유일한 두 브랜드 색이라 섞어도 낯선 색이 끼어들지 않는다. */
 .primary {
   display: flex;
   align-items: center;
@@ -66,7 +68,7 @@
   padding: var(--s-4) var(--s-6);
   border: none;
   border-radius: var(--r-full);
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--mint));
   color: var(--on-accent);
   font-size: var(--t-lg);
   font-weight: 700;

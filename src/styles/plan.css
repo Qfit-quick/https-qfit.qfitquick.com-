@@ -296,6 +296,18 @@ body.gated { overflow: hidden; }
   min-width: 0;
 }
 
+/* 오늘 카드 둘(운동·식단)만 테두리에 그라데이션을 준다(2026-09-11) —
+   전부 다 칠하면 화면이 시끄러워지니 이 화면의 핵심인 "오늘" 카드
+   둘에만 쓴다. 두 배경을 겹치는 방식이라야 모서리가 둥글게 유지된다
+   — border-image 는 라운드 처리가 브라우저마다 다르게 잘린다. */
+.plan-day-card,
+.plan-diet-card {
+  border: 2px solid transparent;
+  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg, var(--mint), var(--accent));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
 .plan-intensity-row { display: flex; align-items: baseline; gap: var(--s-2); flex-wrap: wrap; }
 .plan-intensity-row b { font-size: var(--t-lg); font-weight: 800; }
 .plan-intensity-row span { font-size: var(--t-sm); }
