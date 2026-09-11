@@ -291,6 +291,10 @@ function updateSetupSummary(){
   b.classList.toggle('active', !secsCustom && b.dataset.preset === selectedDurationPreset);
  });
  document.getElementById('custom-duration-btn')?.classList.toggle('active', secsCustom);
+
+ document.querySelectorAll('#transition-row [data-speed]').forEach(b=>{
+  b.classList.toggle('active', b.dataset.speed === selectedTransitionSpeed);
+ });
 }
 
 // 저장된 루틴을 한 줄로. 네 개까지만 적고 나머지는 개수로 줄인다 —
@@ -330,6 +334,18 @@ function markRange(input, range, message){
 }
 
 let selectedDurationPreset = 'normal';
+
+// 동작 사이 전환 속도(2026-09-12). 한 세트가 끝나고 다음 동작이 뜨기까지의
+// '숨 돌리는 틈' 길이다 — completeMission() 의 그 setTimeout 하나만 이 값을
+// 쓴다. 기본 1초는 같은 동작을 이어 할 때는 괜찮지만, 다른 동작으로 넘어갈
+// 때(특히 초보자 코스처럼 자세를 완전히 바꿔야 하는 경우) 자리 잡을 틈이
+// 없다는 피드백으로 추가했다.
+const TRANSITION_SPEEDS = { slow: 2200, normal: 1000, fast: 500 };
+let selectedTransitionSpeed = 'normal';
+function getTransitionMs(){
+ return TRANSITION_SPEEDS[selectedTransitionSpeed] || TRANSITION_SPEEDS.normal;
+}
+
 function getDurationPreset(){
  if(selectedDurationPreset === 'custom'){
  const input = document.getElementById('custom-duration-input');
@@ -542,12 +558,13 @@ export function isWorkoutRunning(){ return missionActive; }
  * 하는지는 마지막에 사람이 봐야 한다. 설정 화면이 그 확인 자리다 —
  * '지난 루틴 다시' 도 같은 길을 쓴다.
  */
-export function startRoutine({ keys, totalSets, durationPreset } = {}){
+export function startRoutine({ keys, totalSets, durationPreset, transitionSpeed } = {}){
  try{
  Sound.unlock();
  if(Array.isArray(keys) && keys.length) selectedExKeys = pickSet(keys);
  if(Number.isFinite(totalSets)) selectedTotalSets = clamp(totalSets, LIMITS.setCount, selectedTotalSets);
  if(durationPreset && DURATION_PRESETS[durationPreset]) selectedDurationPreset = durationPreset;
+ if(transitionSpeed && TRANSITION_SPEEDS[transitionSpeed]) selectedTransitionSpeed = transitionSpeed;
  // 직접 입력 토글이 켜져 있으면 위에서 정한 프리셋이 무시된다 — 계획이
  // 정한 값을 쓰려면 두 토글을 먼저 내려야 한다(AI 퀴즈도 같이 한다).
  const setToggle = document.getElementById('custom-setcount-toggle');
@@ -1074,6 +1091,7 @@ function saveSetupPrefs(){
  const prefs = {
  exKeys: Array.from(selectedExKeys),
  durationPreset: selectedDurationPreset,
+ transitionSpeed: selectedTransitionSpeed,
  customDurationOn: !!(durationToggle && durationToggle.checked),
  customDurationVal: durationInput ? durationInput.value : null,
  totalSets: selectedTotalSets,
@@ -1142,6 +1160,12 @@ function applySetupPrefs(prefs){
  document.querySelectorAll('#setcount-row [data-count]').forEach(b=> b.classList.remove('active'));
  }
  revealDurationCard();
+ }
+ if(prefs.transitionSpeed && TRANSITION_SPEEDS[prefs.transitionSpeed]){
+ selectedTransitionSpeed = prefs.transitionSpeed;
+ document.querySelectorAll('#transition-row [data-speed]').forEach(b=>{
+ b.classList.toggle('active', b.dataset.speed === prefs.transitionSpeed);
+ });
  }
  if(warmupToggle) warmupToggle.checked = !!prefs.warmupOn;
  updateSetNote();
@@ -2672,6 +2696,15 @@ try{
 }catch(e){ console.error('duration preset buttons failed:', e); }
 
 try{
+ document.querySelectorAll('#transition-row [data-speed]').forEach(btn=>{
+ btn.addEventListener('click', ()=>{
+ document.querySelectorAll('#transition-row [data-speed]').forEach(b=> b.classList.toggle('active', b === btn));
+ selectedTransitionSpeed = btn.dataset.speed;
+ });
+ });
+}catch(e){ console.error('transition speed buttons failed:', e); }
+
+try{
  const customToggle = document.getElementById('custom-duration-toggle');
  const customInput = document.getElementById('custom-duration-input');
  if(customToggle && customInput){
@@ -3569,7 +3602,7 @@ function completeMission(m){
  } else {
  runMission();
  }
- }, 1000); // ~1s breather beat before the next exercise loads
+ }, getTransitionMs()); // breather beat before the next exercise loads — speed is user-chosen
 }
 
 function runRest(){

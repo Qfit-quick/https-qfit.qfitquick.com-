@@ -241,7 +241,10 @@ function wireActive(program, progress) {
 
   el('program-start-btn')?.addEventListener('click', () => {
     pendingDay = { programId: program.id, dayIndex };
-    onStartDay({ keys: plan.exKeys, totalSets: plan.sets, durationPreset: plan.preset });
+    // 초보 코스는 동작 사이 전환도 느리게 시작한다 — 자세를 통째로 바꿔야
+    // 하는 초보자에게 숨 돌릴 틈 없이 1초 만에 다음 동작이 뜨는 건 너무 빠르다.
+    // 물론 설정 화면에서 다시 고를 수 있다.
+    onStartDay({ keys: plan.exKeys, totalSets: plan.sets, durationPreset: plan.preset, transitionSpeed: progress.level === 'easy' ? 'slow' : undefined });
   });
   el('program-rest-done-btn')?.addEventListener('click', () => {
     const list = loadProgramProgress();
