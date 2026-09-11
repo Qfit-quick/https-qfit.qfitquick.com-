@@ -22,6 +22,7 @@ import { initHeaders } from './ui/header.js';
 import { initGate } from './ui/gate.js';
 import { initPlan, renderPlanScreen } from './ui/plan.js';
 import { initLog, renderLogScreen, renderTodayCard } from './ui/log.js';
+import { initPrograms, renderProgramsScreen } from './ui/programs.js';
 import { ICON } from './ui/icons.js';
 import { STATIC_UI } from './data/i18n-strings.js';
 
@@ -35,6 +36,10 @@ initPlan({
   onShowScreen: showScreenById,
 });
 initLog({ translate: t, STATIC_UI, onShowScreen: showScreenById });
+// 프로그램의 '시작하기' 도 계획 화면과 같은 문(startRoutine)을 쓴다 —
+// 둘 다 '동작을 미리 정해 두고 설정 화면으로 보낸다' 는 같은 일이다.
+initPrograms({ translate: t, STATIC_UI, onStartDay: startRoutine });
+renderProgramsScreen();
 
 // data-icon 이 적힌 자리에 선 아이콘을 채운다
 paintIcons();

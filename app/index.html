@@ -235,6 +235,16 @@
  <button class="btn-restart" id="more-back-btn" style="margin-top:16px;" data-i18n="lbBackBtn">닫기</button>
  </div>
 
+ <!-- PROGRAMS (목적별 다주 프로그램, 2026-09-11).
+      '목표' 탭의 자동 주간 계획과는 다른 물건이라 화면도 따로 둔다.
+      안쪽은 src/ui/programs.js 가 통째로 그린다 — 목록 판과 진행중 판,
+      두 모습이 서로 다른 마크업이라 조건부 조각을 여기 둘 이유가 없다. -->
+ <div class="screen" id="programs-screen">
+ <div class="eyebrow" data-i18n="programsEyebrow">프로그램</div>
+ <h2 class="lb-title" data-i18n="programsTitle">목적별 루틴</h2>
+ <div id="programs-body"></div>
+ </div>
+
  <!-- PLAN (운동 · 식단).
       네 판(오늘·주간 운동·식단·내 숫자)을 한 화면의 탭으로 접는다. 화면을 넷으로
       나누면 '오늘 무엇을 먹고 무엇을 하나' 를 보려고 네 곳을 돌아야 하는데,

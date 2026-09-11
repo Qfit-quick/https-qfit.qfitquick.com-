@@ -1,6 +1,7 @@
 import { ICON } from './ui/icons.js';
 import { openSheet, closeSheet } from './ui/sheet.js';
 import { toast } from './ui/toast.js';
+import { advanceProgramProgress, clearPendingProgramDay } from './ui/programs.js';
 import { getSupabase, hasStoredSession, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
 import * as reminder from './notify/reminder.js';
 import { RECOVERY_CARDS, INJURY_GUIDES, SPECIAL_GUIDES, DIET_GUIDES } from './data/recovery.js';
@@ -420,6 +421,7 @@ const moreScreen = document.getElementById('more-screen');
 const planScreen = document.getElementById('plan-screen');
 const bodyScreen = document.getElementById('body-screen');
 const logScreen = document.getElementById('log-screen');
+const programsScreen = document.getElementById('programs-screen');
 const openVideoGalleryBtn = document.getElementById('open-video-gallery-btn');
 const videoGalleryBackBtn = document.getElementById('video-gallery-back-btn');
 const videoGalleryGrid = document.getElementById('video-gallery-grid');
@@ -476,7 +478,7 @@ const bestScoreBox = document.getElementById('best-score-box');
 const bestScoreVal = document.getElementById('best-score-val');
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  if(el === moreScreen){
  try{
@@ -2824,7 +2826,12 @@ try{
  });
 }catch(e){ console.error('records empty start failed:', e); }
 
-setupBackBtn.addEventListener('click', ()=> showScreen(startScreen));
+setupBackBtn.addEventListener('click', ()=>{
+ // 프로그램 날을 시작해 놓고 설정에서 나가면, 안 한 운동이 나중에 다른
+ // 운동 완주로 잘못 세지 않게 대기 상태를 지운다.
+ try{ clearPendingProgramDay(); }catch(e){}
+ showScreen(startScreen);
+});
 
 playBtn.addEventListener('touchstart', ()=> Sound.unlock(), {passive:true});
 playBtn.addEventListener('click', ()=>{
@@ -3737,6 +3744,7 @@ function finishGame(){
 
  checkAchievements();
  recordCompletion();
+ try{ advanceProgramProgress(); }catch(e){ console.error('advanceProgramProgress failed:', e); }
 
  // ---------- personalized recovery tip (workout → recovery synergy) ----------
  // Look at which exercises were actually in today's WOD and surface the

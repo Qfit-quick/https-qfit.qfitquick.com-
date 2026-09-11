@@ -19,10 +19,16 @@ import { closeSheet, isSheetOpen } from './sheet.js';
 // 순서가 뒤바뀐 것이었다.
 //
 // 기록도 탭에서 뺐다. 더보기 줄에 이미 있는 것과 같은 화면이라, 하단에
-// 고정으로 자리를 차지할 이유가 없었다 — 매일 쓰는 홈·계획·체크만 남긴다.
+// 고정으로 자리를 차지할 이유가 없었다 — 매일 쓰는 홈·체크·프로그램·목표만 남긴다.
+//
+// 프로그램은 '목표' 탭의 자동 주간 계획과 다른 물건이다(2026-09-11) —
+// 이름 붙여 고르는, 시작·끝이 있는 다주 루틴이라 따로 칸을 준다.
+// 이걸로 다섯 칸이 다 찼다 — 여섯째부터는 라벨이 두 자로 줄어 구별이
+// 안 된다.
 const TABS = [
   { id: 'start-screen', label: '홈', icon: 'home', via: null },
   { id: 'log-screen', label: '체크', icon: 'checklist', via: '#today-card-open' },
+  { id: 'programs-screen', label: '프로그램', icon: 'trophy', via: null },
   { id: 'plan-screen', label: '목표', icon: 'plan', via: null },
   { id: 'more-screen', label: '더보기', icon: 'more', via: '#open-more-btn' },
 ];

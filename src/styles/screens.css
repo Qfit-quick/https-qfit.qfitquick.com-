@@ -918,3 +918,23 @@
 
 /* 기록 화면 본문. 기록이 없으면 통째로 감춘다(빈 상태가 대신 나온다). */
 .records-body { display: flex; flex-direction: column; gap: var(--s-5); }
+
+/* ── 프로그램(2026-09-11) ─────────────────────────────────
+   목록 카드 여럿과, 진행 중일 때 카드 하나. .card 는 테두리만 정하므로
+   안쪽 여백은 여기서 준다(plan.css 의 카드들과 같은 관례). */
+.program-list { display: flex; flex-direction: column; gap: var(--s-3); }
+.program-card,
+.program-active,
+.program-done {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+}
+.program-card-name { font-size: var(--t-lg); font-weight: 800; }
+.program-card-tag { font-size: var(--t-sm); }
+.program-disclaimer { font-size: var(--t-xs); }
+.program-level-row { display: flex; gap: var(--s-2); margin-top: var(--s-2); }
+.program-level-btn { flex: 1; }
+.program-focus-row { display: flex; align-items: center; gap: var(--s-2); }
+.program-done { align-items: center; text-align: center; }

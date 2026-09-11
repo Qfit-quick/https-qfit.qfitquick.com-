@@ -22,6 +22,8 @@ import { EXERCISES } from './exercises.js';
 import { MUSCLE_GROUPS } from './muscle-groups.js';
 import { FOOD_BY_TAG, FOOD_BY_KEY, MEAL_SPLIT } from './foods.js';
 import { INTENSITY } from './checkin.js';
+import { AI_GOAL_POOLS } from './ai-goals.js';
+import { GLUTE_KEYS } from './programs.js';
 
 // ── 선택지 ────────────────────────────────────────────────────
 
@@ -227,6 +229,10 @@ export const FOCUS_LABEL = {
   upper: {ko:'상체', en:'Upper body', zh:'上肢'},
   core:  {ko:'코어', en:'Core', zh:'核心'},
   rest:  {ko:'쉬는 날', en:'Rest day', zh:'休息日'},
+  // programDayPlan() 전용 초점 셋(programs.js) — 목표 탭의 주간 계획은 안 쓴다.
+  diet:   {ko:'고강도 유산소', en:'High-intensity cardio', zh:'高强度有氧'},
+  cardio: {ko:'기능성 유산소', en:'Functional cardio', zh:'功能性有氧'},
+  glute:  {ko:'둔근 집중', en:'Glute focus', zh:'臀部专项'},
 };
 
 export const DOW_LABEL = [
@@ -305,6 +311,51 @@ export function workoutPlan(body, intensity = 'normal') {
 /** 오늘이 주간 계획의 몇 번째 날인가. 월요일이 0. */
 export function todayIndex(date = new Date()) {
   return (date.getDay() + 6) % 7;
+}
+
+// ── 목적별 프로그램(programs.js) ─────────────────────────────────
+//
+// '목표' 탭의 workoutPlan() 과 갈래가 다르다 — 프로그램은 사람이 이름
+// 보고 고르는, 시작·끝이 있는 것이다. 그래도 동작 뽑는 방식(요일을
+// 씨앗으로 한 결정적 로테이션)은 그대로 재사용한다 — 같은 프로그램의
+// 같은 날을 다시 열어도 항상 같은 동작이 나와야 하는 이유가 같다.
+const PROGRAM_FOCUS_POOL = {
+  full: () => EXERCISES.map((e) => e.key),
+  cardio: () => groupKeys('full'), // muscle-groups.js 의 '전신'(기능성 유산소 5개)
+  diet: () => AI_GOAL_POOLS.diet,
+  glute: () => GLUTE_KEYS,
+};
+
+/**
+ * 프로그램의 한 날. weekIdx·dayIdx 는 0부터 — 몇 주차, 그 주의 며칠째.
+ * schedule 은 7일 고정 패턴이라 주차 수와 무관하게 dayIdx % 길이 로 돈다.
+ */
+export function programDayPlan(program, weekIdx, dayIdx, levelId = 'normal', weightKg = null) {
+  const focus = program.schedule[dayIdx % program.schedule.length];
+  const level = INTENSITY[levelId] || INTENSITY.normal;
+
+  if (focus === 'rest') {
+    return { focus: 'rest', exKeys: [], sets: 0, secPerSet: 0, preset: level.preset, kcal: 0 };
+  }
+
+  const pool = (PROGRAM_FOCUS_POOL[focus] || (() => groupKeys(focus)))();
+  // 전체 일수를 씨앗으로 써서, 프로그램이 몇 주짜리든 날마다 다른
+  // 조합이 나오되 같은 날을 다시 열면 늘 같게 한다(workoutPlan() 과 같은 식).
+  const globalDay = weekIdx * program.schedule.length + dayIdx;
+  const exKeys = [];
+  for (let n = 0; n < Math.min(4, pool.length); n++) {
+    exKeys.push(pool[(globalDay * 3 + n * 2) % pool.length]);
+  }
+  const uniq = [...new Set(exKeys)];
+
+  return {
+    focus,
+    exKeys: uniq,
+    sets: level.sets,
+    secPerSet: level.secPerSet,
+    preset: level.preset,
+    kcal: sessionKcal(uniq, level.sets, level.secPerSet, weightKg),
+  };
 }
 
 // ── 식단 계획 ─────────────────────────────────────────────────

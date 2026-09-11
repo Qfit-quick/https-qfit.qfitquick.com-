@@ -12,6 +12,7 @@
 const BODY_KEY = 'qfit_body_v1';
 const LOG_KEY = 'qfit_daylog_v1';
 const LEGACY_WEIGHT_KEY = 'wodrush_weight_kg_v1';
+const PROGRAM_KEY = 'qfit_program_v1';
 
 // 기록지는 하루에 한 줄씩 쌓인다. 400일이면 400줄 — 로컬 저장소에는
 // 넉넉하지만 무한히 두면 언젠가 한도에 닿는다. 400일을 넘긴 것은 버린다.
@@ -253,11 +254,36 @@ export function logToCsv() {
   return rows.map((r) => r.join(',')).join('\n');
 }
 
+// ── 프로그램 진행도 ───────────────────────────────────────────
+//
+// 한 번에 하나만 진행한다 — 두 프로그램을 동시에 하면 '오늘 뭘 할
+// 차례인지'가 둘로 갈린다. { programId, level, startDate, completedDays }.
+// completedDays 는 달력 날짜가 아니라 '몇 번째를 끝냈나'다 — 하루
+// 쉬어도 진도가 밀리지 않게(이 앱의 스트릭 계산도 날짜가 아니라
+// 완료 횟수 기준으로 관대하게 세는 쪽을 택해 왔다).
+
+export function loadProgramProgress() {
+  return read(PROGRAM_KEY, null);
+}
+
+export function saveProgramProgress(progress) {
+  write(PROGRAM_KEY, progress);
+}
+
+export function clearProgramProgress() {
+  try {
+    localStorage.removeItem(PROGRAM_KEY);
+  } catch (e) {
+    console.error('clear program progress failed:', e);
+  }
+}
+
 /** 신체정보와 기록지를 지운다. 설정의 '모든 데이터 지우기' 가 부른다. */
 export function wipeHealthData() {
   try {
     localStorage.removeItem(BODY_KEY);
     localStorage.removeItem(LOG_KEY);
+    localStorage.removeItem(PROGRAM_KEY);
   } catch (e) {
     console.error('wipe health data failed:', e);
   }
