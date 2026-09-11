@@ -397,6 +397,7 @@ export const STATIC_UI = {
  logWorkoutCheckSub: {ko:'앱에서 완주하면 저절로 켜집니다. 앱 밖에서 한 운동은 직접 눌러주십시오.', en:'Turns on by itself when you finish a session here. Tap it yourself for training done outside the app.', zh:'在App里完成会自动打勾。App以外的运动请手动勾选。'},
  logDietRule: {ko:'아침·점심·저녁 세 칸이 다 차면 그날 식단을 지킨 것으로 셉니다. 간식은 세지 않습니다.', en:'Diet counts as kept when breakfast, lunch and dinner are all checked. Snacks do not count.', zh:'早、午、晚三格都勾上就算当天饮食达标。加餐不计入。'},
  logNoPlan: {ko:'신체정보를 넣으면 여기에 오늘 식단이 나옵니다', en:'Add your body info and the menu appears here', zh:'填写身体信息后这里会显示今日菜单'},
+ logDietSuggested: {ko:'추천', en:'Suggested', zh:'推荐'},
  logExtra: {ko:'물 · 체중', en:'Water & weight', zh:'饮水与体重'},
  logWater: {ko:'물', en:'Water', zh:'饮水'},
  logWeight: {ko:'오늘 체중', en:'Weight today', zh:'今日体重'},

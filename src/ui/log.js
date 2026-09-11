@@ -100,7 +100,7 @@ function paintChecks(dateStr) {
   MEAL_SPLIT.forEach((m) => {
     const planned = meals && meals.find((x) => x.id === m.id);
     const sub = planned
-      ? planned.rows.slice(0, 2).map((r) => t(r.food.label)).join(', ') + ' · ' + planned.kcal + 'kcal'
+      ? `(${t(S.logDietSuggested)}: ${planned.rows.slice(0, 2).map((r) => t(r.food.label)).join(', ')} · ${planned.kcal}kcal)`
       : t(S.logNoPlan);
     html += row(m.id, 'meal', !!(day.meals || {})[m.id], t(m.label), sub);
   });
