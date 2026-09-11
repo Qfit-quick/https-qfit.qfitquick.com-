@@ -257,7 +257,7 @@ export const STATIC_UI = {
  setLanguage: {ko:'언어', en:'Language', zh:'语言'},
  // 세 언어를 그 언어로 적는다 — 번역하면 자기 언어를 못 찾는다.
  langList: {ko:'한국어 / English / 中文', en:'한국어 / English / 中文', zh:'한국어 / English / 中文'},
- setTheme: {ko:'테마', en:'Theme', zh:'主题'},
+ setTheme: {ko:'화면 색상 조정', en:'Theme', zh:'主题'},
  setThemeSub: {ko:'시스템 설정을 따릅니다', en:'Follows your system setting', zh:'跟随系统设置'},
  setExport: {ko:'기록 내보내기', en:'Export records', zh:'导出记录'},
  setWipe: {ko:'데이터 삭제', en:'Delete all data', zh:'删除数据'},
