@@ -108,6 +108,11 @@ function setLang(lang){
  applyStaticTranslations();
  renderExGrid();
  renderGroupRow();
+ // 홈의 연속 기록 줄 · 요일 칸 · 알 카드 이름표(aria-label)는 t() 로
+ // 짓지만 언어를 바꾼 순간엔 아무도 다시 부르지 않았다 — 언어 버튼이
+ // 홈 화면 안에 있어서, 누르는 순간 이 셋이 바로 옆에 그대로 보인다.
+ try{ renderWeekStrip(); }catch(e){ console.error('week strip lang repaint failed:', e); }
+ try{ renderPetCard(); }catch(e){ console.error('pet card lang repaint failed:', e); }
  if(typeof updateBestBox === 'function') updateBestBox();
  const lb = document.getElementById('lang-btn');
  if(lb) lb.textContent = LANG_LABEL[nextLang()];
