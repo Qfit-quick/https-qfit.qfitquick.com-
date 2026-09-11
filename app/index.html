@@ -131,6 +131,36 @@
       두 벌로 만들면 홈과 기록지가 서로 다른 말을 하는 날이 온다). -->
  <div class="card today-card" id="today-card"></div>
 
+ <!-- 물 마시기. 하루에도 여러 번 누르는 동작이라 기록 화면 안이 아니라
+      홈에 둔다 — 거기 두면 누를 때마다 화면을 넘어가야 한다.
+      병 모양은 xp-bottle-card 와 같은 60x104 판을 그대로 쓴다(id 만 다르다).
+      점선은 권장량(2L) 자리이고, 병이 꽉 차는 지점이 최대치(3L)다. -->
+ <div class="card water-card" id="water-card">
+ <div class="water-card-head">
+ <span class="water-card-title" data-i18n="waterTitle">오늘 마신 물</span>
+ <span class="dim" id="water-amount-label">0 / 2000ml</span>
+ </div>
+ <div class="water-card-body">
+ <svg class="water-bottle" viewBox="0 0 60 104" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+ <defs>
+ <clipPath id="water-bottle-clip">
+ <path d="M22,4 h16 v9 c8,4 12,13 12,21 v50 a7,7 0 0 1 -7,7 h-26 a7,7 0 0 1 -7,-7 v-50 c0,-8 4,-17 12,-21 z"/>
+ </clipPath>
+ </defs>
+ <path class="bottle-outline" d="M22,4 h16 v9 c8,4 12,13 12,21 v50 a7,7 0 0 1 -7,7 h-26 a7,7 0 0 1 -7,-7 v-50 c0,-8 4,-17 12,-21 z"/>
+ <rect class="bottle-cap" x="23" y="0" width="14" height="6" rx="2"/>
+ <g clip-path="url(#water-bottle-clip)">
+ <rect id="water-fill" class="water-fill-rect" x="0" y="104" width="60" height="70"/>
+ </g>
+ <line id="water-goal-line" class="water-goal-line" x1="13" y1="0" x2="47" y2="0"/>
+ </svg>
+ <div class="water-card-info">
+ <button class="water-add-btn" id="water-add-btn" type="button">+100ml</button>
+ <span class="water-card-hint dim" data-i18n="waterMaxHint">권장 2L · 최대 3L</span>
+ </div>
+ </div>
+ </div>
+
  <div class="start-block">
  <button class="primary" id="one-min-start-btn" data-i18n="startCta">1분 시작</button>
  </div>

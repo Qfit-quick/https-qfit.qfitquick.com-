@@ -515,6 +515,7 @@ function showScreen(el){
  // 운동을 끝내고 홈으로 오면 XP 가 늘어 있다. 여기서 다시 그리지 않으면
  // 알은 앱을 다시 켤 때까지 옛 레벨로 남는다.
  try{ renderPetCard(); }catch(e){ console.error('pet card render failed:', e); }
+ try{ renderWaterCard(); }catch(e){ console.error('water card render failed:', e); }
  }
  // 화면이 바뀌었다고 알린다. 탭바와 뒤로가기가 이 신호를 듣는다 —
  // 그쪽에서 showScreen 을 직접 부르게 하면 위에 붙은 훅들을 건너뛰게 된다.
@@ -1557,6 +1558,55 @@ function openPetDetail(){
  }
 
  overlay.classList.add('on');
+}
+
+// ── 물 마시기 ────────────────────────────────────────────
+// 날짜와 함께 저장한다. 날짜가 오늘이 아니면 자정을 넘긴 것이므로 0으로 본다 —
+// 자정에 깨워서 지우는 타이머를 둘 필요가 없다, 다음에 열어 볼 때 저절로 비워진다.
+const WATER_KEY = 'wodrush_water_v1';
+const WATER_GOAL_ML = 2000;
+const WATER_MAX_ML = 3000;
+const WATER_STEP_ML = 100;
+
+function loadWaterMl(){
+ try{
+  const saved = JSON.parse(localStorage.getItem(WATER_KEY) || 'null');
+  if(saved && saved.date === todayStr()) return saved.ml || 0;
+ }catch(e){}
+ return 0;
+}
+function addWaterMl(step){
+ const ml = Math.min(WATER_MAX_ML, loadWaterMl() + step);
+ try{ localStorage.setItem(WATER_KEY, JSON.stringify({ date: todayStr(), ml })); }catch(e){}
+ renderWaterCard();
+}
+
+/** 홈의 물병. 오늘 마신 양만큼 채우고, 권장량(2L) 자리에 점선을 긋는다.
+    최대치(3L)를 병의 꽉 찬 높이로 잡는다 — 권장선은 그 안쪽 2/3 지점이다. */
+function renderWaterCard(){
+ const card = document.getElementById('water-card');
+ if(!card) return;
+ const ml = loadWaterMl();
+ const label = document.getElementById('water-amount-label');
+ if(label) label.textContent = ml + ' / ' + WATER_GOAL_ML + 'ml';
+
+ const bodyTop = 34, bodyBottom = 104, bodyHeight = bodyBottom - bodyTop; // xp 병과 같은 60x104 판
+ const fill = document.getElementById('water-fill');
+ if(fill){
+  const pct = Math.max(0, Math.min(1, ml / WATER_MAX_ML));
+  const fillHeight = Math.max(4, bodyHeight * pct);
+  fill.setAttribute('y', bodyBottom - fillHeight);
+  fill.setAttribute('height', fillHeight + 10); // 넘치는 여유분은 병 모양에 가려 안전하다
+ }
+ const goalLine = document.getElementById('water-goal-line');
+ if(goalLine){
+  const goalY = bodyBottom - bodyHeight * (WATER_GOAL_ML / WATER_MAX_ML);
+  goalLine.setAttribute('y1', goalY);
+  goalLine.setAttribute('y2', goalY);
+ }
+ const addBtn = document.getElementById('water-add-btn');
+ if(addBtn) addBtn.disabled = ml >= WATER_MAX_ML;
+ card.setAttribute('aria-label', t(STATIC_UI.waterTitle) + ' ' + ml + '/' + WATER_GOAL_ML + 'ml');
 }
 
 function renderCalendar(){
@@ -4212,6 +4262,16 @@ try{
  // 글자를 짚어 읽는 동안 창이 사라진다.
  if(petOverlay) petOverlay.addEventListener('click', (e)=>{ if(e.target === petOverlay) closePet(); });
 }catch(e){ console.error('pet card setup failed:', e); }
+
+// 물 마시기 카드. 알 렌더보다 뒤에 둘 필요는 없지만, 프로필과는 무관하게
+// 자기 저장 키(WATER_KEY)만 읽으므로 loadProfile 과 순서가 엮이지 않는다.
+try{ renderWaterCard(); }catch(e){ console.error('water card boot render failed:', e); }
+try{
+ const waterAddBtn = document.getElementById('water-add-btn');
+ if(waterAddBtn) waterAddBtn.addEventListener('click', ()=>{
+  try{ addWaterMl(WATER_STEP_ML); }catch(e){ console.error('water add failed:', e); }
+ });
+}catch(e){ console.error('water card setup failed:', e); }
 
 // 운동 알림(FR-03).
 // 권한은 토글을 켤 때만 묻는다 — 부팅하자마자 물으면 대부분 거절하고,

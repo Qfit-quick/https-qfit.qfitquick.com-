@@ -46,6 +46,35 @@
 /* 시작 묶음은 아래에 붙여 엄지에 가깝게 둔다 */
 .start-block { margin-top: var(--s-1); display: flex; flex-direction: column; gap: var(--s-3); }
 
+/* ── 물 마시기 ────────────────────────────────────────
+   병은 xp-bottle-card 와 같은 60x104 판이라 크기(40x76)도 그대로 맞춘다 —
+   판이 다르면 fillHeight 계산에 쓰는 bodyTop/bodyBottom 값도 갈라진다. */
+.water-card { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
+.water-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); }
+.water-card-title { font-weight: 700; }
+.water-card-body { display: flex; align-items: center; gap: var(--s-4); }
+.water-bottle { width: 40px; height: 76px; flex: none; }
+.water-fill-rect {
+  fill: #4fc3f7;
+  transition: y var(--dur-slow) var(--ease-out), height var(--dur-slow) var(--ease-out);
+}
+/* 권장량(2L) 자리를 가리키는 선. 40x76 로 축소되는 판이라 얇거나 옅으면
+   그냥 안 보인다 — 실측해 보고서야 알았다. 굵게, 진하게 그린다. */
+.water-goal-line { stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; opacity: 0.55; }
+.water-card-info { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); flex: 1; }
+.water-add-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--t-md);
+  font-weight: 700;
+}
+.water-add-btn:active { transform: scale(0.96); }
+.water-add-btn:disabled { opacity: 0.5; }
+.water-card-hint { font-size: var(--t-xs); }
+
 /* 주간 카드 — 설계: 여백 14/12, 머리줄 0 4px 10px */
 .week-card { padding: 14px 12px; }
 

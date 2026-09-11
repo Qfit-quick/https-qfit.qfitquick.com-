@@ -116,6 +116,8 @@ export const STATIC_UI = {
  saveAsRoutine: {ko:'루틴으로 저장', en:'Save as routine', zh:'保存为方案'},
  thisMonth: {ko:'이번 달', en:'This month', zh:'本月'},
  xpBottleHint: {ko:'운동 완주할 때마다 물이 차올라요', en:'The bottle fills each time you finish', zh:'每完成一次，水位就上升'},
+ waterTitle: {ko:'오늘 마신 물', en:'Water today', zh:'今日饮水'},
+ waterMaxHint: {ko:'권장 2L · 최대 3L', en:'Goal 2L · Max 3L', zh:'目标2L · 上限3L'},
  achievements: {ko:'업적', en:'Achievements', zh:'成就'},
  noSessions: {ko:'아직 완주 기록이 없습니다.', en:'No sessions completed yet.', zh:'还没有完成记录。'},
  movesBlurb: {ko:'직접 찍은 동작 영상들입니다. 스크롤하면서 자세를 참고해보십시오.', en:'Videos we filmed ourselves. Scroll to check your form.', zh:'我们自己拍的动作视频，滑动参考姿势。'},
