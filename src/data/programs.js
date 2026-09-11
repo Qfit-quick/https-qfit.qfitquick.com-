@@ -22,6 +22,11 @@
 // 하이록스·F45 면책: 이 앱은 맨몸운동 24개뿐이라 실제 종목(썰매·로잉 등
 // 기구, 스튜디오 서킷 기기)을 그대로 구현할 수 없다. 두 프로그램은 그
 // 강도·구성 방식을 맨몸운동으로 옮긴 버전이며, 화면에도 이 사실을 적는다.
+//
+// bg(2026-09-12, 선택): core/assets.js 의 programBgUrl() 이 가리킬 파일명
+// (public/media/programs/). 카드 배경으로 흐리게 깔리는 사진 — 없으면
+// 그냥 지금처럼 사진 없는 카드로 나온다. 프로그램마다 사진이 다 준비된
+// 게 아니라서 필수 필드가 아니다.
 
 export const GLUTE_KEYS = ['HIPBRIDGE', 'SQUAT', 'LUNGE', 'COSSACKSQUAT'];
 
@@ -89,6 +94,7 @@ export const PROGRAMS = [
     name: { ko: '엉덩이 2주', en: '2-Week Glutes', zh: '2周臀部' },
     tagline: { ko: '힙브릿지·스쿼트·런지 등 둔근 위주 동작만 모았어요', en: 'Hip bridges, squats, lunges — glute-focused moves only', zh: '臀桥、深蹲、弓步等以臀部为主的动作' },
     schedule: ['glute', 'rest', 'glute', 'glute', 'rest', 'glute', 'rest'],
+    bg: 'glute2.webp',
   },
   {
     id: 'hotnight',

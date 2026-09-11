@@ -17,3 +17,7 @@ export const petUrl = (file) => `${BASE}media/pet/${file}`;
 export const moodUrl = (file) => `${BASE}media/mood/${file}`;
 // 관문의 '오늘 운동 어떻게 생각하나' 아이콘 4장(같은 psd 의 나머지 절반).
 export const driveUrl = (file) => `${BASE}media/drive/${file}`;
+// 프로그램 카드 배경 사진(2026-09-12). 프로그램마다 사진이 있을 때만
+// programs.js 의 bg 필드가 파일명을 가리킨다 — 없는 프로그램은 그냥
+// 기존 카드 그대로 나온다.
+export const programBgUrl = (file) => `${BASE}media/programs/${file}`;

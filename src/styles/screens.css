@@ -937,6 +937,35 @@
   background-origin: border-box;
   background-clip: padding-box, border-box;
 }
+/* 사진 있는 프로그램 카드(2026-09-12). 사진을 그대로 깔면 카드마다 밝기가
+   달라 글자가 어떤 사진 위에선 읽히고 어떤 사진 위에선 안 읽힌다 — 그래서
+   사진은 항상 흐리게 깐 다음, 그 위에 고정된 어둠 그라데이션을 또 얹고,
+   글자색도 테마 토큰이 아니라 흰색으로 고정한다(사진은 라이트·다크 모드를
+   모르므로 테마 색을 쓰면 한쪽에서 반드시 안 읽힌다). */
+.program-card--photo { position: relative; overflow: hidden; isolation: isolate; }
+.program-card--photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--program-bg);
+  background-size: cover;
+  background-position: center;
+  /* 블러가 상자 경계를 그대로 잘라 옅은 테두리가 생기는 것을 막으려고
+     사진을 실제 상자보다 살짝 키운다 — inset 을 음수로 늘리면 카드의
+     그라데이션 테두리(border-box)까지 덮어 버려서 대신 scale 을 쓴다. */
+  transform: scale(1.15);
+  filter: blur(14px);
+  z-index: -2;
+}
+.program-card--photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.72));
+  z-index: -1;
+}
+.program-card--photo { color: #fff; }
+.program-card--photo .dim { color: rgba(255,255,255,.82); }
 .program-card-name { font-size: var(--t-lg); font-weight: 800; }
 .program-card-tag { font-size: var(--t-sm); }
 /* 실제 종목이 아니라는 면책 문구는 본문보다 눈에 덜 걸려야 한다 —

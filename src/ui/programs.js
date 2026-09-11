@@ -9,6 +9,7 @@ import { PROGRAMS } from '../data/programs.js';
 import { programDayPlan, FOCUS_LABEL } from '../data/plan.js';
 import { EXERCISES } from '../data/exercises.js';
 import { loadBody, loadProgramProgress, saveProgramProgress, removeProgramProgress, loadProgramHistory, archiveProgramProgress } from '../health/store.js';
+import { programBgUrl } from '../core/assets.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -117,6 +118,18 @@ export function renderProgramsScreen() {
   }
 }
 
+// 사진 있는 프로그램만 카드 배경을 씌운다(programs.js 의 bg, 선택 필드) —
+// 사진 없는 프로그램은 지금 카드 그대로 나온다. CSS 커스텀 프로퍼티로
+// 넘기는 이유: 배경 이미지 자체는 프로그램마다 다르지만 블러·스크림·글자색
+// 처리는 .program-card--photo 하나로 공통이라, 클래스는 그대로 두고
+// 값만 바꿔 끼운다.
+function bgClass(program) {
+  return program.bg ? ' program-card--photo' : '';
+}
+function bgStyle(program) {
+  return program.bg ? ` style="--program-bg:url('${programBgUrl(program.bg)}')"` : '';
+}
+
 function matchesSearch(p, term) {
   if (!term) return true;
   return (t(p.name) + ' ' + t(p.tagline)).toLowerCase().includes(term);
@@ -137,7 +150,7 @@ function renderProgramCards(term) {
     const history = !progress ? historyFor(p.id) : null;
     const totalDays = p.weeks * p.schedule.length;
     return `
-    <div class="card program-card">
+    <div class="card program-card${bgClass(p)}"${bgStyle(p)}>
       <div class="program-card-name">${esc(t(p.name))}</div>
       <p class="dim program-card-tag">${esc(t(p.tagline))}</p>
       ${p.disclaimer ? `<p class="dim program-disclaimer">${esc(t(p.disclaimer))}</p>` : ''}
@@ -204,7 +217,7 @@ function renderActive(program, progress) {
 
   return `
     ${backBtn}
-    <div class="card program-active">
+    <div class="card program-active${bgClass(program)}"${bgStyle(program)}>
       <div class="program-card-name">${esc(t(program.name))}</div>
       <p class="dim">${esc(t(S.programWeekDay).replace('%s', weekIdx + 1).replace('%s', dayOfWeek + 1))}</p>
       <p class="dim">${esc(t(S.programProgress).replace('%s', doneCount).replace('%s', totalDays))}</p>
