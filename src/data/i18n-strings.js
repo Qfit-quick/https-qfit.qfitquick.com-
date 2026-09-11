@@ -192,6 +192,7 @@ export const STATIC_UI = {
  programBackBtn: {ko:'← 목록', en:'← Programs', zh:'← 列表'},
  programSearchPlaceholder: {ko:'프로그램 검색 (예: 하체)', en:'Search programs (e.g. lower body)', zh:'搜索训练计划（例如：下肢）'},
  programSearchEmpty: {ko:"'%s'에 맞는 프로그램이 없어요", en:"No programs match '%s'", zh:"没有匹配“%s”的计划"},
+ programHistoryNote: {ko:'지난 기록: %s/%s일 완료 · %s에 그만둠', en:'Last try: %s/%s days done · quit %s', zh:'上次记录：完成%s/%s天 · %s退出'},
  programWeekDay: {ko:'%s주차 %s일차', en:'Week %s, Day %s', zh:'第%s周 第%s天'},
  programProgress: {ko:'진행 %s / %s일', en:'%s / %s days done', zh:'进度 %s / %s天'},
  programTodayFocus: {ko:'오늘 초점', en:"Today's focus", zh:'今天重点'},

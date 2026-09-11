@@ -8,7 +8,7 @@
 import { PROGRAMS } from '../data/programs.js';
 import { programDayPlan, FOCUS_LABEL } from '../data/plan.js';
 import { EXERCISES } from '../data/exercises.js';
-import { loadBody, loadProgramProgress, saveProgramProgress, removeProgramProgress } from '../health/store.js';
+import { loadBody, loadProgramProgress, saveProgramProgress, removeProgramProgress, loadProgramHistory, archiveProgramProgress } from '../health/store.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -68,6 +68,19 @@ function progressFor(programId) {
   return loadProgramProgress().find((p) => p.programId === programId) || null;
 }
 
+function historyFor(programId) {
+  return loadProgramHistory().find((h) => h.programId === programId) || null;
+}
+
+function formatDate(ts) {
+  const d = new Date(ts);
+  return t({
+    ko: `${d.getMonth() + 1}월 ${d.getDate()}일`,
+    en: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    zh: `${d.getMonth() + 1}月${d.getDate()}日`,
+  });
+}
+
 export function renderProgramsScreen() {
   const body = el('programs-body');
   if (!body) return;
@@ -121,12 +134,14 @@ function renderProgramCards(term) {
 
   container.innerHTML = filtered.map((p) => {
     const progress = progressFor(p.id);
+    const history = !progress ? historyFor(p.id) : null;
     const totalDays = p.weeks * p.schedule.length;
     return `
     <div class="card program-card">
       <div class="program-card-name">${esc(t(p.name))}</div>
       <p class="dim program-card-tag">${esc(t(p.tagline))}</p>
       ${p.disclaimer ? `<p class="dim program-disclaimer">${esc(t(p.disclaimer))}</p>` : ''}
+      ${history ? `<p class="dim program-history-note">${esc(t(S.programHistoryNote).replace('%s', history.completedDays).replace('%s', history.totalDays).replace('%s', formatDate(history.quitDate)))}</p>` : ''}
       ${progress
         ? `<p class="dim program-card-progress">${esc(t(S.programProgress).replace('%s', progress.completedDays.length).replace('%s', totalDays))}</p>
            <button type="button" class="primary program-continue-btn" data-program="${p.id}">${esc(t(S.programContinueBtn))}</button>`
@@ -237,6 +252,13 @@ function wireActive(program, progress) {
   });
   el('program-quit-btn')?.addEventListener('click', () => {
     if (!confirm(t(S.programQuitConfirm))) return;
+    archiveProgramProgress({
+      programId: program.id,
+      level: progress.level,
+      completedDays: progress.completedDays.length,
+      totalDays,
+      quitDate: Date.now(),
+    });
     removeProgramProgress(program.id);
     if (pendingDay && pendingDay.programId === program.id) pendingDay = null;
     viewingProgramId = null;

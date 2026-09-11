@@ -13,6 +13,7 @@ const BODY_KEY = 'qfit_body_v1';
 const LOG_KEY = 'qfit_daylog_v1';
 const LEGACY_WEIGHT_KEY = 'wodrush_weight_kg_v1';
 const PROGRAM_KEY = 'qfit_program_v1';
+const PROGRAM_HISTORY_KEY = 'qfit_program_history_v1';
 
 // 기록지는 하루에 한 줄씩 쌓인다. 400일이면 400줄 — 로컬 저장소에는
 // 넉넉하지만 무한히 두면 언젠가 한도에 닿는다. 400일을 넘긴 것은 버린다.
@@ -280,6 +281,21 @@ export function removeProgramProgress(programId) {
   write(PROGRAM_KEY, list);
 }
 
+// 그만두면 진행도가 그냥 사라졌다 — 어디까지 했었는지 흔적이 하나도
+// 안 남는 게 아쉽다는 피드백. 프로그램 하나당 가장 최근 한 번만 남긴다
+// (계속 다시 도전할 수 있으니 쌓아둘 필요는 없다 — 지난 시도 하나면 충분).
+export function loadProgramHistory() {
+  const raw = read(PROGRAM_HISTORY_KEY, []);
+  return Array.isArray(raw) ? raw : [];
+}
+
+/** 진행 중이던 기록 하나를 '그만둔 기록'으로 남긴다. */
+export function archiveProgramProgress(entry) {
+  const list = loadProgramHistory().filter((h) => h.programId !== entry.programId);
+  list.push(entry);
+  write(PROGRAM_HISTORY_KEY, list);
+}
+
 export function clearAllProgramProgress() {
   try {
     localStorage.removeItem(PROGRAM_KEY);
@@ -294,6 +310,7 @@ export function wipeHealthData() {
     localStorage.removeItem(BODY_KEY);
     localStorage.removeItem(LOG_KEY);
     localStorage.removeItem(PROGRAM_KEY);
+    localStorage.removeItem(PROGRAM_HISTORY_KEY);
   } catch (e) {
     console.error('wipe health data failed:', e);
   }
