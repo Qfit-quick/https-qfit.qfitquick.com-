@@ -949,3 +949,5 @@
 .program-focus-row { display: flex; align-items: center; gap: var(--s-2); }
 .program-back-btn { margin-bottom: var(--s-3); }
 .program-done { align-items: center; text-align: center; }
+.program-search-wrap { margin-bottom: var(--s-3); }
+.program-search-empty { padding: var(--s-4) 0; text-align: center; }

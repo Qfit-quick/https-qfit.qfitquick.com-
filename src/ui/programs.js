@@ -86,12 +86,40 @@ export function renderProgramsScreen() {
     return;
   }
 
-  body.innerHTML = renderList();
-  wireList();
+  // 검색칸은 카드 목록과 따로 둔다 — 카드만 다시 그려야 입력 중 커서가
+  // 안 튄다(직접선택 화면의 동작 검색과 같은 구조, app.js renderExGrid).
+  body.innerHTML = `
+    <label class="inp-wrap program-search-wrap">
+      <span class="inp-ic" data-icon="search"></span>
+      <input type="text" id="program-search-input" class="inp search-input" placeholder="${esc(t(S.programSearchPlaceholder))}" aria-label="${esc(t(S.programSearchPlaceholder))}">
+    </label>
+    <div class="program-list" id="program-list"></div>
+  `;
+  renderProgramCards('');
+  const searchInput = el('program-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      renderProgramCards(searchInput.value.trim().toLowerCase());
+    });
+  }
 }
 
-function renderList() {
-  return '<div class="program-list">' + PROGRAMS.map((p) => {
+function matchesSearch(p, term) {
+  if (!term) return true;
+  return (t(p.name) + ' ' + t(p.tagline)).toLowerCase().includes(term);
+}
+
+function renderProgramCards(term) {
+  const container = el('program-list');
+  if (!container) return;
+  const filtered = PROGRAMS.filter((p) => matchesSearch(p, term));
+
+  if (!filtered.length) {
+    container.innerHTML = `<p class="dim program-search-empty">${esc(t(S.programSearchEmpty).replace('%s', term))}</p>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map((p) => {
     const progress = progressFor(p.id);
     const totalDays = p.weeks * p.schedule.length;
     return `
@@ -106,11 +134,13 @@ function renderList() {
             `<button type="button" class="sec2 program-level-btn" data-program="${p.id}" data-level="${lv}">${esc(t(S[LEVEL_LABEL_KEY[lv]]))}</button>`
           ).join('')}</div>`}
     </div>`;
-  }).join('') + '</div>';
+  }).join('');
+
+  wireCards(container);
 }
 
-function wireList() {
-  document.querySelectorAll('.program-level-btn').forEach((btn) => {
+function wireCards(container) {
+  container.querySelectorAll('.program-level-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const list = loadProgramProgress();
       const programId = btn.dataset.program;
@@ -122,7 +152,7 @@ function wireList() {
       renderProgramsScreen();
     });
   });
-  document.querySelectorAll('.program-continue-btn').forEach((btn) => {
+  container.querySelectorAll('.program-continue-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       viewingProgramId = btn.dataset.program;
       renderProgramsScreen();
