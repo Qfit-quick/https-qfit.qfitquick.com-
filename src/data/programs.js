@@ -15,6 +15,8 @@
 //   'glute'  — 이 파일 안의 GLUTE_KEYS 직접 지정(부위 특화라 일반 pool
 //              로테이션이 안 맞는다 — 힙브릿지가 muscle-groups.js 에서는
 //              코어로 분류돼 있어서 'lower' 로는 못 집는다)
+//   'hotnight' — 이 파일 안의 HOT_NIGHT_KEYS 직접 지정(누워서/바닥에서
+//              하는 하체·둔근 동작만)
 //   'rest'   — 쉬는 날
 //
 // 하이록스·F45 면책: 이 앱은 맨몸운동 24개뿐이라 실제 종목(썰매·로잉 등
@@ -22,6 +24,11 @@
 // 강도·구성 방식을 맨몸운동으로 옮긴 버전이며, 화면에도 이 사실을 적는다.
 
 export const GLUTE_KEYS = ['HIPBRIDGE', 'SQUAT', 'LUNGE', 'COSSACKSQUAT'];
+
+// '뜨거운 밤' 전용 — 하체·둔근을 노리되 전부 누워서(또는 바닥에 앉아서)
+// 하는 동작만 골랐다(2026-09-12). GLUTE_KEYS 와 다른 점: 저건 서서 하는
+// 스쿼트·런지도 섞여 있지만, 이건 매트 위에서 안 일어나도 되는 것만 남긴다.
+export const HOT_NIGHT_KEYS = ['HIPBRIDGE', 'LEGRAISE', 'DEADBUG', 'VUP', 'CRUNCH'];
 
 export const PROGRAMS = [
   {
@@ -82,5 +89,12 @@ export const PROGRAMS = [
     name: { ko: '엉덩이 2주', en: '2-Week Glutes', zh: '2周臀部' },
     tagline: { ko: '힙브릿지·스쿼트·런지 등 둔근 위주 동작만 모았어요', en: 'Hip bridges, squats, lunges — glute-focused moves only', zh: '臀桥、深蹲、弓步等以臀部为主的动作' },
     schedule: ['glute', 'rest', 'glute', 'glute', 'rest', 'glute', 'rest'],
+  },
+  {
+    id: 'hotnight',
+    weeks: 2,
+    name: { ko: '뜨거운 밤 2주', en: 'Hot Night 2-Week', zh: '火热之夜 2周' },
+    tagline: { ko: '누워서 하는 하체·둔근 동작만 모았어요 — 매트만 있으면 됩니다', en: 'Lying-down lower-body and glute moves only — just need a mat', zh: '只挑选躺着做的下肢与臀部动作 — 有垫子就够了' },
+    schedule: ['hotnight', 'rest', 'hotnight', 'hotnight', 'rest', 'hotnight', 'rest'],
   },
 ];

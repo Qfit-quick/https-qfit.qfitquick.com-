@@ -23,7 +23,7 @@ import { MUSCLE_GROUPS } from './muscle-groups.js';
 import { FOOD_BY_TAG, FOOD_BY_KEY, MEAL_SPLIT } from './foods.js';
 import { INTENSITY } from './checkin.js';
 import { AI_GOAL_POOLS } from './ai-goals.js';
-import { GLUTE_KEYS } from './programs.js';
+import { GLUTE_KEYS, HOT_NIGHT_KEYS } from './programs.js';
 
 // ── 선택지 ────────────────────────────────────────────────────
 
@@ -233,6 +233,7 @@ export const FOCUS_LABEL = {
   diet:   {ko:'고강도 유산소', en:'High-intensity cardio', zh:'高强度有氧'},
   cardio: {ko:'기능성 유산소', en:'Functional cardio', zh:'功能性有氧'},
   glute:  {ko:'둔근 집중', en:'Glute focus', zh:'臀部专项'},
+  hotnight: {ko:'바닥 하체 집중', en:'Floor lower-body focus', zh:'地面下肢专项'},
 };
 
 export const DOW_LABEL = [
@@ -324,6 +325,7 @@ const PROGRAM_FOCUS_POOL = {
   cardio: () => groupKeys('full'), // muscle-groups.js 의 '전신'(기능성 유산소 5개)
   diet: () => AI_GOAL_POOLS.diet,
   glute: () => GLUTE_KEYS,
+  hotnight: () => HOT_NIGHT_KEYS,
 };
 
 /**
