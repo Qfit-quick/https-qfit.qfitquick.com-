@@ -66,6 +66,7 @@ export const PROGRAMS = [
     name: { ko: '다이어트 3주', en: '3-Week Fat Loss', zh: '3周减脂' },
     tagline: { ko: '체지방 감량에 초점을 둔 고강도 유산소 위주', en: 'High-intensity cardio focused on fat loss', zh: '以减脂为核心的高强度有氧' },
     schedule: ['diet', 'core', 'diet', 'rest', 'diet', 'cardio', 'rest'],
+    bg: 'diet3.webp',
   },
   {
     id: 'muscle3',
@@ -80,6 +81,7 @@ export const PROGRAMS = [
     name: { ko: '하체 3주', en: '3-Week Lower Body', zh: '3周下肢' },
     tagline: { ko: '하체 위주, 중간에 코어 하루로 균형', en: 'Lower-body focused, with a core day for balance', zh: '以下肢为主，中间穿插核心日保持平衡' },
     schedule: ['lower', 'rest', 'lower', 'core', 'lower', 'rest', 'lower'],
+    bg: 'lower3.webp',
   },
   {
     id: 'arm3',
@@ -87,6 +89,7 @@ export const PROGRAMS = [
     name: { ko: '팔뚝살 3주', en: '3-Week Arm Slimming', zh: '3周瘦手臂' },
     tagline: { ko: '상체 근력 + 고강도 유산소로 팔 라인 정리', en: 'Upper-body strength + high-intensity cardio to tone the arms', zh: '上肢力量 + 高强度有氧，塑造手臂线条' },
     schedule: ['upper', 'diet', 'rest', 'upper', 'diet', 'upper', 'rest'],
+    bg: 'arm3.webp',
   },
   {
     id: 'glute2',
