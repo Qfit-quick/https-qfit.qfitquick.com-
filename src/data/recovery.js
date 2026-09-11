@@ -158,6 +158,31 @@ export const INJURY_GUIDES = [
   ],
   warn:{ko:'병원 방문 신호: 다리로 저림·힘 빠짐이 뻗치거나, 기침·재채기할 때 통증이 심해지거나, 1주 이상 지속되면 반드시 진료를 받아보십시오.', en:'See a doctor if: numbness or weakness runs down your leg, coughing or sneezing makes it worse, or it lasts over a week.', zh:'就医信号：麻木或无力延伸到腿部、咳嗽打喷嚏时加剧，或持续一周以上，务必就诊。'},
  },
+ { id:'hamstring', part:{ko:'허벅지 뒤(햄스트링)', en:'Hamstring', zh:'腘绳肌（大腿后侧）'},
+  groups:[
+   { h:{ko:'흔한 원인', en:'Common causes', zh:'常见原因'}, items:[
+    {ko:'런지 착지 시 뒤로 뻗은 다리의 햄스트링이 늘어난 채로 체중을 반복해서 받음', en:"The trailing leg's hamstring stretching under repeated load when landing a lunge", zh:'弓步落地时，后侧腿的腘绳肌在拉伸状态下反复承重'},
+    {ko:'힙브릿지에서 엉덩이를 튀기듯 반동으로 들어올림', en:'Bouncing the hips up with momentum in hip bridges', zh:'臀桥时借助反弹猛地抬起臀部'},
+    {ko:'제자리 달리기·버피에서 준비운동 없이 갑자기 무릎을 높이 차올림', en:'Suddenly driving the knees high in running in place or burpees without warming up', zh:'原地跑、波比跳时没有热身就突然高抬膝'},
+    {ko:'점프스쿼트 착지 충격을 무릎이 다 못 받아 뒤쪽 허벅지가 대신 버팀', en:'The knee not absorbing all the landing impact from jump squats, so the back of the thigh takes over', zh:'跳跃深蹲落地冲击膝盖没能全部吸收，转由大腿后侧承担'},
+   ] },
+   { h:{ko:'증상', en:'Symptoms', zh:'症状'}, items:[
+    {ko:'허벅지 뒤쪽이 당기거나 뻐근함, 심하면 순간적으로 \'뚝\' 하며 찌릿한 통증', en:"Tightness or a dull ache at the back of the thigh, or a sudden sharp 'pop' of pain in severe cases", zh:'大腿后侧发紧或酸胀，严重时会突然“啪”地一下剧痛'},
+    {ko:'다리를 펴거나 앉았다 일어날 때, 계단 내려갈 때 통증이 심해짐', en:'Pain worsens when straightening the leg, standing up from sitting, or going down stairs', zh:'伸直腿、久坐后起身或下楼梯时疼痛加剧'},
+   ] },
+   { h:{ko:'즉시 대처', en:'What to do right away', zh:'立即处理'}, items:[
+    {ko:'즉시 운동 중단, 다리를 편하게 펴고 휴식', en:'Stop training immediately and rest with the leg extended comfortably', zh:'立即停止训练，舒适地伸直腿休息'},
+    {ko:'냉찜질 15~20분, 하루 2~3회 (첫 48시간)', en:'Ice 15–20 minutes, 2–3 times a day (first 48 hours)', zh:'冷敷15~20分钟，每天2~3次（前48小时）'},
+    {ko:'절뚝일 정도면 걷는 것도 최소화하고 다리를 심장보다 높게 두기', en:"If you're limping, minimise walking too and keep the leg above heart level", zh:'如果跛行明显，也要尽量少走动，并把腿抬到高于心脏的位置'},
+   ] },
+   { h:{ko:'회복 관리', en:'Recovery', zh:'恢复与调整'}, items:[
+    {ko:'통증이 가라앉으면 반동 없이, 통증 없는 범위까지만 아주 가벼운 스트레칭부터', en:'Once pain eases, start with very gentle stretching — no bouncing, only within a pain-free range', zh:'疼痛缓解后，从非常轻柔的拉伸开始 — 不借助反弹，只做到不痛的范围'},
+    {ko:'복귀 시 런지·힙브릿지는 낮은 강도로 반동 없이 천천히', en:'Coming back, do lunges and hip bridges at low intensity, slowly and without momentum', zh:'复出时弓步、臀桥要低强度、慢慢做，不借力'},
+    {ko:'제자리 달리기·점프스쿼트·버피처럼 순간적으로 힘을 쓰는 동작은 통증이 완전히 사라진 뒤 가장 나중에 복귀', en:'Bring back explosive moves like running in place, jump squats and burpees last, only once pain is completely gone', zh:'原地跑、跳跃深蹲、波比跳这类爆发性动作最后恢复，且要等疼痛完全消失后再进行'},
+   ] },
+  ],
+  warn:{ko:'병원 방문 신호: 허벅지 뒤쪽에 멍이 크게 들거나, 걷기 힘들 정도로 힘이 빠지거나, 2주 이상 낫지 않으면 정형외과 진료를 받아보십시오.', en:"See a doctor if: there's significant bruising at the back of the thigh, you're too weak to walk normally, or it hasn't improved after two weeks.", zh:'就医信号：大腿后侧大片淤青、虚弱到难以正常行走，或两周以上仍未好转，请就诊骨科。'},
+ },
  { id:'knee', part:{ko:'무릎', en:'Knee', zh:'膝盖'},
   groups:[
    { h:{ko:'흔한 원인', en:'Common causes', zh:'常见原因'}, items:[
