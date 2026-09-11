@@ -406,6 +406,8 @@ export const STATIC_UI = {
  logWater: {ko:'물', en:'Water', zh:'饮水'},
  logWeight: {ko:'오늘 체중', en:'Weight today', zh:'今日体重'},
  logWeightNote: {ko:'여기 적으면 신체정보의 체중도 같이 바뀝니다 — 계획이 옛 체중으로 계산되지 않게.', en:'Entering it here also updates your body info, so the plan is never calculated from an old weight.', zh:'在这里填写会同时更新身体信息，避免计划用旧体重计算。'},
+ logWeightChartTitle: {ko:'체중 변화', en:'Weight trend', zh:'体重变化'},
+ logWeightChartEmpty: {ko:'체중을 며칠 더 적으면 여기 변화 그래프가 나와요', en:'Log your weight a few more days to see the trend here', zh:'再多记录几天体重，这里就会显示变化趋势'},
  logCheckin: {ko:'아침 체크인', en:'Morning check-in', zh:'早间打卡'},
  logRecent: {ko:'최근 14일', en:'Last 14 days', zh:'最近14天'},
  logStreaks: {ko:'운동 %s일 · 식단 %s일 연속', en:'%s-day workout · %s-day diet streak', zh:'训练连续%s天 · 饮食连续%s天'},

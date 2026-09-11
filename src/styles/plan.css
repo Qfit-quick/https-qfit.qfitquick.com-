@@ -658,6 +658,15 @@ body.gated { overflow: hidden; }
 .log-weight-row .inp-wrap { flex: 1 1 auto; min-width: 0; }
 /* 아이콘 자리로 비워 둔 왼쪽 40px 을 되돌린다(신체정보 칸과 같은 이유). */
 .log-weight-row .inp { padding: 0 34px 0 12px; text-align: right; }
+/* 체중 변화 점그래프(2026-09-12). 적어 둔 날만 잇는 선이라 x축 간격이
+   날짜가 아니라 '적은 순서' 다 — 매일 안 적어도 그래프가 뜨문뜨문
+   비어 보이지 않는다. */
+.log-weight-chart-wrap { display: flex; flex-direction: column; gap: var(--s-2); }
+.log-weight-chart-cap { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); font-size: var(--t-xs); color: var(--text-dim); }
+.log-weight-chart-delta { font-weight: 700; color: var(--text); }
+.log-weight-chart { width: 100%; height: 64px; display: block; }
+.log-weight-line { fill: none; stroke: var(--mint); stroke-width: 2; }
+.log-weight-dot { fill: var(--mint); }
 .log-mood-row { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
 .log-mood-v { font-size: var(--t-sm); color: var(--text-dim); }
 /* base.css 의 img{display:block} 을 되돌린다 — 이 아이콘은 문장 속 글자처럼

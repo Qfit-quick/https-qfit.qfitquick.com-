@@ -190,6 +190,20 @@ export function dayStatus(day) {
   return 'none';
 }
 
+/** 체중을 적어 둔 날만, 최근 n 일 중 오래된 것부터 [{date, weightKg}] 로.
+ * 기록지의 체중 변화 그래프가 쓴다 — 안 적은 날까지 0으로 채우면 그래프가
+ * 들쭉날쭉한 가짜 변화를 보여 주므로, 실제로 적은 날만 골라 잇는다. */
+export function weightHistory(n, endDate = dayKey()) {
+  const log = loadLog();
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const date = shiftDay(endDate, -i);
+    const w = log[date] && log[date].weightKg;
+    if (w != null) out.push({ date, weightKg: w });
+  }
+  return out;
+}
+
 /** 최근 n 일을 오래된 것부터 [{date, day, status}] 로. 스트립·캘린더가 쓴다. */
 export function recentDays(n, endDate = dayKey()) {
   const log = loadLog();

@@ -10,7 +10,7 @@
 
 import {
   dayKey, loadDay, saveDay, dietState, dayStatus,
-  recentDays, streakOf, monthTally, loadBody, saveBody,
+  recentDays, streakOf, monthTally, loadBody, saveBody, weightHistory,
 } from '../health/store.js';
 import { MEAL_SPLIT } from '../data/foods.js';
 import { MOOD_OPTIONS, DRIVE_OPTIONS } from '../data/checkin.js';
@@ -121,6 +121,44 @@ const WATER_MAX = 3000;
 // 이미 검증된 '병 채우기' 그림이라 굳이 새로 그리지 않는다.
 const BOTTLE_TOP = 34, BOTTLE_BOTTOM = 104, BOTTLE_H = BOTTLE_BOTTOM - BOTTLE_TOP;
 
+function shortDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return t({
+    ko: `${d.getMonth() + 1}/${d.getDate()}`,
+    en: d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
+    zh: `${d.getMonth() + 1}/${d.getDate()}`,
+  });
+}
+
+// 체중 변화 점그래프. 적어 둔 날만 잇는다(weightHistory 참고) — 하루짜리는
+// 선을 그을 수 없어 점 하나만 찍고, 아예 없으면 안내 문구로 대신한다.
+const WEIGHT_CHART_W = 280, WEIGHT_CHART_H = 64, WEIGHT_CHART_PAD = 8;
+function weightChartHtml(points) {
+  if (points.length < 2) {
+    return `<p class="dim log-note">${esc(t(S.logWeightChartEmpty))}</p>`;
+  }
+  const weights = points.map((p) => p.weightKg);
+  const min = Math.min(...weights);
+  const max = Math.max(...weights);
+  const range = max - min || 1; // 전부 같은 값이면 가운데 한 줄로
+  const stepX = (WEIGHT_CHART_W - WEIGHT_CHART_PAD * 2) / (points.length - 1);
+  const yFor = (w) => WEIGHT_CHART_H - WEIGHT_CHART_PAD - ((w - min) / range) * (WEIGHT_CHART_H - WEIGHT_CHART_PAD * 2);
+  const coords = points.map((p, i) => [WEIGHT_CHART_PAD + i * stepX, yFor(p.weightKg)]);
+  const first = points[0], last = points[points.length - 1];
+  const delta = last.weightKg - first.weightKg;
+  const deltaSign = delta > 0 ? '+' : '';
+
+  return '<div class="log-weight-chart-cap">' +
+    `<span>${esc(shortDate(first.date))} · ${first.weightKg}kg</span>` +
+    `<span class="log-weight-chart-delta">${deltaSign}${delta.toFixed(1)}kg</span>` +
+    `<span>${esc(shortDate(last.date))} · ${last.weightKg}kg</span>` +
+    '</div>' +
+    `<svg class="log-weight-chart" viewBox="0 0 ${WEIGHT_CHART_W} ${WEIGHT_CHART_H}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">` +
+    `<polyline class="log-weight-line" points="${coords.map((c) => c.join(',')).join(' ')}"></polyline>` +
+    coords.map(([x, y]) => `<circle class="log-weight-dot" cx="${x}" cy="${y}" r="3"></circle>`).join('') +
+    '</svg>';
+}
+
 function paintExtra(dateStr) {
   const box = el('log-extra');
   if (!box) return;
@@ -172,6 +210,10 @@ function paintExtra(dateStr) {
     '<span class="inp-unit">kg</span></span>' +
     '</div>';
   html += `<p class="dim log-note">${esc(t(S.logWeightNote))}</p>`;
+
+  // 체중 변화 그래프. 적은 날만 있으면 잇는다(최근 90일 안에서).
+  html += `<div class="section-label">${esc(t(S.logWeightChartTitle))}</div>`;
+  html += '<div class="log-weight-chart-wrap">' + weightChartHtml(weightHistory(90, dateStr)) + '</div>';
 
   // 아침 설문 답. 버려지는 질문이 아니게 하려면 되돌아볼 자리가 있어야 한다.
   if (mood || drive) {
@@ -374,6 +416,9 @@ export function initLog({ translate, STATIC_UI, onShowScreen } = {}) {
       const date = dayKey();
       saveDay(date, { weightKg: v });
       saveBody({ weightKg: v });
+      // 방금 적은 값이 그래프에 바로 잡히게 다시 그린다 — 안 그러면
+      // 화면을 나갔다 들어와야만 오늘 점이 보인다.
+      paintExtra(date);
     });
 
     el('log-back-btn')?.addEventListener('click', () => goScreen('start-screen'));
