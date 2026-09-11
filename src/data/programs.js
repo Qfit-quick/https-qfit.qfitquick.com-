@@ -27,7 +27,7 @@ export const PROGRAMS = [
   {
     id: 'hyrox',
     weeks: 3,
-    name: { ko: '하이록스 스타일', en: 'Hyrox-style', zh: 'Hyrox风格' },
+    name: { ko: '하이록스 3주', en: 'Hyrox 3-Week', zh: 'Hyrox 3周' },
     tagline: { ko: '고강도 유산소 + 기능성 서킷', en: 'High-intensity cardio + functional circuits', zh: '高强度有氧 + 功能性循环' },
     disclaimer: {
       ko: '실제 하이록스 종목(썰매·로잉 등 기구)이 아니라, 그 강도를 맨몸운동으로 옮긴 버전입니다.',
@@ -38,8 +38,8 @@ export const PROGRAMS = [
   },
   {
     id: 'f45',
-    weeks: 3,
-    name: { ko: 'F45 스타일', en: 'F45-style', zh: 'F45风格' },
+    weeks: 2,
+    name: { ko: 'F45 2주', en: 'F45 2-Week', zh: 'F45 2周' },
     tagline: { ko: '전신 서킷 트레이닝', en: 'Full-body circuit training', zh: '全身循环训练' },
     disclaimer: {
       ko: '실제 F45 스튜디오 기구 서킷이 아니라, 그 방식을 맨몸운동으로 옮긴 버전입니다.',

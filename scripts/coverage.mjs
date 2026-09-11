@@ -78,6 +78,9 @@ const IGNORE = new Set([
   // 바텀시트 닫기 버튼. 보이는 모양은 .icb 가 다 정하고, 이 이름은
   // sheet.js 가 querySelector 로 집는 손잡이다(스타일이 없는 게 정상).
   'sheet-close',
+  // 프로그램 목록의 '이어하기' 버튼. 보이는 모양은 .primary 가 다 정하고,
+  // 이 이름은 programs.js 가 '고르는 버튼'과 구분해 집는 손잡이다.
+  'program-continue-btn',
 ]);
 
 const missing = [...used]

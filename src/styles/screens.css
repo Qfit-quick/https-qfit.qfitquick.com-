@@ -919,9 +919,11 @@
 /* 기록 화면 본문. 기록이 없으면 통째로 감춘다(빈 상태가 대신 나온다). */
 .records-body { display: flex; flex-direction: column; gap: var(--s-5); }
 
-/* ── 프로그램(2026-09-11) ─────────────────────────────────
+/* ── 프로그램(2026-09-11, 2026-09-12 가독성 손봄) ──────────────
    목록 카드 여럿과, 진행 중일 때 카드 하나. .card 는 테두리만 정하므로
-   안쪽 여백은 여기서 준다(plan.css 의 카드들과 같은 관례). */
+   안쪽 여백은 여기서 준다(plan.css 의 카드들과 같은 관례).
+   카드마다 테두리가 흰 배경과 안 구별된다는 피드백 — plan.css 의
+   오늘 카드와 같은 그라데이션 테두리를 여기도 준다. */
 .program-list { display: flex; flex-direction: column; gap: var(--s-3); }
 .program-card,
 .program-active,
@@ -930,11 +932,20 @@
   flex-direction: column;
   gap: var(--s-2);
   padding: var(--s-4);
+  border: 2px solid transparent;
+  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg in oklch, var(--mint), var(--accent));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 .program-card-name { font-size: var(--t-lg); font-weight: 800; }
 .program-card-tag { font-size: var(--t-sm); }
+/* 실제 종목이 아니라는 면책 문구는 본문보다 눈에 덜 걸려야 한다 —
+   크기만으로 부차적임을 나타낸다. 색까지 더 흐리게 하면(dim 에 opacity
+   까지 겹치면) 대비가 너무 떨어져 이 화면을 고친 이유와 어긋난다. */
 .program-disclaimer { font-size: var(--t-xs); }
+.program-card-progress { font-size: var(--t-sm); font-weight: 600; }
 .program-level-row { display: flex; gap: var(--s-2); margin-top: var(--s-2); }
 .program-level-btn { flex: 1; }
 .program-focus-row { display: flex; align-items: center; gap: var(--s-2); }
+.program-back-btn { margin-bottom: var(--s-3); }
 .program-done { align-items: center; text-align: center; }

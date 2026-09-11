@@ -58,7 +58,11 @@
 
 /* (1) 채운 것 — 화면에서 제일 중요한 행동 하나.
    단색 대신 브랜드 두 색(민트·노랑)을 살짝 섞는다(2026-09-11) — 이 앱의
-   유일한 두 브랜드 색이라 섞어도 낯선 색이 끼어들지 않는다. */
+   유일한 두 브랜드 색이라 섞어도 낯선 색이 끼어들지 않는다.
+   보간을 꼭 oklch 로 한다(2026-09-12) — 기본(sRGB)으로 노랑↔민트를
+   섞으면 두 색이 서로 거의 보색이라 중간 지점이 탁한 카키색으로
+   가라앉는다. oklch 는 밝기·채도를 유지한 채로만 색상을 돌려서
+   중간에도 선명함이 안 죽는다. */
 .primary {
   display: flex;
   align-items: center;
@@ -68,7 +72,7 @@
   padding: var(--s-4) var(--s-6);
   border: none;
   border-radius: var(--r-full);
-  background: linear-gradient(135deg, var(--accent), var(--mint));
+  background: linear-gradient(135deg in oklch, var(--accent), var(--mint));
   color: var(--on-accent);
   font-size: var(--t-lg);
   font-weight: 700;

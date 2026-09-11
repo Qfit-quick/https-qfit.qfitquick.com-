@@ -256,21 +256,31 @@ export function logToCsv() {
 
 // ── 프로그램 진행도 ───────────────────────────────────────────
 //
-// 한 번에 하나만 진행한다 — 두 프로그램을 동시에 하면 '오늘 뭘 할
-// 차례인지'가 둘로 갈린다. { programId, level, startDate, completedDays }.
-// completedDays 는 달력 날짜가 아니라 '몇 번째를 끝냈나'다 — 하루
-// 쉬어도 진도가 밀리지 않게(이 앱의 스트릭 계산도 날짜가 아니라
-// 완료 횟수 기준으로 관대하게 세는 쪽을 택해 왔다).
+// 여러 프로그램을 동시에 진행할 수 있다(2026-09-12, 피드백으로 바꿈 —
+// 처음엔 하나만 되게 했었다). 배열로 둔다: [{ programId, level, startDate,
+// completedDays }, ...] 프로그램 하나당 항목 하나, 시작 안 한 건 배열에
+// 없다. completedDays 는 달력 날짜가 아니라 '몇 번째를 끝냈나'다 — 하루
+// 쉬어도 진도가 밀리지 않게(이 앱의 스트릭 계산도 날짜가 아니라 완료
+// 횟수 기준으로 관대하게 세는 쪽을 택해 왔다).
 
+/** 옛 버전(단일 객체)으로 저장된 값도 배열로 바꿔서 돌려준다. */
 export function loadProgramProgress() {
-  return read(PROGRAM_KEY, null);
+  const raw = read(PROGRAM_KEY, []);
+  if (!raw) return [];
+  return Array.isArray(raw) ? raw : [raw];
 }
 
-export function saveProgramProgress(progress) {
-  write(PROGRAM_KEY, progress);
+export function saveProgramProgress(list) {
+  write(PROGRAM_KEY, list);
 }
 
-export function clearProgramProgress() {
+/** 프로그램 하나만 그만둔다 — 나머지 진행 중인 프로그램은 그대로 둔다. */
+export function removeProgramProgress(programId) {
+  const list = loadProgramProgress().filter((p) => p.programId !== programId);
+  write(PROGRAM_KEY, list);
+}
+
+export function clearAllProgramProgress() {
   try {
     localStorage.removeItem(PROGRAM_KEY);
   } catch (e) {

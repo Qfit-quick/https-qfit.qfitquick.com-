@@ -188,6 +188,8 @@ export const STATIC_UI = {
  programLevelHard: {ko:'고수', en:'Advanced', zh:'高级'},
  programStartBtn: {ko:'시작하기', en:'Start', zh:'开始'},
  programQuitBtn: {ko:'그만두기', en:'Quit program', zh:'退出计划'},
+ programContinueBtn: {ko:'이어하기', en:'Continue', zh:'继续'},
+ programBackBtn: {ko:'← 목록', en:'← Programs', zh:'← 列表'},
  programWeekDay: {ko:'%s주차 %s일차', en:'Week %s, Day %s', zh:'第%s周 第%s天'},
  programProgress: {ko:'진행 %s / %s일', en:'%s / %s days done', zh:'进度 %s / %s天'},
  programTodayFocus: {ko:'오늘 초점', en:"Today's focus", zh:'今天重点'},
