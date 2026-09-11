@@ -156,6 +156,13 @@
  <span class="row-ic" data-icon="spark"></span>
  <span class="row-main"><span class="row-t" data-i18n="aiModeBtn">AI로 시작하기</span><span class="row-d" data-i18n="aiModeSub">질문 2개로 끝</span></span>
  </button>
+ <!-- 아픈 부위 회피(2026-09-10). 직접선택·랜덤선택·AI시작 세 길 모두
+      selectedExKeys 를 정하기 전에 이 값(painArea)을 먼저 본다 — 줄을
+      하나만 두면 세 길이 전부 같은 설정을 보게 된다. -->
+ <button class="row44 card" id="pain-area-btn" type="button">
+ <span class="row-ic" data-icon="heart"></span>
+ <span class="row-main"><span class="row-t" data-i18n="painAreaBtn">아픈 부위 피하기</span><span class="row-d dim" id="pain-area-sub" data-i18n="painAreaOff">선택 안 함</span></span>
+ </button>
  <button class="row44 card row-mint repeat-trigger-btn" id="repeat-trigger-start" type="button" style="display:none;">
  <span class="row-ic" data-icon="repeat"></span>
  <span class="row-main"><span class="row-t" data-i18n="repeatLast">지난 루틴 다시 시작</span><span class="row-d dim" id="repeat-trigger-sub"></span></span>
@@ -698,6 +705,15 @@
  <button class="icb stepper-btn" id="stepper-up" type="button" aria-label="늘리기" data-icon="plus"></button>
  </div>
  <button class="primary" id="stepper-apply" data-i18n="applyBtn">적용</button>
+ </div>
+
+ <!-- 아픈 부위 고르기 시트(2026-09-10). 부위 목록은 회복 화면의
+      INJURY_GUIDES 와 같은 7개를 그대로 쓴다(JS 가 채운다) — 목록이
+      둘로 갈리면 회피 목록과 회복 안내가 서로 다른 부위를 말하게 된다. -->
+ <div class="pain-area-panel" id="pain-area-panel" style="display:none;">
+ <p class="dim" data-i18n="painAreaHint">아픈 데가 있으면 그 부위에 부담 가는 동작을 뺍니다.</p>
+ <div class="chip-row" id="pain-area-chips"></div>
+ <button class="link-btn pain-area-link" id="pain-area-recovery-link" type="button" hidden></button>
  </div>
 
  </div>

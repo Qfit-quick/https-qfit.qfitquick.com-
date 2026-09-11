@@ -37,8 +37,10 @@ export const RECOVERY_CARDS = [
   ] },
 ];
 
+// id 는 부위별 부상 대처법을 다른 데이터(운동 회피 목록 등)와 연결하는
+// 키다. part 는 언어별 표시용 문구라 그대로는 키로 못 쓴다.
 export const INJURY_GUIDES = [
- { part:{ko:'목', en:'Neck', zh:'颈部'},
+ { id:'neck', part:{ko:'목', en:'Neck', zh:'颈部'},
   groups:[
    { h:{ko:'흔한 원인', en:'Common causes', zh:'常见原因'}, items:[
     {ko:'크런치·레그레이즈할 때 손으로 머리를 억지로 당기며 목에 힘을 줌', en:'Yanking your head with your hands during crunches or leg raises', zh:'做卷腹、举腿时用手硬拉头部，颈部发力'},
@@ -62,7 +64,7 @@ export const INJURY_GUIDES = [
   ],
   warn:{ko:'병원 방문 신호: 팔로 저림·마비가 이어지거나, 두통이 심하거나, 3~4일이 지나도 호전이 없으면 정형외과·재활의학과 진료를 받아보십시오.', en:'See a doctor if: tingling or numbness runs into your arm, headaches are severe, or there\'s no improvement after 3–4 days.', zh:'就医信号：麻木或无力延伸到手臂、头痛严重，或3~4天仍无好转，请就诊骨科或康复科。'},
  },
- { part:{ko:'어깨', en:'Shoulder', zh:'肩部'},
+ { id:'shoulder', part:{ko:'어깨', en:'Shoulder', zh:'肩部'},
   groups:[
    { h:{ko:'흔한 원인', en:'Common causes', zh:'常见原因'}, items:[
     {ko:'푸쉬업·파이크푸쉬업·플랭크에서 어깨가 으쓱 올라가거나 팔꿈치가 과도하게 벌어짐', en:'Shoulders shrugging up or elbows flaring wide in push-ups, pike push-ups or planks', zh:'俯卧撑、派克撑、平板支撑时耸肩或肘部过度外展'},
@@ -86,7 +88,7 @@ export const INJURY_GUIDES = [
   ],
   warn:{ko:'병원 방문 신호: 팔을 옆으로 들어 올리기 힘들 정도의 힘 빠짐, 밤에 통증으로 잠을 깨는 경우, 1주 이상 통증이 지속되면 정형외과 진료가 필요합니다.', en:'See a doctor if: you can barely lift the arm sideways, pain wakes you at night, or it lasts over a week.', zh:'就医信号：手臂难以侧举、夜间被痛醒，或疼痛持续一周以上，需就诊骨科。'},
  },
- { part:{ko:'팔꿈치', en:'Elbow', zh:'肘部'},
+ { id:'elbow', part:{ko:'팔꿈치', en:'Elbow', zh:'肘部'},
   groups:[
    { h:{ko:'흔한 원인', en:'Common causes', zh:'常见原因'}, items:[
     {ko:'푸쉬업·파이크푸쉬업에서 팔꿈치를 완전히 편 상태로 \'탁\' 잠그듯 반복', en:'Snapping the elbows into a full lock at the top of push-ups or pike push-ups', zh:'俯卧撑、派克撑时反复把肘部“咔”地完全锁死'},
@@ -110,7 +112,7 @@ export const INJURY_GUIDES = [
   ],
   warn:{ko:'병원 방문 신호: 부기가 눈에 띄게 있거나, 팔꿈치를 완전히 펴거나 굽히지 못하거나, 2주 이상 통증이 계속되면 진료를 받아보십시오.', en:'See a doctor if: there\'s visible swelling, you can\'t fully straighten or bend the elbow, or pain lasts over two weeks.', zh:'就医信号：明显肿胀、肘部无法完全伸直或弯曲，或疼痛持续两周以上，请就诊。'},
  },
- { part:{ko:'손목', en:'Wrist', zh:'手腕'},
+ { id:'wrist', part:{ko:'손목', en:'Wrist', zh:'手腕'},
   groups:[
    { h:{ko:'흔한 원인', en:'Common causes', zh:'常见原因'}, items:[
     {ko:'푸쉬업·파이크푸쉬업·플랭크·배밀기에서 손목이 과도하게 꺾인 상태로 체중을 지탱', en:'Bearing weight on a sharply bent wrist in push-ups, pike push-ups, planks or crawls', zh:'俯卧撑、派克撑、平板支撑、匍匐前进时手腕过度后翻承重'},
@@ -132,7 +134,7 @@ export const INJURY_GUIDES = [
   ],
   warn:{ko:'병원 방문 신호: 손목이 붓고 시퍼렇게 멍이 들거나, 손가락 저림이 동반되거나, 며칠이 지나도 악화되면 정형외과 진료를 권합니다.', en:'See a doctor if: the wrist swells and bruises, fingers go numb, or it worsens over several days.', zh:'就医信号：手腕肿胀发青、伴手指麻木，或数日后仍在加重，建议就诊骨科。'},
  },
- { part:{ko:'허리', en:'Lower back', zh:'腰部'},
+ { id:'back', part:{ko:'허리', en:'Lower back', zh:'腰部'},
   groups:[
    { h:{ko:'흔한 원인', en:'Common causes', zh:'常见原因'}, items:[
     {ko:'플랭크·배밀기에서 골반이 아래로 처져 허리가 과도하게 꺾임', en:'Hips sagging in planks or crawls so the lower back over-arches', zh:'平板支撑、匍匐前进时臀部下沉，腰部过度塌陷'},
@@ -156,7 +158,7 @@ export const INJURY_GUIDES = [
   ],
   warn:{ko:'병원 방문 신호: 다리로 저림·힘 빠짐이 뻗치거나, 기침·재채기할 때 통증이 심해지거나, 1주 이상 지속되면 반드시 진료를 받아보십시오.', en:'See a doctor if: numbness or weakness runs down your leg, coughing or sneezing makes it worse, or it lasts over a week.', zh:'就医信号：麻木或无力延伸到腿部、咳嗽打喷嚏时加剧，或持续一周以上，务必就诊。'},
  },
- { part:{ko:'무릎', en:'Knee', zh:'膝盖'},
+ { id:'knee', part:{ko:'무릎', en:'Knee', zh:'膝盖'},
   groups:[
    { h:{ko:'흔한 원인', en:'Common causes', zh:'常见原因'}, items:[
     {ko:'스쿼트·점프스쿼트에서 무릎이 발끝보다 안쪽으로 모이며 반복', en:'Knees caving inward past the toes, rep after rep, in squats or jump squats', zh:'深蹲、跳跃深蹲时膝盖反复向内扣，超过脚尖'},
@@ -179,7 +181,7 @@ export const INJURY_GUIDES = [
   ],
   warn:{ko:'병원 방문 신호: 무릎이 붓거나 힘이 풀려 꺾이는 느낌이 들거나, \'뚝\' 소리와 함께 통증이 시작됐다면 바로 정형외과 진료를 받아보십시오.', en:'See a doctor if: the knee swells, gives way under you, or the pain started with a pop.', zh:'就医信号：膝盖肿胀、发软打软腿，或伴随“啪”的一声开始疼痛，请立即就诊骨科。'},
  },
- { part:{ko:'발목', en:'Ankle', zh:'脚踝'},
+ { id:'ankle', part:{ko:'발목', en:'Ankle', zh:'脚踝'},
   groups:[
    { h:{ko:'흔한 원인', en:'Common causes', zh:'常见原因'}, items:[
     {ko:'점프스쿼트·버피 착지 시 발목이 옆으로 꺾임 (특히 미끄러운 바닥)', en:'Ankle rolling sideways on landing from jump squats or burpees (especially on a slick floor)', zh:'跳跃深蹲、波比跳落地时脚踝向外翻（尤其在滑的地面）'},

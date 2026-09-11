@@ -4,6 +4,7 @@ import { toast } from './ui/toast.js';
 import { getSupabase, hasStoredSession, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
 import * as reminder from './notify/reminder.js';
 import { RECOVERY_CARDS, INJURY_GUIDES, SPECIAL_GUIDES, DIET_GUIDES } from './data/recovery.js';
+import { INJURY_AVOID } from './data/injury-avoid.js';
 // Q-fit 앱 본체. legacy/index.html 의 IIFE 본문을 그대로 옮긴 것이다.
 // 화면별 분리는 라우터를 다시 짜는 단계에서 이어서 한다.
 
@@ -2049,6 +2050,14 @@ function syncPlayBtn(){
 // 그 묶음으로 통째로 갈아 끼워져서, 지금까지 고른 것이 조용히 사라졌다.
 let exFilter = 'all';
 
+// 아픈 부위(2026-09-10). null 이거나 INJURY_GUIDES[].id 중 하나.
+// 세션 동안만 유지한다 — 저장해 두면 통증이 나은 뒤에도 계속 회피하게 된다.
+// '1분 시작' 시트에서 고르고, 직접선택·랜덤선택·AI시작 세 길이 전부 이걸 본다.
+let painArea = null;
+function avoidedKeys(){
+ return painArea ? new Set(INJURY_AVOID[painArea] || []) : new Set();
+}
+
 // 한 판에 고르는 동작 수는 상한이 없다(설계 03의 4개 제한을 2026-09-10 에
 // 없앴다). buildMissions() 가 세트 수(regularSetCount)에 맞춰 pool 에서
 // 뽑거나 채워 넣으므로, pool 이 1개든 24개든 그대로 돈다.
@@ -2121,9 +2130,13 @@ function renderExGrid(){
  filtered.forEach(ex=>{
  const checked = selectedExKeys.has(ex.key);
  const locked = !!ex.premium && !myProfile.isPremium;
+ // 아픈 부위와 겹치는 동작은 막지 않는다 — 최종 판단은 사람 몫이다
+ // (이 앱은 "마지막 하나도 못 지우게 막지 않는다"는 원칙을 이미 쓰고
+ // 있다). 잠금 카드와 같은 원칙으로 흐리지 않고 배지 하나로만 알려 준다.
+ const avoided = avoidedKeys().has(ex.key);
  const btn = document.createElement('button');
  btn.type = 'button';
- btn.className = 'ex-card' + (checked ? ' checked' : '') + (ex.pro ? ' pro' : '') + (locked ? ' locked' : '');
+ btn.className = 'ex-card' + (checked ? ' checked' : '') + (ex.pro ? ' pro' : '') + (locked ? ' locked' : '') + (avoided ? ' avoided' : '');
  btn.setAttribute('role', 'checkbox');
  btn.setAttribute('aria-checked', checked ? 'true' : 'false');
 
@@ -2132,6 +2145,13 @@ function renderExGrid(){
  lock.className = 'premium-lock';
  lock.textContent = '✨';
  btn.appendChild(lock);
+ }
+ if(avoided){
+ const warn = document.createElement('span');
+ warn.className = 'avoided-badge';
+ warn.title = t(STATIC_UI.avoidedHint);
+ warn.textContent = '⚠️';
+ btn.appendChild(warn);
  }
 
  // 무엇을 하는 동작인지 알려 주는 자리다 — 영상을 쓴다.
@@ -2235,7 +2255,15 @@ try{
  // 6개면 6개를 뽑는 식. buildMissions() 가 이미 pool 을 세트 수만큼
  // 무작위로 줄여 쓰므로, 여기서는 자르지 않고 전체를 그대로 넘긴다.
  if(modeRandomBtn) modeRandomBtn.addEventListener('click', ()=>{
- const pool = EXERCISES.filter(e=> !e.premium || myProfile.isPremium).map(e=>e.key);
+ let pool = EXERCISES.filter(e=> !e.premium || myProfile.isPremium).map(e=>e.key);
+ // 아픈 부위가 있으면 그 부위를 자극하는 동작은 뺀다. 다 빠져서 아무것도
+ // 안 남으면(회피 부위가 넓은데 프리미엄도 없는 경우 등) 회피를 접고
+ // 원래 pool 로 되돌아간다 — 시작을 아예 막으면 안 된다.
+ if(painArea){
+  const avoided = avoidedKeys();
+  const safe = pool.filter(k=> !avoided.has(k));
+  if(safe.length) pool = safe;
+ }
  for(let i = pool.length - 1; i > 0; i--){
   const j = Math.floor(Math.random() * (i + 1));
   [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -2247,6 +2275,78 @@ try{
  showScreen(manualSelectScreen);
  });
 }catch(e){ console.error('mode buttons failed:', e); }
+
+// 아픈 부위 고르기(2026-09-10). 시트는 직접 입력 시트와 같은 열고 닫는
+// 방식(openSheet/closeSheet)을 쓴다. 부위 목록은 회복 화면의 INJURY_GUIDES
+// 를 그대로 읽어서 만든다 — 목록을 따로 두면 둘이 어긋나는 날이 온다.
+try{
+ const painAreaBtn = document.getElementById('pain-area-btn');
+ const painAreaPanel = document.getElementById('pain-area-panel');
+ const painAreaSub = document.getElementById('pain-area-sub');
+ const painAreaChips = document.getElementById('pain-area-chips');
+ const painAreaRecoveryLink = document.getElementById('pain-area-recovery-link');
+
+ function paintPainAreaSub(){
+ if(!painAreaSub) return;
+ const g = painArea && INJURY_GUIDES.find(x=>x.id===painArea);
+ painAreaSub.textContent = g ? t(STATIC_UI.painAreaOn).replace('%s', t(g.part)) : t(STATIC_UI.painAreaOff);
+ }
+
+ // 부위를 고르면 그 부위의 회복 스트레칭으로 바로 넘어갈 수 있게 링크를
+ // 보여준다 — renderInjuryChips() 가 칩에서 검색창을 채우는 것과 같은
+ // 방식으로 회복 화면을 그 부위만 펼친 상태로 연다.
+ function goToPainRecovery(g){
+ closeSheet();
+ showScreen(recoveryScreen);
+ renderRecovery();
+ const input = document.getElementById('injury-search-input');
+ if(input){ input.value = t(g.part); input.dispatchEvent(new Event('input', { bubbles: true })); }
+ }
+
+ function paintPainAreaLink(){
+ if(!painAreaRecoveryLink) return;
+ const g = painArea && INJURY_GUIDES.find(x=>x.id===painArea);
+ painAreaRecoveryLink.hidden = !g;
+ if(g){
+ painAreaRecoveryLink.textContent = t(STATIC_UI.painAreaRecoveryLink).replace('%s', t(g.part));
+ painAreaRecoveryLink.onclick = ()=> goToPainRecovery(g);
+ }
+ }
+
+ function renderPainAreaChips(){
+ if(!painAreaChips) return;
+ painAreaChips.innerHTML = '';
+ const mk = (label, id)=>{
+ const b = document.createElement('button');
+ b.type = 'button';
+ b.className = 'chip';
+ const on = painArea === id;
+ if(on) b.dataset.on = '1';
+ b.setAttribute('aria-pressed', on ? 'true' : 'false');
+ b.textContent = label;
+ b.addEventListener('click', ()=>{
+ painArea = (painArea === id) ? null : id;
+ paintPainAreaSub();
+ paintPainAreaLink();
+ renderPainAreaChips();
+ // 이미 열려 있는 직접선택 화면이 있으면 회피 표시가 바로 반영돼야 한다.
+ try{ renderExGrid(); }catch(err){}
+ });
+ return b;
+ };
+ painAreaChips.appendChild(mk(t(STATIC_UI.painAreaNone), null));
+ INJURY_GUIDES.forEach(g=> painAreaChips.appendChild(mk(t(g.part), g.id)));
+ }
+
+ if(painAreaBtn && painAreaPanel){
+ painAreaBtn.addEventListener('click', ()=>{
+ renderPainAreaChips();
+ openSheet(painAreaPanel, { title: t(STATIC_UI.painAreaBtn), from: painAreaBtn });
+ });
+ }
+ paintPainAreaSub();
+ document.addEventListener('qfit:lang', ()=>{ paintPainAreaSub(); paintPainAreaLink(); });
+}catch(e){ console.error('pain area picker failed:', e); }
 
 // 난이도별 빠른 선택은 없앴다(설계 03). 초보·숙련은 이제 칩 하나로 '거르기' 다 —
 // 누르면 지금까지 고른 것이 통째로 갈아 끼워지던 동작이 사라졌다.
@@ -2358,6 +2458,12 @@ try{
  return !ex.pro;
  });
  if(keys.length < 2) keys = pool; // fallback if filtering left too few
+ // 아픈 부위 회피(랜덤과 같은 규칙) — 다 빠지면 회피를 접는다.
+ if(painArea){
+ const avoided = avoidedKeys();
+ const safe = keys.filter(k=> !avoided.has(k));
+ if(safe.length) keys = safe;
+ }
  // 세트 수만큼 무작위로 고른다(2026-09-10, 랜덤과 같은 규칙) — 목표 풀
  // 전체를 넘기면 buildMissions() 가 세트 수에 맞춰 무작위로 줄여 쓴다.
  selectedExKeys = pickSet(keys);
