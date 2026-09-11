@@ -242,7 +242,7 @@ export function monthTally(dateStr = dayKey()) {
 /** 기록지를 CSV 로. 설정 화면의 내보내기가 이걸 쓴다. */
 export function logToCsv() {
   const log = loadLog();
-  const rows = [['date', 'workout', 'breakfast', 'lunch', 'dinner', 'snack', 'water_cups', 'weight_kg', 'mood', 'drive', 'status']];
+  const rows = [['date', 'workout', 'breakfast', 'lunch', 'dinner', 'snack', 'water_ml', 'weight_kg', 'mood', 'drive', 'status']];
   for (const date of Object.keys(log).sort()) {
     const day = { ...EMPTY_DAY(), ...log[date] };
     const m = day.meals || {};

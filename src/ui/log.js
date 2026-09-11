@@ -111,32 +111,55 @@ function paintChecks(dateStr) {
 
 // ── 물·체중·그날 기분 ─────────────────────────────────────────
 
+// 한 번 누르면 100mL, 권장은 2L, 병은 3L에서 꽉 찬다(그 이상은 안 채워진다 —
+// 굳이 넘치게 둘 이유가 없다). 컵 개수를 체중에서 계산해 8~14개까지
+// 들쭉날쭉하던 것보다, 고정된 병 하나가 매일 똑같이 보여서 익히기 쉽다.
+const WATER_STEP = 100;
+const WATER_TARGET = 2000;
+const WATER_MAX = 3000;
+// app.js 의 XP 병(#xp-water-fill)과 같은 모양(viewBox, clip path)을 쓴다 —
+// 이미 검증된 '병 채우기' 그림이라 굳이 새로 그리지 않는다.
+const BOTTLE_TOP = 34, BOTTLE_BOTTOM = 104, BOTTLE_H = BOTTLE_BOTTOM - BOTTLE_TOP;
+
 function paintExtra(dateStr) {
   const box = el('log-extra');
   if (!box) return;
   const day = loadDay(dateStr);
   const body = loadBody();
-  const nut = nutritionPlan(body);
-  const cups = nut ? nut.waterCups : 8;
-  const drank = Math.min(day.water || 0, cups);
 
   const mood = MOOD_OPTIONS.find((o) => o.id === day.mood);
   const drive = DRIVE_OPTIONS.find((o) => o.id === day.drive);
 
   let html = `<div class="kick">${esc(t(S.logExtra))}</div>`;
 
-  // 물. 컵을 눌러서 채운다 — 숫자 입력칸으로 두면 아무도 안 적는다.
+  // 물. 병을 눌러서 채운다 — 숫자 입력칸으로 두면 아무도 안 적는다.
+  const drank = Math.min(day.water || 0, WATER_MAX);
+  const fillRatio = drank / WATER_MAX;
+  const fillH = BOTTLE_H * fillRatio;
+  const fillY = BOTTLE_BOTTOM - fillH;
+  const targetY = BOTTLE_BOTTOM - BOTTLE_H * (WATER_TARGET / WATER_MAX);
   html += '<div class="log-water-row">' +
     '<span class="log-water-head">' +
     `<span class="log-water-l">${esc(t(S.logWater))}</span>` +
-    `<span class="log-water-n">${drank}/${cups}</span>` +
+    `<span class="log-water-n">${drank}mL <span class="dim">/ ${WATER_TARGET}mL</span></span>` +
     '</span>' +
-    '<span class="log-cups">' +
-    Array.from({ length: cups }, (_, i) =>
-      `<button class="log-cup${i < drank ? ' on' : ''}" type="button" data-cup="${i + 1}" ` +
-      `aria-label="${esc(t(S.logWaterCup).replace('%s', i + 1))}"></button>`
-    ).join('') +
+    '<div class="log-water-body">' +
+    '<svg class="log-water-bottle" viewBox="0 0 60 104" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><clipPath id="log-bottle-clip">' +
+    '<path d="M22,4 h16 v9 c8,4 12,13 12,21 v50 a7,7 0 0 1 -7,7 h-26 a7,7 0 0 1 -7,-7 v-50 c0,-8 4,-17 12,-21 z"/>' +
+    '</clipPath></defs>' +
+    '<path class="bottle-outline" d="M22,4 h16 v9 c8,4 12,13 12,21 v50 a7,7 0 0 1 -7,7 h-26 a7,7 0 0 1 -7,-7 v-50 c0,-8 4,-17 12,-21 z"/>' +
+    '<rect class="bottle-cap" x="23" y="0" width="14" height="6" rx="2"/>' +
+    '<g clip-path="url(#log-bottle-clip)">' +
+    `<rect class="log-water-fill" x="0" y="${fillY}" width="60" height="${fillH + 10}"/>` +
+    '</g>' +
+    `<line class="log-water-target-line" x1="15" x2="45" y1="${targetY}" y2="${targetY}"/>` +
+    '</svg>' +
+    '<span class="log-water-btns">' +
+    '<button type="button" class="sec2 log-water-btn" id="log-water-minus">−100mL</button>' +
+    '<button type="button" class="primary log-water-btn" id="log-water-plus">+100mL</button>' +
     '</span>' +
+    '</div>' +
     '</div>';
 
   // 오늘 체중. 여기서 적으면 신체정보의 체중도 같이 바뀐다 — 두 곳에 따로
@@ -329,13 +352,15 @@ export function initLog({ translate, STATIC_UI, onShowScreen } = {}) {
         return;
       }
 
-      const cup = e.target.closest('[data-cup]');
-      if (cup) {
-        const n = Number(cup.dataset.cup);
+      if (e.target.closest('#log-water-plus')) {
         const day = loadDay(date);
-        // 같은 컵을 다시 누르면 거기까지 지운다. 잘못 누른 것을 되돌리는
-        // 길이 없으면 사람들은 아예 안 누른다.
-        saveDay(date, { water: day.water === n ? n - 1 : n });
+        saveDay(date, { water: Math.min(WATER_MAX, (day.water || 0) + WATER_STEP) });
+        paintExtra(date);
+        return;
+      }
+      if (e.target.closest('#log-water-minus')) {
+        const day = loadDay(date);
+        saveDay(date, { water: Math.max(0, (day.water || 0) - WATER_STEP) });
         paintExtra(date);
       }
     });

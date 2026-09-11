@@ -399,7 +399,6 @@ export const STATIC_UI = {
  logNoPlan: {ko:'신체정보를 넣으면 여기에 오늘 식단이 나옵니다', en:'Add your body info and the menu appears here', zh:'填写身体信息后这里会显示今日菜单'},
  logExtra: {ko:'물 · 체중', en:'Water & weight', zh:'饮水与体重'},
  logWater: {ko:'물', en:'Water', zh:'饮水'},
- logWaterCup: {ko:'%s잔째', en:'cup %s', zh:'第%s杯'},
  logWeight: {ko:'오늘 체중', en:'Weight today', zh:'今日体重'},
  logWeightNote: {ko:'여기 적으면 신체정보의 체중도 같이 바뀝니다 — 계획이 옛 체중으로 계산되지 않게.', en:'Entering it here also updates your body info, so the plan is never calculated from an old weight.', zh:'在这里填写会同时更新身体信息，避免计划用旧体重计算。'},
  logCheckin: {ko:'아침 체크인', en:'Morning check-in', zh:'早间打卡'},

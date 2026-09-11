@@ -636,17 +636,17 @@ body.gated { overflow: hidden; }
 .log-water-l,
 .log-weight-l,
 .log-mood-l { font-size: var(--t-sm); font-weight: 600; flex: none; }
-/* 컵은 눌러서 채운다. 숫자 입력칸으로 두면 아무도 안 적는다.
-   두 줄로 내려가도 괜찮게 폭을 좁혔다. */
-.log-cups { display: flex; gap: 5px; flex-wrap: wrap; }
-.log-cup {
-  width: 22px;
-  height: 26px;
-  border: 2px solid var(--line);
-  border-radius: 3px 3px 7px 7px;
-  background: var(--surface);
-}
-.log-cup.on { border-color: var(--mint); background: var(--mint); }
+/* 병은 버튼을 눌러서 채운다. 숫자 입력칸으로 두면 아무도 안 적는다.
+   병 그림은 app.js 의 XP 병(screens.css 의 .xp-bottle)과 같은 클래스
+   (.bottle-outline·.bottle-cap)를 그대로 쓴다 — 채움 색·목표선만 여기서 더한다. */
+.log-water-body { display: flex; align-items: center; gap: var(--s-4); }
+.log-water-bottle { width: 40px; height: 76px; flex: none; }
+.log-water-fill { fill: var(--mint); transition: y var(--dur-slow) var(--ease-out), height var(--dur-slow) var(--ease-out); }
+/* 권장 2L 지점을 병에 눈금 하나로 표시한다 — 숫자만으로는 '어디까지 채워야
+   적당한지' 가 안 와닿는다. */
+.log-water-target-line { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 2 2; }
+.log-water-btns { display: flex; flex-direction: column; gap: var(--s-2); flex: 1 1 auto; min-width: 0; }
+.log-water-btn { min-height: var(--tap); }
 .log-water-n {
   font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
