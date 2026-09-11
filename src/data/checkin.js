@@ -12,17 +12,19 @@
 
 import { DURATION_PRESETS } from './durations.js';
 
-/** 문항 1 — 오늘 기분. score 는 0(나쁨) ~ 4(아주 좋음). */
+/** 문항 1 — 오늘 기분. score 는 0(나쁨) ~ 4(아주 좋음).
+ *  img 는 이 앱 전용 그림(카카오톡으로 받은 Q-fit 이모지.psd 에서 뽑음,
+ *  core/assets.js 의 moodUrl 로 실제 경로를 만든다) — 없으면 emoji 로 대신한다. */
 export const MOOD_OPTIONS = [
-  { id:'great', emoji:'🔥', score:4,
+  { id:'great', emoji:'🔥', img:'great-v1.webp', score:4,
     label:{ko:'아주 좋아요', en:'Great', zh:'非常好'} },
-  { id:'good', emoji:'🙂', score:3,
+  { id:'good', emoji:'🙂', img:'good-v1.webp', score:3,
     label:{ko:'좋아요', en:'Good', zh:'不错'} },
-  { id:'soso', emoji:'😐', score:2,
+  { id:'soso', emoji:'😐', img:'soso-v1.webp', score:2,
     label:{ko:'그저 그래요', en:'So-so', zh:'一般'} },
-  { id:'tired', emoji:'😪', score:1,
+  { id:'tired', emoji:'😪', img:'tired-v1.webp', score:1,
     label:{ko:'피곤해요', en:'Tired', zh:'很累'} },
-  { id:'bad', emoji:'😞', score:0,
+  { id:'bad', emoji:'😞', img:'bad-v1.webp', score:0,
     label:{ko:'안 좋아요', en:'Not good', zh:'不太好'} },
 ];
 

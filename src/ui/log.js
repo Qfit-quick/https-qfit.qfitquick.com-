@@ -16,6 +16,7 @@ import { MEAL_SPLIT } from '../data/foods.js';
 import { MOOD_OPTIONS, DRIVE_OPTIONS } from '../data/checkin.js';
 import { nutritionPlan, mealPlan } from '../data/plan.js';
 import { ICON } from './icons.js';
+import { moodUrl } from '../core/assets.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -151,9 +152,12 @@ function paintExtra(dateStr) {
 
   // 아침 설문 답. 버려지는 질문이 아니게 하려면 되돌아볼 자리가 있어야 한다.
   if (mood || drive) {
+    const moodBit = mood
+      ? (mood.img ? `<img class="log-mood-img" src="${moodUrl(mood.img)}" alt="">` : mood.emoji + ' ') + esc(t(mood.label))
+      : '';
     html += '<div class="log-mood-row">' +
       `<span class="log-mood-l">${esc(t(S.logCheckin))}</span>` +
-      `<span class="log-mood-v">${mood ? mood.emoji + ' ' + esc(t(mood.label)) : ''}` +
+      `<span class="log-mood-v">${moodBit}` +
       `${drive ? ' · ' + drive.emoji + ' ' + esc(t(drive.label)) : ''}</span>` +
       '</div>';
   }

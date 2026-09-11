@@ -82,8 +82,10 @@
 }
 .gate-opt:active { background: var(--surface-2); }
 /* 이모지는 여기서만 쓴다. 아이콘이 아니라 '기분' 그 자체를 가리키는
-   자리라, 선 아이콘으로는 다섯 단계를 구별해 그릴 수가 없다. */
-.gate-opt-emoji { font-size: 1.5rem; line-height: 1; flex: none; }
+   자리라, 선 아이콘으로는 다섯 단계를 구별해 그릴 수가 없다.
+   기분(MOOD_OPTIONS)은 img 가 있어 <img> 로 대신 그려진다 — 같은 클래스를
+   쓰므로 크기만 정하고, 텍스트 이모지(span)에는 폭·높이가 안 먹혀 그대로다. */
+.gate-opt-emoji { width: 32px; height: 32px; font-size: 1.5rem; line-height: 1; flex: none; object-fit: contain; }
 .gate-opt-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .gate-opt-t { font-size: var(--t-md); font-weight: 600; }
 .gate-opt-d { font-size: var(--t-xs); color: var(--text-dim); }
@@ -658,6 +660,7 @@ body.gated { overflow: hidden; }
 .log-weight-row .inp { padding: 0 34px 0 12px; text-align: right; }
 .log-mood-row { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
 .log-mood-v { font-size: var(--t-sm); color: var(--text-dim); }
+.log-mood-img { width: 18px; height: 18px; object-fit: contain; vertical-align: -4px; margin-right: 2px; }
 
 /* 최근 14일. 칸 하나를 반으로 갈라 왼쪽이 운동, 오른쪽이 식단이다.
    색 하나로 네 상태를 나타내려면 색이 네 개 필요하고, 색 네 개는

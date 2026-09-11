@@ -13,3 +13,5 @@ export const clipUrl = (file) => `${BASE}media/clips/${file}`;
 // scripts/clean.mjs 가 media/ 를 안 지우는 덕에 라이브에서만 살아남아 있었다.
 // 이제 public/media/pet/ 이 원본이고 빌드가 그대로 복사한다.
 export const petUrl = (file) => `${BASE}media/pet/${file}`;
+// 관문·기록지의 오늘 기분 아이콘 5장(카카오톡으로 받은 Q-fit 이모지.psd 에서 추출).
+export const moodUrl = (file) => `${BASE}media/mood/${file}`;

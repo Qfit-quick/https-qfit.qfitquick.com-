@@ -13,6 +13,7 @@
 import { MOOD_OPTIONS, DRIVE_OPTIONS, toneFor, intensityFor, INTENSITY } from '../data/checkin.js';
 import { QUOTES_BY_TONE, QUOTES } from '../data/quotes.js';
 import { dayKey, hasCheckin, saveCheckin, loadDay } from '../health/store.js';
+import { moodUrl } from '../core/assets.js';
 
 let t = (o) => (o && o.ko) || '';
 let strings = {};
@@ -67,8 +68,11 @@ function optionButton(opt, onPick) {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'gate-opt';
+  const visual = opt.img
+    ? `<img class="gate-opt-emoji" src="${moodUrl(opt.img)}" alt="" aria-hidden="true">`
+    : `<span class="gate-opt-emoji" aria-hidden="true">${opt.emoji}</span>`;
   b.innerHTML =
-    `<span class="gate-opt-emoji" aria-hidden="true">${opt.emoji}</span>` +
+    visual +
     '<span class="gate-opt-main">' +
     `<span class="gate-opt-t">${t(opt.label)}</span>` +
     (opt.sub ? `<span class="gate-opt-d">${t(opt.sub)}</span>` : '') +
