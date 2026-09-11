@@ -1481,12 +1481,21 @@ function renderWeekStrip(){
 // 표는 여기 한 벌뿐이다 — 홈의 작은 알과 성장 창이 같은 표를 본다.
 // 두 벌로 두면 홈은 알인데 창은 큐피드인 날이 온다.
 //
-// 단계마다 그림 아니면 이모지 하나다. 아기 큐피드에는 그림이 없어서
-// 이모지로 세운다(그림 두 장은 알과 완전체뿐이다).
+// 단계마다 그림 아니면 이모지 하나다.
+//
+// 예전엔 그림이 알·완전체 두 장뿐이라, 그 사이(아기 큐피드)가 이모지 하나로
+// 때워져 있었다 — 알이 깨자마자 바로 완전체로 넘어가는 것처럼 보인다는
+// 피드백. '큐핏 cupidon.psd' 에서 성장 단계 그림 5장(아기 → 완전체)을
+// 새로 받아 전 구간을 그림으로 채웠다. 기존 완전체 로고(cupid-logo-v3,
+// 검은 실루엣)는 이 새 그림들과 화풍이 달라 더 안 쓴다 — public/ 에는
+// 남겨 두되 여기서는 참조하지 않는다.
 const PET_STAGES = [
- { min:1,  max:5,        img:'egg-v1.webp',        emoji:'🥚', name:{ko:'알', en:'Egg', zh:'蛋'} },
- { min:5,  max:10,       img:null,                 emoji:'🐣', name:{ko:'아기 큐피드', en:'Baby Cupid', zh:'幼年丘比特'} },
- { min:10, max:Infinity, img:'cupid-logo-v3.webp', emoji:'💗', name:{ko:'완전체 큐피드', en:'Full Cupid', zh:'完全体丘比特'} },
+ { min:1,  max:3,        img:'egg-v1.webp',           emoji:'🥚', name:{ko:'알', en:'Egg', zh:'蛋'} },
+ { min:3,  max:5,        img:'cupid-baby-v1.webp',    emoji:'🐣', name:{ko:'아기 큐피드', en:'Baby Cupid', zh:'幼年丘比特'} },
+ { min:5,  max:7,        img:'cupid-toddler-v1.webp', emoji:'💗', name:{ko:'꼬마 큐피드', en:'Little Cupid', zh:'小丘比特'} },
+ { min:7,  max:9,        img:'cupid-flying-v1.webp',  emoji:'🏹', name:{ko:'날개 편 큐피드', en:'Flying Cupid', zh:'展翅丘比特'} },
+ { min:9,  max:12,       img:'cupid-sparkle-v1.webp', emoji:'✨', name:{ko:'명사수 큐피드', en:'Sharpshooter Cupid', zh:'神射丘比特'} },
+ { min:12, max:Infinity, img:'cupid-full-v1.webp',    emoji:'💘', name:{ko:'완전체 큐피드', en:'Full Cupid', zh:'完全体丘比特'} },
 ];
 
 function petStageIndex(level){

@@ -15,3 +15,5 @@ export const clipUrl = (file) => `${BASE}media/clips/${file}`;
 export const petUrl = (file) => `${BASE}media/pet/${file}`;
 // 관문·기록지의 오늘 기분 아이콘 5장(카카오톡으로 받은 Q-fit 이모지.psd 에서 추출).
 export const moodUrl = (file) => `${BASE}media/mood/${file}`;
+// 관문의 '오늘 운동 어떻게 생각하나' 아이콘 4장(같은 psd 의 나머지 절반).
+export const driveUrl = (file) => `${BASE}media/drive/${file}`;

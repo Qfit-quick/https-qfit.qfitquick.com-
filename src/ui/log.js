@@ -16,7 +16,7 @@ import { MEAL_SPLIT } from '../data/foods.js';
 import { MOOD_OPTIONS, DRIVE_OPTIONS } from '../data/checkin.js';
 import { nutritionPlan, mealPlan } from '../data/plan.js';
 import { ICON } from './icons.js';
-import { moodUrl } from '../core/assets.js';
+import { moodUrl, driveUrl } from '../core/assets.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -155,10 +155,12 @@ function paintExtra(dateStr) {
     const moodBit = mood
       ? (mood.img ? `<img class="log-mood-img" src="${moodUrl(mood.img)}" alt="">` : mood.emoji + ' ') + esc(t(mood.label))
       : '';
+    const driveBit = drive
+      ? ' · ' + (drive.img ? `<img class="log-mood-img" src="${driveUrl(drive.img)}" alt="">` : drive.emoji + ' ') + esc(t(drive.label))
+      : '';
     html += '<div class="log-mood-row">' +
       `<span class="log-mood-l">${esc(t(S.logCheckin))}</span>` +
-      `<span class="log-mood-v">${moodBit}` +
-      `${drive ? ' · ' + drive.emoji + ' ' + esc(t(drive.label)) : ''}</span>` +
+      `<span class="log-mood-v">${moodBit}${driveBit}</span>` +
       '</div>';
   }
 

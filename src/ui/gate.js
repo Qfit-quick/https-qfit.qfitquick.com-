@@ -13,7 +13,7 @@
 import { MOOD_OPTIONS, DRIVE_OPTIONS, toneFor, intensityFor, INTENSITY } from '../data/checkin.js';
 import { QUOTES_BY_TONE, QUOTES } from '../data/quotes.js';
 import { dayKey, hasCheckin, saveCheckin, loadDay } from '../health/store.js';
-import { moodUrl } from '../core/assets.js';
+import { moodUrl, driveUrl } from '../core/assets.js';
 
 let t = (o) => (o && o.ko) || '';
 let strings = {};
@@ -63,13 +63,13 @@ function showStep(name) {
   }
 }
 
-/** 선택지 버튼 한 줄. 두 문항이 같은 모양을 쓴다. */
-function optionButton(opt, onPick) {
+/** 선택지 버튼 한 줄. 두 문항이 같은 모양을 쓴다(urlFn 만 문항마다 다르다). */
+function optionButton(opt, onPick, urlFn) {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'gate-opt';
   const visual = opt.img
-    ? `<img class="gate-opt-emoji" src="${moodUrl(opt.img)}" alt="" aria-hidden="true">`
+    ? `<img class="gate-opt-emoji" src="${urlFn(opt.img)}" alt="" aria-hidden="true">`
     : `<span class="gate-opt-emoji" aria-hidden="true">${opt.emoji}</span>`;
   b.innerHTML =
     visual +
@@ -167,7 +167,7 @@ export function initGate({ translate, STATIC_UI, onEnter } = {}) {
       MOOD_OPTIONS.forEach((opt) => moodBox.appendChild(optionButton(opt, (o) => {
         answer.mood = o.id;
         showStep('drive');
-      })));
+      }, moodUrl)));
     }
 
     const driveBox = el('gate-drive-opts');
@@ -182,7 +182,7 @@ export function initGate({ translate, STATIC_UI, onEnter } = {}) {
         // 를 되돌아볼 수 있어야 설문이 버려지는 질문이 아니게 된다.
         saveCheckin(today, { mood: answer.mood, drive: answer.drive, quoteId: q.id });
         showStep('quote');
-      })));
+      }, driveUrl)));
     }
 
     const back = el('gate-back-btn');

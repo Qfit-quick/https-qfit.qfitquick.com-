@@ -28,18 +28,20 @@ export const MOOD_OPTIONS = [
     label:{ko:'안 좋아요', en:'Not good', zh:'不太好'} },
 ];
 
-/** 문항 2 — 오늘 운동을 어떻게 생각하나. intensity 가 오늘 추천 강도가 된다. */
+/** 문항 2 — 오늘 운동을 어떻게 생각하나. intensity 가 오늘 추천 강도가 된다.
+ *  img 는 MOOD_OPTIONS 와 같은 psd(Q-fit 이모지.psd)의 나머지 절반 —
+ *  core/assets.js 의 driveUrl 로 실제 경로를 만든다. */
 export const DRIVE_OPTIONS = [
-  { id:'fired', emoji:'💪', score:3, intensity:'hard',
+  { id:'fired', emoji:'💪', img:'fired-bicep-v1.webp', score:3, intensity:'hard',
     label:{ko:'제대로 하고 싶어요', en:'I want to go hard', zh:'想好好练一场'},
     sub:{ko:'풀 세션으로 권해 드립니다', en:'We will suggest the full session', zh:'会推荐完整训练'} },
-  { id:'ok', emoji:'👍', score:2, intensity:'normal',
+  { id:'ok', emoji:'👍', img:'ok-thumbsup-v1.webp', score:2, intensity:'normal',
     label:{ko:'할 만해요', en:'I can do it', zh:'还可以'},
     sub:{ko:'평소 강도로 권해 드립니다', en:'We will suggest your usual', zh:'会推荐常规强度'} },
-  { id:'meh', emoji:'😮‍💨', score:1, intensity:'easy',
+  { id:'meh', emoji:'😮‍💨', img:'meh-thinking-v1.webp', score:1, intensity:'easy',
     label:{ko:'솔직히 귀찮아요', en:'Honestly, I do not feel like it', zh:'说实话有点懒'},
     sub:{ko:'1분짜리 최소 버전으로 낮춥니다', en:'We will drop it to the 1-minute version', zh:'会降到一分钟的最简版'} },
-  { id:'no', emoji:'🛑', score:0, intensity:'easy',
+  { id:'no', emoji:'🛑', img:'no-crossedarms-v1.webp', score:0, intensity:'easy',
     label:{ko:'전혀 하고 싶지 않아요', en:'Not at all', zh:'完全不想动'},
     sub:{ko:'가장 짧은 것 하나만 권해 드립니다', en:'We will suggest just one short set', zh:'只推荐最短的一组'} },
 ];
