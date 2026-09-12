@@ -1,0 +1,227 @@
+/* 큐피드 하트 슈팅 미니게임(2026-09-12).
+ *
+ * 사용자가 만들어 전달한 독립 HTML/CSS/JS 게임을 화면 하나로 그대로
+ * 옮긴 것이다 — 로직·구성은 바꾸지 않는다. id·class 는 전부 heartgame-
+ * 접두사를 붙여 기존 화면과 겹치지 않게 했다.
+ *
+ * 원본처럼 한 번만 나오는 자리(HUD 점수·최고기록·타이머·레인 묶음 등)는
+ * id 로만 골라 쓰고, 여러 번 찍히는 자리(레인 하나하나·날아오는 아이템·
+ * 오버레이 셋·버튼 모양)만 class 로 둔다 — scripts/coverage.mjs 가 "쓰이는
+ * class 는 전부 CSS 정의가 있어야 한다"고 보는데, id 는 그 검사 대상이
+ * 아니라서 한 번뿐인 자리를 class 로도 얹을 이유가 없다.
+ *
+ * 배경 그라데이션 같은 이 게임만의 고유한 색(어두운 청록 캔버스)은 원본
+ * 그대로 두되, 실제로 이 앱의 브랜드색과 같은 자리(민트·골드·경고색)는
+ * 하드코딩 대신 tokens.css 변수를 그대로 쓴다 — 다크모드에서 이 값들이
+ * 스스로 밝아지므로 게임 강조색도 같이 또렷해진다. */
+
+#heartgame-screen {
+  /* .screen 의 기본 여백·중앙정렬을 지운다 — 이 화면은 안쪽까지 꽉 채운
+     캔버스라 다른 화면과 같은 규칙을 쓰면 사방에 여백이 생긴다. */
+  padding: 0;
+  overflow: hidden;
+}
+
+#heartgame-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  background: radial-gradient(120% 140% at 20% 10%, #0a3a33, #062420);
+  font-family: var(--font);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── HUD ── */
+#heartgame-hud {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--s-4) + env(safe-area-inset-top)) var(--s-4) var(--s-3);
+  z-index: 20;
+  color: #fff;
+  font-weight: 800;
+  pointer-events: none;
+}
+#heartgame-hud-left { display: flex; align-items: center; gap: var(--s-3); }
+#heartgame-hud-right { display: flex; align-items: center; gap: var(--s-2); }
+#heartgame-score {
+  font-size: 22px;
+  background: linear-gradient(90deg, var(--accent), #ff9500);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.heartgame-icon-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  border: none;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 15px;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.heartgame-icon-btn:active { transform: scale(0.92); }
+#heartgame-best {
+  font-size: var(--t-xs); font-weight: 700;
+  color: var(--accent);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  letter-spacing: 0.02em;
+  font-family: var(--font-num);
+}
+#heartgame-timer {
+  font-size: var(--t-sm);
+  color: var(--mint);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+  font-family: var(--font-num);
+}
+#heartgame-combo-label {
+  position: absolute; top: 52px; left: 0; right: 0;
+  text-align: center;
+  font-size: var(--t-sm); font-weight: 700;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 20;
+  pointer-events: none;
+}
+
+/* ── 레인 ── */
+#heartgame-lanes { position: absolute; inset: 0; }
+.heartgame-lane {
+  position: relative;
+  height: 33.333%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex; align-items: center;
+}
+.heartgame-lane:last-child { border-bottom: none; }
+
+.heartgame-hitzone {
+  position: absolute; top: 0; bottom: 0; left: 0;
+  width: 20%;
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.18), transparent);
+  border-right: 2px dashed rgba(45, 212, 191, 0.35);
+  pointer-events: none;
+}
+.heartgame-cupid {
+  position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
+  font-size: 30px;
+  filter: drop-shadow(0 0 6px rgba(45, 212, 191, 0.6));
+  pointer-events: none;
+}
+
+.heartgame-item {
+  position: absolute; top: 50%;
+  transform: translate(0, -50%);
+  font-size: 34px;
+  line-height: 1;
+  will-change: left;
+  pointer-events: none;
+}
+.heartgame-item.heartgame-pop { animation: heartgamePop 0.26s ease-out forwards; }
+@keyframes heartgamePop {
+  0% { transform: translate(0, -50%) scale(1); opacity: 1; }
+  35% { transform: translate(0, -50%) scale(1.55); opacity: 1; }
+  100% { transform: translate(0, -50%) scale(0.25); opacity: 0; }
+}
+
+.heartgame-burst {
+  position: absolute; top: 50%; left: 0;
+  width: 46px; height: 46px;
+  margin-left: -23px; margin-top: -23px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: heartgameBurst 0.4s ease-out forwards;
+}
+.heartgame-burst-pos { background: radial-gradient(circle, color-mix(in srgb, var(--accent) 90%, transparent), transparent 70%); }
+.heartgame-burst-neg { background: radial-gradient(circle, color-mix(in srgb, var(--danger) 90%, transparent), transparent 70%); }
+@keyframes heartgameBurst {
+  0% { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.heartgame-arrow {
+  position: absolute; top: 50%; left: 6px;
+  transform: translateY(-50%);
+  width: 22px; height: 4px;
+  background: var(--mint);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(45, 212, 191, 0.9), 0 0 14px rgba(45, 212, 191, 0.5);
+  pointer-events: none;
+  animation: heartgameShoot 0.18s ease-out forwards;
+}
+.heartgame-arrow::after {
+  content: '';
+  position: absolute; right: -7px; top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-left: 9px solid var(--mint);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+}
+@keyframes heartgameShoot {
+  from { left: 6px; opacity: 1; }
+  to { left: 90%; opacity: 0; }
+}
+
+.heartgame-popup {
+  position: absolute; transform: translate(-50%, -50%);
+  font-weight: 800; font-size: var(--t-lg);
+  pointer-events: none;
+  animation: heartgamePopup 0.6s ease-out forwards;
+  white-space: nowrap;
+}
+@keyframes heartgamePopup {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -160%) scale(1.15); }
+}
+
+/* ── 오버레이(시작·종료·일시정지) ── */
+.heartgame-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--s-4);
+  background: rgba(3, 15, 13, 0.82);
+  z-index: 30; color: #fff; text-align: center;
+  padding: var(--s-6);
+}
+.heartgame-overlay h1 { margin: 0; font-size: var(--t-xl); }
+.heartgame-overlay p { margin: 0; color: rgba(255, 255, 255, 0.7); font-size: var(--t-sm); line-height: 1.6; }
+#heartgame-final-score {
+  font-size: var(--t-stat); font-weight: 800;
+  font-family: var(--font-num);
+  background: linear-gradient(90deg, var(--accent), #ff9500);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+#heartgame-record-badge {
+  font-size: var(--t-sm); font-weight: 800; letter-spacing: 0.04em;
+  color: #062420;
+  background: linear-gradient(90deg, var(--accent), #ff9500);
+  padding: 5px 14px; border-radius: var(--r-full);
+  animation: heartgameRecordPulse 0.9s ease-in-out infinite;
+}
+@keyframes heartgameRecordPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.heartgame-play-btn {
+  border: none; cursor: pointer;
+  padding: var(--s-4) var(--s-8); border-radius: var(--r-full);
+  font-size: var(--t-md); font-weight: 800; color: #062420;
+  background: linear-gradient(90deg, var(--mint), #7fe8d8);
+  box-shadow: 0 6px 18px rgba(45, 212, 191, 0.35);
+  min-height: var(--tap);
+}
+.heartgame-play-btn:active { transform: scale(0.97); }
+
+.heartgame-pause-menu { display: flex; flex-direction: column; gap: var(--s-3); width: 100%; max-width: 260px; }
+.heartgame-ghost-btn { background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, 0.28); box-shadow: none; }

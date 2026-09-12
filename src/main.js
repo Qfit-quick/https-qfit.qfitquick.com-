@@ -12,6 +12,9 @@ import './styles/result.css';
 // 관문·계획·기록지의 스타일. 맨 뒤에 온다 — 위 일곱 장의 규칙을 덮어쓰는
 // 곳이 있어서(카드 안쪽 여백 등) 순서가 바뀌면 그 자리부터 틀어진다.
 import './styles/plan.css';
+// 큐피드 하트 슈팅 미니게임(2026-09-12). 이 화면은 다른 화면과 겹치지 않는
+// 자기만의 색·레이아웃을 쓰므로 순서가 앞뒤 어디에 와도 상관없다.
+import './styles/heartgame.css';
 
 import './app.js';
 import { t, showScreenById, startRoutine } from './app.js';
@@ -23,6 +26,7 @@ import { initGate } from './ui/gate.js';
 import { initPlan, renderPlanScreen } from './ui/plan.js';
 import { initLog, renderLogScreen, renderTodayCard } from './ui/log.js';
 import { initPrograms, renderProgramsScreen } from './ui/programs.js';
+import { initHeartGame } from './ui/heartgame.js';
 import { ICON } from './ui/icons.js';
 import { STATIC_UI } from './data/i18n-strings.js';
 
@@ -40,6 +44,7 @@ initLog({ translate: t, STATIC_UI, onShowScreen: showScreenById });
 // 둘 다 '동작을 미리 정해 두고 설정 화면으로 보낸다' 는 같은 일이다.
 initPrograms({ translate: t, STATIC_UI, onStartDay: startRoutine });
 renderProgramsScreen();
+initHeartGame({ translate: t, STATIC_UI });
 
 // data-icon 이 적힌 자리에 선 아이콘을 채운다
 paintIcons();

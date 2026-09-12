@@ -38,6 +38,8 @@ const TABS = [
 const IMMERSIVE = new Set([
   'wod-preview-screen', 'warmup-screen', 'countdown-screen',
   'game-screen', 'result-screen',
+  // 큐피드 하트 슈팅(2026-09-12) — 이 화면도 탭에 집중해야 하니 탭바를 감춘다.
+  'heartgame-screen',
 ]);
 
 // 탭이 아닌 화면에 있을 때 어느 탭을 켜 둘지. 없으면 아무것도 안 켠다.
@@ -56,6 +58,8 @@ const BELONGS_TO = {
   'setup-screen': 'start-screen',
   'manual-select-screen': 'start-screen',
   'ai-quiz-screen': 'start-screen',
+  // 큐피드 하트 슈팅은 더보기 줄에서 연다.
+  'heartgame-screen': 'more-screen',
 };
 
 let bar = null;

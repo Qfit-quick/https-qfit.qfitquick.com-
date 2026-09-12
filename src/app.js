@@ -227,6 +227,9 @@ function applyStaticTranslations(){
  // textContent 라 <b> 가 글자 그대로 찍힌다. 여기서 innerHTML 로 덮어쓴다.
  const weightHintEl = document.getElementById('weight-hint');
  if(weightHintEl) weightHintEl.innerHTML = t(STATIC_UI.weightHint);
+ // 하트 게임 안내문도 <b> 를 쓴다 — 같은 이유로 innerHTML 로 덮어쓴다.
+ const heartgameIntroEl = document.getElementById('heartgame-intro');
+ if(heartgameIntroEl) heartgameIntroEl.innerHTML = t(STATIC_UI.heartgameIntro);
 
 }
 
@@ -443,6 +446,10 @@ const planScreen = document.getElementById('plan-screen');
 const bodyScreen = document.getElementById('body-screen');
 const logScreen = document.getElementById('log-screen');
 const programsScreen = document.getElementById('programs-screen');
+// 큐피드 하트 슈팅 미니게임(2026-09-12). 안쪽 동작은 src/ui/heartgame.js 가
+// 전부 붙인다 — 여기서는 다른 몰입형 화면(gameScreen 등)과 같은 자리에
+// 놓고 showScreen 의 화면 목록에 끼워 넣는 것만 한다.
+const heartgameScreen = document.getElementById('heartgame-screen');
 const openVideoGalleryBtn = document.getElementById('open-video-gallery-btn');
 const videoGalleryBackBtn = document.getElementById('video-gallery-back-btn');
 const videoGalleryGrid = document.getElementById('video-gallery-grid');
@@ -499,14 +506,10 @@ const bestScoreBox = document.getElementById('best-score-box');
 const bestScoreVal = document.getElementById('best-score-val');
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,heartgameScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  if(el === moreScreen){
  try{
- const savedPrefs = loadSetupPrefs();
- const show = !!(savedPrefs && Array.isArray(savedPrefs.exKeys) && savedPrefs.exKeys.length);
- const moreBtn = document.getElementById('repeat-trigger-more');
- if(moreBtn) moreBtn.style.display = show ? '' : 'none';
  // '내 루틴' 줄에 몇 개가 저장돼 있는지. 0 개라면 들어가 봐야 빈 화면이라
  // 그 사실을 여기서 미리 말해 준다.
  const sub = document.getElementById('routines-count-sub');
@@ -2417,9 +2420,7 @@ try{
  const aiQuizBackBtn = document.getElementById('ai-quiz-back-btn');
  const savedPrefsAtBoot = loadSetupPrefs();
  const hasSavedRoutine = !!(savedPrefsAtBoot && Array.isArray(savedPrefsAtBoot.exKeys) && savedPrefsAtBoot.exKeys.length);
- const repeatTriggerMoreBtn = document.getElementById('repeat-trigger-more');
  const repeatTriggerStartBtn = document.getElementById('repeat-trigger-start');
- if(repeatTriggerMoreBtn && hasSavedRoutine) repeatTriggerMoreBtn.style.display = '';
  if(repeatTriggerStartBtn && hasSavedRoutine) repeatTriggerStartBtn.style.display = '';
  document.querySelectorAll('.repeat-trigger-btn').forEach(btn=>{
  btn.addEventListener('click', ()=>{
@@ -2432,6 +2433,8 @@ try{
  showWodPreview(()=>{ if(prefs && prefs.warmupOn){ startWarmup(); } else { startCountdown(); } });
  });
  });
+ const openHeartgameBtn = document.getElementById('open-heartgame-btn');
+ if(openHeartgameBtn && heartgameScreen) openHeartgameBtn.addEventListener('click', ()=> showScreen(heartgameScreen));
  if(modeAiBtn) modeAiBtn.addEventListener('click', ()=>{
  Sound.unlock();
  flash('#ffe600');
