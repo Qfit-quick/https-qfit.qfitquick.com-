@@ -1,0 +1,161 @@
+/* 챌린지 트래커(2026-09-13).
+ *
+ * 사용자가 만든 독립 HTML/CSS/JS(qfit-challenge-tracker.html)를 화면
+ * 하나로 그대로 옮긴 것이다 — 구성은 바꾸지 않는다. id·class 는 전부
+ * challenge- 접두사를 붙였다.
+ *
+ * 원본 CSS 변수 중 이 앱에 이미 있는 브랜드색과 같은 자리(민트·골드)는
+ * 하드코딩 대신 tokens.css 값을 그대로 쓴다. --panel·--line·--text-dim
+ * 은 원본이 자기만의 어두운 청록 캔버스(--bg-1/--bg-2) 위에 쓰려고 만든
+ * "반투명 흰색" 값이라, 이 앱의 --surface/--line(라이트·다크에 따라
+ * 값이 바뀌는 토큰)과는 역할이 다르다 — 억지로 바꾸면 어두운 배경 위에
+ * 라이트 모드 --surface(거의 흰색)가 얹혀 글자가 안 보이게 된다. 그래서
+ * 이 화면 전용 지역 변수로 남겨 뒀다(하트게임 화면과 같은 방침).
+ */
+
+#challenge-screen {
+  --challenge-bg-1: #062420;
+  --challenge-bg-2: #0a3a33;
+  --challenge-panel: rgba(255, 255, 255, 0.06);
+  --challenge-panel-strong: rgba(255, 255, 255, 0.1);
+  --challenge-line: rgba(255, 255, 255, 0.1);
+  --challenge-text-dim: rgba(255, 255, 255, 0.62);
+  background: radial-gradient(120% 140% at 20% 0%, var(--challenge-bg-2), var(--challenge-bg-1));
+  color: #fff;
+}
+/* .screen 의 카드형 배경(var(--bg))을 지운다 — 이 화면은 자기만의
+   어두운 캔버스를 쓴다. */
+#challenge-screen.screen { background: radial-gradient(120% 140% at 20% 0%, var(--challenge-bg-2), var(--challenge-bg-1)); }
+
+#challenge-screen .eyebrow,
+#challenge-screen .lb-title { color: #fff; }
+
+/* 트랙 탭 */
+#challenge-tabs {
+  display: flex; gap: var(--s-2); margin-bottom: var(--s-3);
+  overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+#challenge-tabs::-webkit-scrollbar { display: none; }
+.challenge-tab-btn {
+  flex: 0 0 auto; white-space: nowrap;
+  padding: var(--s-2) var(--s-4); text-align: center;
+  border-radius: var(--r-full); border: none; cursor: pointer;
+  font-size: var(--t-sm); font-weight: 700;
+  background: var(--challenge-panel); color: var(--challenge-text-dim);
+}
+.challenge-tab-btn.active {
+  background: linear-gradient(90deg, var(--mint), #7fe8d8);
+  color: #062420;
+}
+
+/* 요약 카드 */
+#challenge-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2);
+  background: var(--challenge-panel); border-radius: var(--r-lg);
+  padding: var(--s-3) var(--s-2); margin-bottom: var(--s-4);
+}
+.challenge-summary-item { text-align: center; }
+.challenge-summary-item .challenge-summary-num {
+  font-size: var(--t-sm); font-weight: 800;
+  font-family: var(--font-num);
+  background: linear-gradient(90deg, var(--accent), #ff9500);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.challenge-summary-item .challenge-summary-lbl { font-size: 10px; color: var(--challenge-text-dim); margin-top: 2px; }
+
+/* 시작일 */
+#challenge-start-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--challenge-panel); border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4); margin-bottom: var(--s-3);
+  font-size: var(--t-sm);
+}
+#challenge-start-date {
+  background: var(--challenge-panel-strong); border: 1px solid var(--challenge-line);
+  color: #fff; border-radius: var(--r-sm); padding: 5px 8px; font-size: var(--t-sm);
+  font-family: inherit;
+}
+
+/* 진행바 */
+#challenge-progress-wrap { margin-bottom: var(--s-5); }
+#challenge-progress-label {
+  display: flex; justify-content: space-between;
+  font-size: var(--t-xs); color: var(--challenge-text-dim); margin-bottom: var(--s-2);
+}
+.challenge-progress-outer {
+  width: 100%; height: 10px; border-radius: var(--r-full);
+  background: rgba(255, 255, 255, 0.08); overflow: hidden;
+}
+.challenge-progress-inner {
+  height: 100%; border-radius: var(--r-full);
+  background: linear-gradient(90deg, var(--mint), var(--accent));
+  transition: width 0.25s ease;
+}
+
+/* phase 카드 */
+.challenge-phase-card {
+  background: var(--challenge-panel); border-radius: var(--r-lg);
+  margin-bottom: var(--s-3); overflow: hidden;
+  border: 1px solid transparent;
+}
+.challenge-phase-card.current { border-color: var(--mint); }
+.challenge-phase-header {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  background: none; border: none; color: #fff; cursor: pointer;
+  padding: 13px var(--s-4); font-size: var(--t-sm); font-weight: 700; text-align: left;
+}
+.challenge-phase-header .challenge-week-range {
+  font-size: 11px; font-weight: 600; color: var(--challenge-text-dim); margin-right: var(--s-2);
+}
+.challenge-phase-header .challenge-badge {
+  font-size: 10px; font-weight: 800; color: #062420;
+  background: var(--mint); border-radius: var(--r-full); padding: 2px 8px; margin-left: var(--s-2);
+}
+.challenge-phase-header .challenge-chev { transition: transform 0.2s ease; color: var(--challenge-text-dim); }
+.challenge-phase-card.open .challenge-chev { transform: rotate(180deg); }
+.challenge-phase-body { display: none; padding: 0 var(--s-4) var(--s-4); }
+.challenge-phase-card.open .challenge-phase-body { display: block; }
+.challenge-phase-goal { font-size: 12.5px; color: var(--challenge-text-dim); margin: 0 0 var(--s-3); line-height: 1.5; }
+
+.challenge-exercise-table { width: 100%; border-collapse: collapse; margin-bottom: var(--s-3); font-size: var(--t-xs); }
+.challenge-exercise-table th {
+  text-align: left; font-size: 10.5px; color: var(--challenge-text-dim);
+  padding: 4px 6px; border-bottom: 1px solid var(--challenge-line); font-weight: 600;
+}
+.challenge-exercise-table td { padding: 7px 6px; border-bottom: 1px solid var(--challenge-line); vertical-align: top; }
+.challenge-exercise-table td.challenge-note { color: var(--challenge-text-dim); font-size: 11px; }
+.challenge-ex-gloss { color: var(--accent); font-size: 10.5px; margin-top: 2px; opacity: 0.9; }
+.challenge-exercise-table td.challenge-icon-cell { width: 44px; padding-right: 2px; }
+.challenge-ex-icon { width: 36px; height: 36px; display: block; color: var(--mint); }
+.challenge-ex-icon svg { width: 100%; height: 100%; }
+
+.challenge-week-logs { display: flex; flex-direction: column; gap: var(--s-2); }
+.challenge-week-log-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-2); background: var(--challenge-panel-strong); border-radius: var(--r-md);
+  padding: var(--s-2) var(--s-3);
+}
+.challenge-week-log-row.filled { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mint) 50%, transparent); }
+.challenge-week-log-row .challenge-w-label { font-size: var(--t-xs); flex: 1; }
+.challenge-week-log-row .challenge-w-label .challenge-wk { color: var(--accent); font-weight: 700; margin-right: 4px; }
+.challenge-week-log-row input[type="number"],
+.challenge-week-log-row input[type="text"] {
+  width: 74px; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--challenge-line);
+  color: #fff; border-radius: var(--r-sm); padding: 6px 8px; font-size: var(--t-xs);
+  font-family: inherit; text-align: right;
+}
+.challenge-week-log-row .challenge-unit { font-size: 11px; color: var(--challenge-text-dim); width: 20px; }
+.challenge-bool-btns { display: flex; gap: var(--s-2); }
+.challenge-bool-btn {
+  border: 1px solid var(--challenge-line); background: transparent; color: var(--challenge-text-dim);
+  border-radius: var(--r-sm); padding: 5px 10px; font-size: 11px; cursor: pointer;
+}
+.challenge-bool-btn.on-success { background: var(--mint); border-color: var(--mint); color: #062420; font-weight: 700; }
+.challenge-bool-btn.on-fail { background: var(--danger); border-color: var(--danger); color: #fff; font-weight: 700; }
+
+#challenge-reset-btn {
+  width: 100%; margin-top: var(--s-2);
+  background: transparent; border: 1px solid color-mix(in srgb, var(--danger) 50%, transparent);
+  color: var(--danger); border-radius: var(--r-md); padding: var(--s-3); font-size: var(--t-xs);
+  cursor: pointer; min-height: var(--tap);
+}

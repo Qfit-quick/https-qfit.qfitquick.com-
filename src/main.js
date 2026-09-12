@@ -15,6 +15,8 @@ import './styles/plan.css';
 // 큐피드 하트 슈팅 미니게임(2026-09-12). 이 화면은 다른 화면과 겹치지 않는
 // 자기만의 색·레이아웃을 쓰므로 순서가 앞뒤 어디에 와도 상관없다.
 import './styles/heartgame.css';
+// 챌린지 트래커(2026-09-13). 마찬가지로 자기만의 색을 쓴다.
+import './styles/challengeTracker.css';
 
 import './app.js';
 import { t, showScreenById, startRoutine } from './app.js';
@@ -27,6 +29,7 @@ import { initPlan, renderPlanScreen } from './ui/plan.js';
 import { initLog, renderLogScreen, renderTodayCard } from './ui/log.js';
 import { initPrograms, renderProgramsScreen } from './ui/programs.js';
 import { initHeartGame } from './ui/heartgame.js';
+import { initChallengeTracker } from './ui/challengeTracker.js';
 import { ICON } from './ui/icons.js';
 import { STATIC_UI } from './data/i18n-strings.js';
 
@@ -45,6 +48,7 @@ initLog({ translate: t, STATIC_UI, onShowScreen: showScreenById });
 initPrograms({ translate: t, STATIC_UI, onStartDay: startRoutine });
 renderProgramsScreen();
 initHeartGame({ translate: t, STATIC_UI });
+initChallengeTracker({ translate: t, STATIC_UI });
 
 // data-icon 이 적힌 자리에 선 아이콘을 채운다
 paintIcons();

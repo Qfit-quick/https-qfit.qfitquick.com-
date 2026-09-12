@@ -100,6 +100,30 @@ export const STATIC_UI = {
  heartgameExitBtn: {ko:'나가기', en:'Exit', zh:'退出'},
  heartgameBest: {ko:'BEST %s', en:'BEST %s', zh:'最高 %s'},
  heartgameCombo: {ko:'COMBO x%s!', en:'COMBO x%s!', zh:'连击 x%s！'},
+ // 챌린지 트래커(2026-09-13). 턱걸이·플란체 등 7개 트랙의 화면 뼈대
+ // 문구만 여기 있다 — 운동 이름·목표·비고·쉬운 설명(GLOSS) 104개+@는
+ // src/data/challengeTracks.js·challengeGloss.js 에 한국어 전용으로
+ // 그대로 뒀다(칼리스테닉스 전문 용어라 오역 위험 없이 옮기려면 별도
+ // 검수가 필요해서, 지금은 정확한 한국어 하나만 유지하는 쪽을 택했다).
+ challengeMenuLabel: {ko:'도전', en:'Challenge', zh:'挑战'},
+ challengeEyebrow: {ko:'도전', en:'Challenge', zh:'挑战'},
+ challengeTitle: {ko:'챌린지 트래커', en:'Challenge Tracker', zh:'挑战追踪'},
+ challengeTabLabel: {ko:'%s (%s주)', en:'%s (%s wk)', zh:'%s（%s周）'},
+ challengeStartLabel: {ko:'시작일', en:'Start date', zh:'开始日期'},
+ challengeSummaryUnit: {ko:'%s/%s', en:'%s/%s', zh:'%s/%s'},
+ challengeProgressText: {ko:'기록 완료 %s/%s주', en:'%s/%s weeks logged', zh:'已记录 %s/%s周'},
+ challengeCalendarWeek: {ko:'시작일 기준 %s주차', en:'Week %s since start', zh:'距开始第%s周'},
+ challengeWeekLabel: {ko:'%s주차', en:'Wk %s', zh:'第%s周'},
+ challengeGoalPrefix: {ko:'목표: %s', en:'Goal: %s', zh:'目标：%s'},
+ challengeBadgeCurrent: {ko:'진행중', en:'Current', zh:'进行中'},
+ challengeColExercise: {ko:'운동', en:'Exercise', zh:'动作'},
+ challengeColSets: {ko:'세트', en:'Sets', zh:'组数'},
+ challengeColNote: {ko:'비고', en:'Note', zh:'备注'},
+ challengeBoolSuccess: {ko:'성공', en:'Success', zh:'成功'},
+ challengeBoolFail: {ko:'실패', en:'Fail', zh:'失败'},
+ challengeTextPlaceholder: {ko:'예: 12초 / 6초', en:'e.g. 12s / 6s', zh:'例：12秒 / 6秒'},
+ challengeResetBtn: {ko:'이 트랙 기록 초기화', en:'Reset this track', zh:'重置本项记录'},
+ challengeResetConfirm: {ko:'%s 트랙의 시작일과 기록을 모두 초기화할까요?', en:'Reset the start date and all logs for %s?', zh:'确定要重置"%s"的开始日期和全部记录吗？'},
  warmupToggle: {ko:'준비운동 먼저 하기 (약 1분)', en:'Warm up first (~1 min)', zh:'先做热身（约1分钟）'},
  warmupTitle: {ko:'준비운동', en:'Warm-up', zh:'热身'},
  warmupSkip: {ko:'건너뛰기', en:'Skip', zh:'跳过'},

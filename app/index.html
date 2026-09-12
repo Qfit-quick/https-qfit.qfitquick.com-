@@ -338,6 +338,37 @@
  <button class="btn-restart" id="plan-back-btn" data-i18n="lbBackBtn">닫기</button>
  </div>
 
+ <!-- CHALLENGE TRACKER (도전, 2026-09-13).
+      턱걸이·플란체·핸드스탠드·머슬업·프론트레버·딥스·사이드스플릿 7개
+      장기 챌린지의 진행 트래커. programs-screen과 마찬가지로 탭 전용
+      화면이라 닫기 버튼이 없다 — 안쪽은 src/ui/challengeTracker.js 가
+      전부 그린다. 운동 이름·목표·비고는 한국어 전용이다(그 이유는
+      src/data/challengeTracks.js 머리 설명 참고). -->
+ <div class="screen" id="challenge-screen">
+ <div class="eyebrow" data-i18n="challengeEyebrow">도전</div>
+ <h2 class="lb-title" data-i18n="challengeTitle">챌린지 트래커</h2>
+
+ <div id="challenge-tabs"></div>
+ <div id="challenge-summary"></div>
+
+ <div id="challenge-start-row">
+ <span data-i18n="challengeStartLabel">시작일</span>
+ <input type="date" id="challenge-start-date">
+ </div>
+
+ <div id="challenge-progress-wrap">
+ <div id="challenge-progress-label">
+ <span id="challenge-progress-text"></span>
+ <span id="challenge-calendar-week"></span>
+ </div>
+ <div class="challenge-progress-outer"><div class="challenge-progress-inner" id="challenge-progress-inner" style="width:0%"></div></div>
+ </div>
+
+ <div id="challenge-phase-list"></div>
+
+ <button type="button" id="challenge-reset-btn" data-i18n="challengeResetBtn">이 트랙 기록 초기화</button>
+ </div>
+
  <!-- BODY (신체정보).
       계산에 필요한 값만 받는다. 체지방률·허리둘레 같은 것은 받아도 이 앱이
       쓸 데가 없고, 칸이 늘면 아무것도 안 넣고 나가게 된다. -->

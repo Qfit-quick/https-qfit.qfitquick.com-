@@ -450,6 +450,9 @@ const programsScreen = document.getElementById('programs-screen');
 // 전부 붙인다 — 여기서는 다른 몰입형 화면(gameScreen 등)과 같은 자리에
 // 놓고 showScreen 의 화면 목록에 끼워 넣는 것만 한다.
 const heartgameScreen = document.getElementById('heartgame-screen');
+// 챌린지 트래커(2026-09-13). 프로그램과 마찬가지로 탭 전용 화면 —
+// 안쪽은 src/ui/challengeTracker.js 가 전부 그린다.
+const challengeScreen = document.getElementById('challenge-screen');
 const openVideoGalleryBtn = document.getElementById('open-video-gallery-btn');
 const videoGalleryBackBtn = document.getElementById('video-gallery-back-btn');
 const videoGalleryGrid = document.getElementById('video-gallery-grid');
@@ -506,7 +509,7 @@ const bestScoreBox = document.getElementById('best-score-box');
 const bestScoreVal = document.getElementById('best-score-val');
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,heartgameScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,heartgameScreen,challengeScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  if(el === moreScreen){
  try{

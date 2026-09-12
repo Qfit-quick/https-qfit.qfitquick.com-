@@ -23,13 +23,16 @@ import { closeSheet, isSheetOpen } from './sheet.js';
 //
 // 프로그램은 '목표' 탭의 자동 주간 계획과 다른 물건이다(2026-09-11) —
 // 이름 붙여 고르는, 시작·끝이 있는 다주 루틴이라 따로 칸을 준다.
-// 이걸로 다섯 칸이 다 찼다 — 여섯째부터는 라벨이 두 자로 줄어 구별이
-// 안 된다.
+// 다섯 칸이 상한이라고 여기 오래 적어 뒀었지만, 턱걸이·플란체 같은
+// 장기(수개월) 챌린지는 '프로그램'(2~3주짜리)과는 무게가 달라서
+// 여섯째 칸 '도전'을 사용자 요청으로 추가했다(2026-09-13) — 라벨은
+// 기존 '프로그램'(4자)보다 짧은 2자라 줄어들 폭이 없다.
 const TABS = [
   { id: 'start-screen', label: '홈', icon: 'home', via: null },
   { id: 'log-screen', label: '체크', icon: 'checklist', via: '#today-card-open' },
   { id: 'programs-screen', label: '프로그램', icon: 'trophy', via: null },
   { id: 'plan-screen', label: '목표', icon: 'plan', via: null },
+  { id: 'challenge-screen', label: '도전', icon: 'spark', via: null },
   { id: 'more-screen', label: '더보기', icon: 'more', via: '#open-more-btn' },
 ];
 
