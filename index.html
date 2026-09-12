@@ -36,8 +36,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-CRGI0dGg.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DpUwpgYP.css">
+  <script type="module" crossorigin src="./assets/index-CE21JaYa.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DT3z5I61.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -182,7 +182,12 @@
  <!-- 설계 16 에는 여기 '오늘의 챌린지' 배너가 있지만 넣지 않는다.
       챌린지는 FR-05 로 걷어낸 기능이다(커밋 150da98) — 설계는 그 결정보다
       앞선 그림이라, 여기서는 요구사항이 이긴다. -->
- <button class="repeat-chip repeat-trigger-btn" id="repeat-trigger-more" style="display:none;" data-i18n="repeatLast">지난 루틴 다시 시작</button>
+ <!-- 이 자리는 원래 '지난 루틴 다시 시작' 이었다(2026-09-12, 큐피드
+      하트 슈팅 미니게임으로 교체). 그 기능 자체가 없어진 건 아니다 —
+      repeat-trigger-btn 클래스를 쓰는 나머지 두 자리(홈의 1분 시작 시트,
+      결과 화면)에 여전히 남아 있다. 이 버튼만 그 클래스에서 빼고
+      heartgame-screen 을 여는 손잡이로 바꿨다. -->
+ <button class="repeat-chip" id="open-heartgame-btn" type="button" data-i18n="heartgameMenuLabel">큐피드 하트 슈팅</button>
 
  <!-- 로그인했을 때만 뜬다(showScreen 의 more-screen 분기). 익명 상태로는
       ?ref= 에 넣을 내 아이디가 없다. -->
@@ -235,6 +240,60 @@
  </div>
 
  <button class="btn-restart" id="more-back-btn" style="margin-top:16px;" data-i18n="lbBackBtn">닫기</button>
+ </div>
+
+ <!-- HEART GAME (큐피드 하트 슈팅, 2026-09-12).
+      더보기의 '큐피드 하트 슈팅' 줄이 여는 몰입형 미니게임. src/ui/log.js
+      같은 다른 하위 화면과 달리 머리(eyebrow+제목)와 닫기 버튼이 없다 —
+      game-screen·result-screen과 같은 몰입형(IMMERSIVE) 화면이라 탭바를
+      감추고(nav.js), 나가는 길은 이 화면 안 일시정지 메뉴의 '나가기'
+      하나뿐이다. 안쪽 동작은 전부 src/ui/heartgame.js 가 붙인다 — 사용자가
+      만들어 전달한 독립 HTML(cupid-heart-game.html)을 그대로 옮긴 것이라
+      id·class 에 전부 heartgame- 접두사를 붙여 기존 화면과 분리했다. -->
+ <div class="screen" id="heartgame-screen">
+ <div id="heartgame-root">
+ <div id="heartgame-hud">
+ <div id="heartgame-hud-left">
+ <button type="button" id="heartgame-pause-btn" class="heartgame-icon-btn">⏸</button>
+ <div id="heartgame-score">0</div>
+ </div>
+ <div id="heartgame-hud-right">
+ <div id="heartgame-best">BEST 0</div>
+ <div id="heartgame-timer">0</div>
+ </div>
+ </div>
+ <div id="heartgame-combo-label">COMBO</div>
+
+ <div id="heartgame-lanes">
+ <div class="heartgame-lane" data-lane="0"><div class="heartgame-hitzone"></div><div class="heartgame-cupid">🏹</div></div>
+ <div class="heartgame-lane" data-lane="1"><div class="heartgame-hitzone"></div><div class="heartgame-cupid">🏹</div></div>
+ <div class="heartgame-lane" data-lane="2"><div class="heartgame-hitzone"></div><div class="heartgame-cupid">🏹</div></div>
+ </div>
+
+ <div id="heartgame-start-overlay" class="heartgame-overlay">
+ <h1 data-i18n="heartgameTitle">큐피드 하트 슈팅 💘</h1>
+ <p id="heartgame-intro" data-i18n="heartgameIntro">날아오는 하트가 큐피드 근처(민트색 구역)에 오면 그 줄을 탭해서 화살을 쏘세요.</p>
+ <button type="button" class="heartgame-play-btn" id="heartgame-start-btn" data-i18n="heartgameStartBtn">시작하기</button>
+ </div>
+
+ <div id="heartgame-end-overlay" class="heartgame-overlay" hidden>
+ <h1 data-i18n="heartgameEndTitle">게임 종료!</h1>
+ <div id="heartgame-record-badge" data-i18n="heartgameRecordBadge" hidden>NEW RECORD!</div>
+ <div id="heartgame-final-score">0</div>
+ <p id="heartgame-final-line"></p>
+ <button type="button" class="heartgame-play-btn" id="heartgame-retry-btn" data-i18n="heartgameRestartBtn">다시하기</button>
+ </div>
+
+ <div id="heartgame-pause-overlay" class="heartgame-overlay" hidden>
+ <h1 data-i18n="heartgamePauseTitle">일시정지</h1>
+ <div class="heartgame-pause-menu">
+ <button type="button" class="heartgame-play-btn" id="heartgame-resume-btn" data-i18n="heartgameResumeBtn">이어하기</button>
+ <button type="button" class="heartgame-play-btn heartgame-ghost-btn" id="heartgame-pause-mute-btn"></button>
+ <button type="button" class="heartgame-play-btn heartgame-ghost-btn" id="heartgame-pause-restart-btn" data-i18n="heartgameRestartBtn">다시하기</button>
+ <button type="button" class="heartgame-play-btn heartgame-ghost-btn" id="heartgame-pause-exit-btn" data-i18n="heartgameExitBtn">나가기</button>
+ </div>
+ </div>
+ </div>
  </div>
 
  <!-- PROGRAMS (목적별 다주 프로그램, 2026-09-11).
