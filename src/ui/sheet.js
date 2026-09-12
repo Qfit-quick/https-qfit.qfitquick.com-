@@ -55,10 +55,20 @@ function build() {
 }
 
 // 아래로 끌어내려 닫기. 폰에서는 닫기 버튼을 찾는 것보다 이게 빠르다.
+//
+// 손잡이만 잡게 하면 못 찾은 사람이 갇힌 것처럼 느끼므로 시트 전체를
+// 끌 수 있게 뒀는데, 그러면서 버튼을 누르다가 손가락이 살짝 떨리기만
+// 해도 시트 전체가 손가락을 따라 밀려나 버튼을 놓치는 문제가 있었다
+// (2026-09-12, "드래그하면 전체가 드래그된다" 피드백). 그래서 두 가지로
+// 막는다 — 버튼 등 누르는 요소 위에서 시작한 터치는 애초에 끌기로
+// 치지 않고, 그 밖의 자리에서 시작했더라도 아주 작게 흔들린 정도(6px
+// 미만)는 아직 끌기로 옮기지 않는다.
+const DRAG_ARM_PX = 6;
 function attachDrag() {
   let startY = 0;
   let dy = 0;
-  let dragging = false;
+  let dragging = false; // 끌기로 확정됐다(6px 넘게 움직였다)
+  let tracking = false; // 손을 뗄 때까지 지켜보는 중(아직 확정 전)
 
   const grabArea = () => sheet;
 
@@ -67,10 +77,13 @@ function attachDrag() {
     (e) => {
       // 시트 안의 목록을 스크롤하는 중이면 끌기로 치지 않는다
       if (body.scrollTop > 0) return;
-      dragging = true;
+      // 버튼·링크·입력칸을 누르는 터치는 탭이지 끌기가 아니다 — 이걸 안 걸러서
+      // 시트 전체가 버튼과 함께 밀려나며 탭이 씹혔다.
+      if (e.target.closest('button, a, input, select, textarea')) return;
+      tracking = true;
+      dragging = false;
       startY = e.touches[0].clientY;
       dy = 0;
-      sheet.style.transition = 'none';
     },
     { passive: true }
   );
@@ -78,8 +91,14 @@ function attachDrag() {
   grabArea().addEventListener(
     'touchmove',
     (e) => {
-      if (!dragging) return;
-      dy = Math.max(0, e.touches[0].clientY - startY); // 위로는 안 끌린다
+      if (!tracking) return;
+      const raw = e.touches[0].clientY - startY;
+      if (!dragging) {
+        if (raw < DRAG_ARM_PX) return; // 아직 흔들림 수준 — 시트를 움직이지 않는다
+        dragging = true;
+        sheet.style.transition = 'none';
+      }
+      dy = Math.max(0, raw); // 위로는 안 끌린다
       sheet.style.transform = `translateY(${dy}px)`;
       backdrop.style.opacity = String(Math.max(0, 1 - dy / 320));
     },
@@ -87,6 +106,7 @@ function attachDrag() {
   );
 
   grabArea().addEventListener('touchend', () => {
+    tracking = false;
     if (!dragging) return;
     dragging = false;
     sheet.style.transition = '';

@@ -14,8 +14,19 @@ html {
 }
 html, body { height: 100%; }
 
+/* body 를 position:fixed 로 화면에 못박는다(2026-09-12). 화면 스크롤은
+   전부 .screen 각자가 맡고(overflow-y:auto) body 자체는 원래도 스크롤될
+   일이 없었는데, iOS 홈 화면 설치(PWA standalone) 상태에서는 body 가
+   그냥 overflow:hidden 인 것만으로는 부족해서 화면 위에서 손가락을
+   끌면 body 를 포함한 문서 전체가 통째로 튕기듯 밀렸다("홈 화면에서
+   드래그하면 전체가 드래그된다" 피드백) — .screen 안의 정상적인 스크롤과는
+   별개로 그 바깥 문서 자체가 고무줄처럼 늘어난 것이다. fixed 로 못박으면
+   문서 자체에는 밀릴 여지가 아예 없어진다. */
 body {
   margin: 0;
+  position: fixed;
+  inset: 0;
+  width: 100%;
   min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
@@ -23,6 +34,7 @@ body {
   font-size: var(--t-md);
   line-height: 1.5;
   overflow: hidden;
+  overscroll-behavior: none;
   display: flex;
   justify-content: center;
   -webkit-font-smoothing: antialiased;
