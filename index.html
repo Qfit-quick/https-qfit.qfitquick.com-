@@ -36,8 +36,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-CE21JaYa.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DT3z5I61.css">
+  <script type="module" crossorigin src="./assets/index-D4SnyJ8r.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-D1m92PK5.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -338,6 +338,37 @@
  </div>
 
  <button class="btn-restart" id="plan-back-btn" data-i18n="lbBackBtn">닫기</button>
+ </div>
+
+ <!-- CHALLENGE TRACKER (도전, 2026-09-13).
+      턱걸이·플란체·핸드스탠드·머슬업·프론트레버·딥스·사이드스플릿 7개
+      장기 챌린지의 진행 트래커. programs-screen과 마찬가지로 탭 전용
+      화면이라 닫기 버튼이 없다 — 안쪽은 src/ui/challengeTracker.js 가
+      전부 그린다. 운동 이름·목표·비고는 한국어 전용이다(그 이유는
+      src/data/challengeTracks.js 머리 설명 참고). -->
+ <div class="screen" id="challenge-screen">
+ <div class="eyebrow" data-i18n="challengeEyebrow">도전</div>
+ <h2 class="lb-title" data-i18n="challengeTitle">챌린지 트래커</h2>
+
+ <div id="challenge-tabs"></div>
+ <div id="challenge-summary"></div>
+
+ <div id="challenge-start-row">
+ <span data-i18n="challengeStartLabel">시작일</span>
+ <input type="date" id="challenge-start-date">
+ </div>
+
+ <div id="challenge-progress-wrap">
+ <div id="challenge-progress-label">
+ <span id="challenge-progress-text"></span>
+ <span id="challenge-calendar-week"></span>
+ </div>
+ <div class="challenge-progress-outer"><div class="challenge-progress-inner" id="challenge-progress-inner" style="width:0%"></div></div>
+ </div>
+
+ <div id="challenge-phase-list"></div>
+
+ <button type="button" id="challenge-reset-btn" data-i18n="challengeResetBtn">이 트랙 기록 초기화</button>
  </div>
 
  <!-- BODY (신체정보).
