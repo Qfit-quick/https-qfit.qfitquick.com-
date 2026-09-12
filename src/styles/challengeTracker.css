@@ -30,9 +30,10 @@
 #challenge-screen .eyebrow,
 #challenge-screen .lb-title { color: #fff; }
 
-/* 트랙 탭 */
+/* 트랙 탭. flex:none 이 없으면 세로 flex 인 .screen 안에서 이 줄이
+   눌려 사라진다(.chip-row 와 같은 문제 — components.css 참고). */
 #challenge-tabs {
-  display: flex; gap: var(--s-2); margin-bottom: var(--s-3);
+  display: flex; flex: none; gap: var(--s-2); margin-bottom: var(--s-3);
   overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
 #challenge-tabs::-webkit-scrollbar { display: none; }
