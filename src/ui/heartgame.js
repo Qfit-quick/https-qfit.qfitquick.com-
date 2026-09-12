@@ -463,10 +463,4 @@ export function initHeartGame({ translate, STATIC_UI } = {}) {
   document.addEventListener('screenchange', (e) => {
     if (e.detail?.id !== 'heartgame-screen') pauseGame();
   });
-
-  // ⚠ 임시 디버그 훅(자동화 검증용, 확인 끝나면 반드시 지운다). 자동화 탭이
-  // document.hidden=true 로 잡혀 requestAnimationFrame 이 안 돌 때, dt 를
-  // 직접 넘겨 게임 루프를 즉시 여러 번 굴려 명중·놓침·게임오버를 확인하기
-  // 위한 것이다.
-  window.__heartgameDebug = { startGame, update, onLaneTap, exitGame, pauseGame, resumeGame, getState: () => state, els };
 }
