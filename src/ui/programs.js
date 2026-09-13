@@ -127,7 +127,14 @@ function bgClass(program) {
   return program.bg ? ' program-card--photo' : '';
 }
 function bgStyle(program) {
-  return program.bg ? ` style="--program-bg:url('${programBgUrl(program.bg)}')"` : '';
+  if (!program.bg) return '';
+  // CSS 커스텀 프로퍼티 안의 url() 은 그 값을 "쓴" 스타일시트(screens.css →
+  // assets/index-*.css) 기준으로 풀린다 — 값을 "정한" 이 문서 기준이 아니다.
+  // base:'./' 라 상대경로를 그대로 넣으면 assets/media/... 로 잘못 풀려서
+  // 사진이 항상 404 난다. document.baseURI 로 미리 완전한 URL을 만들어
+  // 넣으면 어디서 참조하든 더 풀 것이 없어 이 문제를 피한다.
+  const absolute = new URL(programBgUrl(program.bg), document.baseURI).href;
+  return ` style="--program-bg:url('${absolute}')"`;
 }
 
 function matchesSearch(p, term) {
