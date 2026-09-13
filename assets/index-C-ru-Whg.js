@@ -4,7 +4,7 @@
       <input type="text" id="program-search-input" class="inp search-input" placeholder="${j(G(X.programSearchPlaceholder))}" aria-label="${j(G(X.programSearchPlaceholder))}">
     </label>
     <div class="program-list" id="program-list"></div>
-  `,rr("");const t=rt("program-search-input");t&&t.addEventListener("input",()=>{rr(t.value.trim().toLowerCase())})}function Ss(e){return e.bg?" program-card--photo":""}function xs(e){return e.bg?` style="--program-bg:url('${El(e.bg)}')"`:""}function Ml(e,t){return t?(G(e.name)+" "+G(e.tagline)).toLowerCase().includes(t):!0}function rr(e){const t=rt("program-list");if(!t)return;const n=as.filter(o=>Ml(o,e));if(!n.length){t.innerHTML=`<p class="dim program-search-empty">${j(G(X.programSearchEmpty).replace("%s",e))}</p>`;return}t.innerHTML=n.map(o=>{const a=Es(o.id),r=a?null:Al(o.id),s=o.weeks*o.schedule.length;return`
+  `,rr("");const t=rt("program-search-input");t&&t.addEventListener("input",()=>{rr(t.value.trim().toLowerCase())})}function Ss(e){return e.bg?" program-card--photo":""}function xs(e){return e.bg?` style="--program-bg:url('${new URL(El(e.bg),document.baseURI).href}')"`:""}function Ml(e,t){return t?(G(e.name)+" "+G(e.tagline)).toLowerCase().includes(t):!0}function rr(e){const t=rt("program-list");if(!t)return;const n=as.filter(o=>Ml(o,e));if(!n.length){t.innerHTML=`<p class="dim program-search-empty">${j(G(X.programSearchEmpty).replace("%s",e))}</p>`;return}t.innerHTML=n.map(o=>{const a=Es(o.id),r=a?null:Al(o.id),s=o.weeks*o.schedule.length;return`
     <div class="card program-card${Ss(o)}"${xs(o)}>
       <div class="program-card-name">${j(G(o.name))}</div>
       <p class="dim program-card-tag">${j(G(o.tagline))}</p>
