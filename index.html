@@ -36,8 +36,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-C-ru-Whg.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CUR5qZa7.css">
+  <script type="module" crossorigin src="./assets/index-Dg5FFONy.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-C3c6_bgC.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -349,6 +349,12 @@
  <div class="screen" id="challenge-screen">
  <div class="eyebrow" data-i18n="challengeEyebrow">도전</div>
  <h2 class="lb-title" data-i18n="challengeTitle">챌린지 트래커</h2>
+
+ <label class="inp-wrap challenge-search-wrap">
+ <span class="inp-ic" data-icon="search"></span>
+ <input type="text" id="challenge-search-input" class="inp search-input" placeholder="운동 검색 (예: 턱걸이)" data-i18n-placeholder="challengeSearchPlaceholder" aria-label="운동 검색">
+ </label>
+ <div id="challenge-search-results"></div>
 
  <div id="challenge-tabs"></div>
  <div id="challenge-summary"></div>
