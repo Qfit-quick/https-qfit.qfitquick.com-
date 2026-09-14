@@ -3262,8 +3262,8 @@ function buildMissions(){
  midRestIndex = Math.min(Math.floor(missions.length/2), missions.length - 2);
  midRestGiven = false;
 
- // ---------- 깜짝 보너스 라운드 (재미 요소) ----------
- // ~60% chance one random non-boss set becomes a "bonus round" worth
+ // ---------- 깜짝 보너스 세트 (재미 요소) ----------
+ // ~60% chance one random non-boss set becomes a "bonus set" worth
  // double XP — an unpredictable little treat, not something you can
  // plan around, which is what makes it feel fun rather than routine.
  bonusMissionIndex = -1;
@@ -3420,8 +3420,8 @@ function runMission(){
 
 // ---------- 쉬운 동작 전환 ----------
 //
-// 힘들면 이 세트만 더 쉬운 동작으로 바꾼다. 마지막 라운드는 빼고(난이도가
-// 곧 그 라운드의 뜻이다), 매핑이 없는 동작(이미 쉬운 축)에는 버튼 자체를
+// 힘들면 이 세트만 더 쉬운 동작으로 바꾼다. 마지막 세트는 빼고(난이도가
+// 곧 그 세트의 뜻이다), 매핑이 없는 동작(이미 쉬운 축)에는 버튼 자체를
 // 감춘다. src/ 개편 때 통째로 빠졌다가 그 대상 동작 12종과 같이 되살렸다
 // (2026-09-08, 옛 빌드 번들에서 그대로 옮김).
 const EASY_ALT = {
@@ -3776,7 +3776,7 @@ function finishGame(){
  ? t({ko:' · 주말 2배 XP!', en:' · Weekend 2x XP!', zh:' · 周末双倍XP！'})
  : '';
  if(bonusXpEarned > 0){
- bonusMsg += t({ko:' · 보너스 라운드 +' + bonusXpEarned + ' XP!', en:' · Bonus round +' + bonusXpEarned + ' XP!', zh:' · 奖励回合 +' + bonusXpEarned + ' XP！'});
+ bonusMsg += t({ko:' · 보너스 세트 +' + bonusXpEarned + ' XP!', en:' · Bonus set +' + bonusXpEarned + ' XP!', zh:' · 奖励组 +' + bonusXpEarned + ' XP！'});
  }
  if(bonusMsg) finalSub.textContent = finalSub.textContent + bonusMsg;
 

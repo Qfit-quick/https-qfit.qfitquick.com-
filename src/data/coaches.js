@@ -6,9 +6,9 @@
 export const COACHES = [
  { id:'passion', emoji:'',
  name:{ko:'열정 코치',en:'Passion Coach',zh:'热血教练'},
- start:{ko:['좋아, 시작해보자!','이번엔 더 세게 가자!','준비됐지? 간다!','이번 라운드도 가보자!','자 다시 불붙여보자!'],
- en:["Alright, let's go!","Let's push harder this time!","Ready? Here we go!","Let's do this round too!","Time to light it up again!"],
- zh:['好，开始吧！','这次再加把劲！','准备好了吗？走起！','这一轮也拿下！','再点燃一次！']},
+ start:{ko:['좋아, 시작해보자!','이번엔 더 세게 가자!','준비됐지? 간다!','이번 세트도 가보자!','자 다시 불붙여보자!'],
+ en:["Alright, let's go!","Let's push harder this time!","Ready? Here we go!","Let's do this set too!","Time to light it up again!"],
+ zh:['好，开始吧！','这次再加把劲！','准备好了吗？走起！','这一组也拿下！','再点燃一次！']},
  push:{ko:'거의 다 왔어! 힘내!',en:'Almost there! Keep going!',zh:'快到了！加油！'},
  last:{ko:'딱 하나만 더!!',en:'Just one more!!',zh:'就差最后一下！'},
  clear:{ko:['미쳤다 진짜!!','가자, 다음 타겟!','이 텐션 그대로!','완전 폭발적이었어!','좋아 계속 가자!!'],
