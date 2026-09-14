@@ -178,8 +178,7 @@ export const STATIC_UI = {
  wodOrder: {ko:'이 순서대로 진행해요', en:'Here\'s the order', zh:'按这个顺序进行'},
  warmupError: {ko:'준비운동 영상을 불러오지 못했습니다. 건너뛰고 시작해도 됩니다.', en:'Couldn\'t load the warm-up video. You can skip it.', zh:'热身视频加载失败，可以跳过。'},
  bonusBanner: {ko:'보너스 라운드 · 2배 XP', en:'Bonus round · 2x XP', zh:'奖励回合 · 双倍XP'},
- // 'BOSS WOD' 는 영어로 박혀 있어서 어느 언어로 열어도 그대로였다.
- bossBanner: {ko:'보스 라운드', en:'Boss round', zh:'BOSS回合'},
+ bossBanner: {ko:'마지막 라운드', en:'Final round', zh:'最后一轮'},
  secUnit: {ko:'초', en:'sec', zh:'秒'},
  savePrompt: {ko:'기록 저장할까요?', en:'Save your records?', zh:'要保存记录吗？'},
  loginNow: {ko:'로그인하기', en:'Log in', zh:'去登录'},
