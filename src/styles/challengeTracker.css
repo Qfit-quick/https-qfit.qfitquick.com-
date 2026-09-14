@@ -30,6 +30,34 @@
 #challenge-screen .eyebrow,
 #challenge-screen .lb-title { color: #fff; }
 
+/* 운동 검색. 다른 화면의 검색칸(.inp/.inp-wrap/.inp-ic, components.css)을
+   그대로 쓰되, 이 화면만의 어두운 캔버스에 맞게 색만 지역적으로 새로
+   덮는다 — .inp 기본값은 라이트·다크 겸용 토큰(--surface 등)이라 그대로
+   두면 밝은 배경의 입력칸이 어두운 화면 위에 튄다.
+   flex:none 은 위 #challenge-tabs 와 같은 이유(.screen 안 눌림 방지)다. */
+.challenge-search-wrap { flex: none; margin-bottom: var(--s-3); }
+#challenge-screen .inp-ic { color: var(--challenge-text-dim); }
+#challenge-search-input {
+  background: var(--challenge-panel-strong); border: 1px solid var(--challenge-line);
+  color: #fff;
+}
+#challenge-search-input::placeholder { color: var(--challenge-text-dim); }
+#challenge-search-results {
+  flex: none; display: flex; flex-direction: column; gap: var(--s-2);
+  margin-bottom: var(--s-3); max-height: 320px; overflow-y: auto;
+}
+.challenge-search-empty { font-size: var(--t-xs); color: var(--challenge-text-dim); padding: var(--s-3); text-align: center; }
+.challenge-search-result {
+  display: flex; align-items: center; gap: var(--s-3);
+  background: var(--challenge-panel); border-radius: var(--r-md);
+  padding: var(--s-2) var(--s-3); border: none; cursor: pointer; text-align: left; width: 100%;
+  color: #fff; font: inherit;
+}
+.challenge-search-result .challenge-ex-icon { flex: none; width: 32px; height: 32px; color: var(--mint); }
+.challenge-search-result-text { flex: 1; min-width: 0; }
+.challenge-search-result-name { font-size: var(--t-sm); font-weight: 700; }
+.challenge-search-result-meta { font-size: 10.5px; color: var(--challenge-text-dim); margin-top: 2px; }
+
 /* 트랙 탭. flex:none 이 없으면 세로 flex 인 .screen 안에서 이 줄이
    눌려 사라진다(.chip-row 와 같은 문제 — components.css 참고). */
 #challenge-tabs {

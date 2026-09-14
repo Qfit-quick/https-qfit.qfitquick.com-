@@ -74,11 +74,34 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
     progressBarInner: document.getElementById('challenge-progress-inner'),
     phaseList: document.getElementById('challenge-phase-list'),
     resetBtn: document.getElementById('challenge-reset-btn'),
+    searchInput: document.getElementById('challenge-search-input'),
+    searchResults: document.getElementById('challenge-search-results'),
   };
   if (!els.tabsContainer) return; // 마크업이 아직 안 붙었으면 조용히 넘어간다
 
   let currentTrackKey = 'pullup';
   let openPhaseIdx = 0; // 트랙 바꿀 때마다 재계산
+
+  // 검색 색인. 7개 트랙 × phase × 운동을 한 번만 평평하게 펴 둔다 —
+  // 트랙이 바뀔 때마다 다시 만들 필요가 없고(운동 목록 자체는 고정 데이터),
+  // 검색은 입력마다 이 배열만 훑는다(109개뿐이라 매번 새로 만들어도
+  // 되지만, 어차피 고정이라 한 번으로 충분하다).
+  const SEARCH_INDEX = [];
+  CHALLENGE_TRACK_ORDER.forEach((key) => {
+    const track = CHALLENGE_TRACKS[key];
+    track.phases.forEach((phase, phaseIdx) => {
+      phase.exercises.forEach((ex) => {
+        SEARCH_INDEX.push({
+          trackKey: key,
+          trackShort: track.short,
+          phaseIdx,
+          range: phase.range,
+          name: ex[0],
+          iconKey: ex[3],
+        });
+      });
+    });
+  });
 
   function renderTabs() {
     els.tabsContainer.innerHTML = '';
@@ -231,7 +254,10 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
     });
   }
 
-  function renderTrack() {
+  // forcedPhaseIdx: 검색 결과를 눌러 들어올 때처럼 "이 phase 를 펼쳐라"
+  // 가 이미 정해져 있는 경우에 쓴다. 안 주면(트랙 탭을 직접 눌렀을 때)
+  // 원래대로 캘린더 주차로 현재 phase 를 다시 계산한다.
+  function renderTrack(forcedPhaseIdx) {
     const track = CHALLENGE_TRACKS[currentTrackKey];
 
     renderTabs();
@@ -242,10 +268,54 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
     renderSummary();
     renderProgress(track, logs);
 
-    const calWeek = computeCalendarWeek(els.startDateInput.value, track.totalWeeks);
-    openPhaseIdx = calWeek ? findPhaseIndexForWeek(track.phases, calWeek) : 0;
+    if (forcedPhaseIdx !== undefined) {
+      openPhaseIdx = forcedPhaseIdx;
+    } else {
+      const calWeek = computeCalendarWeek(els.startDateInput.value, track.totalWeeks);
+      openPhaseIdx = calWeek ? findPhaseIndexForWeek(track.phases, calWeek) : 0;
+    }
 
     renderPhases(track);
+  }
+
+  function renderSearchResults(query) {
+    if (!query) {
+      els.searchResults.innerHTML = '';
+      return;
+    }
+    const matches = SEARCH_INDEX.filter((row) => row.name.toLowerCase().includes(query));
+    if (matches.length === 0) {
+      els.searchResults.innerHTML = '<p class="challenge-search-empty">' + esc(t(S.challengeSearchEmpty)) + '</p>';
+      return;
+    }
+    els.searchResults.innerHTML = '';
+    matches.forEach((row) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'challenge-search-result';
+      const meta = t(S.challengeSearchResultMeta).replace('%s', row.trackShort).replace('%s', row.range[0]).replace('%s', row.range[1]);
+      btn.innerHTML =
+        '<span class="challenge-ex-icon">' + getChallengeIcon(row.iconKey) + '</span>' +
+        '<span class="challenge-search-result-text">' +
+        '<span class="challenge-search-result-name">' + esc(row.name) + '</span>' +
+        '<span class="challenge-search-result-meta">' + esc(meta) + '</span>' +
+        '</span>';
+      btn.addEventListener('click', () => {
+        currentTrackKey = row.trackKey;
+        renderTrack(row.phaseIdx);
+        els.searchInput.value = '';
+        els.searchResults.innerHTML = '';
+        const card = els.phaseList.children[row.phaseIdx];
+        card?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      els.searchResults.appendChild(btn);
+    });
+  }
+
+  if (els.searchInput) {
+    els.searchInput.addEventListener('input', () => {
+      renderSearchResults(els.searchInput.value.trim().toLowerCase());
+    });
   }
 
   els.startDateInput.addEventListener('change', () => {
