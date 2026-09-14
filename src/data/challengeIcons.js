@@ -215,16 +215,20 @@ export var CHALLENGE_ICONS = {
     propsBefore: [barProp(8)]
   }),
 
-  // 손목 — 손목 스트레칭(손등을 꺾어 바닥 짚는 자세) 클로즈업
-  wrist:
-    '<svg viewBox="0 0 100 100">' +
-    '<line x1="36" y1="90" x2="32" y2="54" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>' +
-    '<line x1="32" y1="54" x2="62" y2="30" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>' +
-    '<line x1="62" y1="30" x2="76" y2="18" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>' +
-    '<line x1="62" y1="30" x2="80" y2="28" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>' +
-    '<line x1="62" y1="30" x2="78" y2="40" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>' +
-    '<circle cx="32" cy="54" r="4" fill="currentColor"/>' +
-    '</svg>',
+  // 손목 — 한쪽 팔을 옆으로 뻗어 손목·손가락을 펴는 스트레칭 (정면).
+  // 원래는 팔뚝만 클로즈업해 그려서 머리·몸통이 없는 이 아이콘 하나만
+  // 다른 28개(전부 졸라맨 전신)와 스타일이 어긋났다 — 사용자 피드백으로
+  // figure() 틀에 맞춘 전신 자세로 다시 그렸다(2026-09-14).
+  wrist: figure({
+    head: [50, 15],
+    torso: [[50, 22], [50, 55]],
+    legL: [[50, 55], [46, 75], [44, 92]],
+    legR: [[50, 55], [54, 75], [56, 92]],
+    armL: [[50, 24], [38, 38], [34, 54]],
+    armR: [[50, 24], [72, 26], [80, 40]],
+    propsBefore: [groundProp(94)],
+    propsAfter: ['<path d="M80 40 L92 36 M80 40 L94 44 M80 40 L88 50" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>']
+  }),
 
   // 능동 매달리기 계열 — 어깨를 아래로 당겨 힘을 쓰는 매달리기(데드행과 구분: 어깨 위에 아래화살표 표시)
   hangActive: figure({
