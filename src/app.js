@@ -4201,70 +4201,44 @@ try{
  if(weekendBanner && [0,6].includes(new Date().getDay())){ weekendBanner.style.display = 'block'; }
 }catch(e){ console.error('weekend banner setup failed:', e); }
 
-// ---------- "Add to Home Screen" banner ----------
+// ---------- "Add to Home Screen" (설정 화면 줄) ----------
+// 예전에는 홈 화면 맨 위에 항상 뜨는 배너였다. 앱을 열 때마다 위쪽을
+// 차지하는 게 거슬린다는 요청(2026-09-15)으로 설정 안의 평범한 줄 하나로
+// 옮겼다 — 원할 때 설정에 들어가서 누른다.
+//
 // Android/Chrome supports a real one-tap native install prompt via
 // beforeinstallprompt. iOS Safari has no such API — there, tapping the
-// banner just expands the manual "Share → Add to Home Screen" steps,
+// row just expands the manual "Share → Add to Home Screen" steps,
 // since that's the only way to guide someone through it there.
 try{
  let deferredInstallPrompt = null;
- const installBanner = document.getElementById('install-banner');
- const installBannerMain = document.getElementById('install-banner-main');
- const installBannerText = document.getElementById('install-banner-text');
- const installBannerDetail = document.getElementById('install-banner-detail');
- const installActionBtn = document.getElementById('install-action-btn');
- const installDismissBtn = document.getElementById('install-dismiss-btn');
+ const installGroup = document.getElementById('settings-install-group');
+ const installRow = document.getElementById('settings-install-row');
+ const installDetail = document.getElementById('settings-install-detail');
  const isStandaloneMode = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone;
- const installDismissed = localStorage.getItem('wodrush_install_dismissed_v1') === '1';
  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 
- function showInstallBanner(kind){
- if(!installBanner || isStandaloneMode || installDismissed) return;
- installBanner.style.display = 'block';
- installBanner.dataset.kind = kind;
- if(kind === 'ios'){
- if(installBannerText) installBannerText.textContent = '홈 화면에 추가하면 더 빠르게 써요 (눌러서 방법 보기)';
- if(installActionBtn) installActionBtn.style.display = 'none';
- } else {
- if(installBannerText) installBannerText.textContent = '홈 화면에 추가하면 더 빠르게 써요';
- if(installActionBtn) installActionBtn.style.display = '';
- }
- }
- function dismissInstallBanner(){
- try{ localStorage.setItem('wodrush_install_dismissed_v1', '1'); }catch(e){}
- if(installBanner) installBanner.style.display = 'none';
- }
+ // 이미 홈 화면 앱으로 열려 있으면 눌러도 할 일이 없으니 줄 자체를 숨긴다.
+ if(installGroup && !isStandaloneMode) installGroup.style.display = '';
 
  window.addEventListener('beforeinstallprompt', (e)=>{
  e.preventDefault();
  deferredInstallPrompt = e;
- showInstallBanner('chrome');
  });
- if(isIOS && !isStandaloneMode && !installDismissed){
- showInstallBanner('ios');
- }
- if(installActionBtn){
- installActionBtn.addEventListener('click', async (e)=>{
- e.stopPropagation();
+ if(installRow){
+ installRow.addEventListener('click', async ()=>{
  if(deferredInstallPrompt){
  deferredInstallPrompt.prompt();
  try{ await deferredInstallPrompt.userChoice; }catch(err){}
  deferredInstallPrompt = null;
+ return;
  }
- dismissInstallBanner();
- });
- }
- if(installDismissBtn){
- installDismissBtn.addEventListener('click', (e)=>{ e.stopPropagation(); dismissInstallBanner(); });
- }
- if(installBannerMain){
- installBannerMain.addEventListener('click', ()=>{
- if(installBanner && installBanner.dataset.kind === 'ios' && installBannerDetail){
- installBannerDetail.style.display = installBannerDetail.style.display === 'none' ? 'block' : 'none';
+ if(isIOS && installDetail){
+ installDetail.style.display = installDetail.style.display === 'none' ? 'block' : 'none';
  }
  });
  }
-}catch(e){ console.error('install banner setup failed:', e); }
+}catch(e){ console.error('install settings row setup failed:', e); }
 try{ loadProfile(); }catch(e){ console.error('loadProfile failed:', e); }
 // 알은 프로필의 xp 로 그린다. 그래서 loadProfile 뒤에 있어야 한다.
 try{ renderPetCard(); }catch(e){ console.error('pet card boot render failed:', e); }
