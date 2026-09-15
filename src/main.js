@@ -53,7 +53,7 @@ initChallengeTracker({ translate: t, STATIC_UI });
 // data-icon 이 적힌 자리에 선 아이콘을 채운다
 paintIcons();
 // 하단 탭바와 뒤로가기. app.js 가 화면을 다 만든 뒤여야 한다.
-initNav();
+initNav({ translate: t, STATIC_UI });
 // 하위 화면의 머리(뒤로 + 제목). app.js 가 화면을 다 만든 뒤여야 한다.
 initHeaders({ STATIC_UI, t, ICON });
 

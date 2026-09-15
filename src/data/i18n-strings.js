@@ -71,6 +71,14 @@ export const STATIC_UI = {
  movesBtn: {ko:'운동동작 소개', en:'Exercise Guide', zh:'动作介绍'},
  recoveryBtn: {ko:'회복 · SOS', en:'Recovery · SOS', zh:'恢复 · SOS'},
  settingsBtn: {ko:'설정', en:'Settings', zh:'设置'},
+ // 하단 탭바(src/ui/nav.js) 전용 라벨. '체크'는 기록지(logEyebrow, '기록지')와
+ // 일부러 다른 말이다 — 탭 두 자짜리가 서로 헷갈리지 않게 nav.js 가 골랐다.
+ // '목표'도 신체정보 화면의 bodyGoal 과 같은 글자지만 뜻하는 화면이 달라
+ // 따로 둔다 — 나중에 한쪽 문구만 바뀌어도 다른 쪽이 같이 안 틀어지게.
+ navBarLabel: {ko:'주요 화면', en:'Main navigation', zh:'主导航'},
+ navHome: {ko:'홈', en:'Home', zh:'首页'},
+ navCheck: {ko:'체크', en:'Check', zh:'打卡'},
+ navGoal: {ko:'목표', en:'Goal', zh:'目标'},
  // 탭바 최상위 화면의 큰 제목은 탭 이름과 같아야 한다 — 다르면 탭을 눌러
  // 들어온 사람이 다른 데로 온 줄 안다(설계 16).
  moreTitle: {ko:'더보기', en:'More', zh:'更多'},

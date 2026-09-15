@@ -11,6 +11,9 @@ import { ICON } from './icons.js';
 import { showScreenById, isWorkoutRunning } from '../app.js';
 import { closeSheet, isSheetOpen } from './sheet.js';
 
+let t = (o) => (o && o.ko) || '';
+let S = {};
+
 // 다섯 칸이 상한이다. 여섯이 되면 라벨이 두 자로 줄고, 두 자짜리 이름은
 // 서로 구별이 안 된다('기록'과 '기록지'가 그랬다 — 그래서 하나는 '체크'다).
 //
@@ -28,12 +31,12 @@ import { closeSheet, isSheetOpen } from './sheet.js';
 // 여섯째 칸 '도전'을 사용자 요청으로 추가했다(2026-09-13) — 라벨은
 // 기존 '프로그램'(4자)보다 짧은 2자라 줄어들 폭이 없다.
 const TABS = [
-  { id: 'start-screen', label: '홈', icon: 'home', via: null },
-  { id: 'log-screen', label: '체크', icon: 'checklist', via: '#today-card-open' },
-  { id: 'programs-screen', label: '프로그램', icon: 'trophy', via: null },
-  { id: 'plan-screen', label: '목표', icon: 'plan', via: null },
-  { id: 'challenge-screen', label: '도전', icon: 'spark', via: null },
-  { id: 'more-screen', label: '더보기', icon: 'more', via: '#open-more-btn' },
+  { id: 'start-screen', labelKey: 'navHome', icon: 'home', via: null },
+  { id: 'log-screen', labelKey: 'navCheck', icon: 'checklist', via: '#today-card-open' },
+  { id: 'programs-screen', labelKey: 'programsEyebrow', icon: 'trophy', via: null },
+  { id: 'plan-screen', labelKey: 'navGoal', icon: 'plan', via: null },
+  { id: 'challenge-screen', labelKey: 'challengeEyebrow', icon: 'spark', via: null },
+  { id: 'more-screen', labelKey: 'moreEyebrow', icon: 'more', via: '#open-more-btn' },
 ];
 
 // 운동에 집중해야 하는 화면에서는 탭바를 감춘다.
@@ -68,23 +71,36 @@ const BELONGS_TO = {
 let bar = null;
 let ignoreNextPush = false;
 
+/** 라벨을 다시 그린다 — 처음 세울 때, 그리고 언어가 바뀔 때 둘 다 부른다. */
+function paintLabels() {
+  bar?.setAttribute('aria-label', t(S.navBarLabel));
+  bar?.querySelectorAll('.tab').forEach((btn) => {
+    const tab = TABS.find((tb) => tb.id === btn.dataset.screen);
+    if (!tab) return;
+    const label = t(S[tab.labelKey]);
+    btn.setAttribute('aria-label', label);
+    const span = btn.querySelector('.tab-label');
+    if (span) span.textContent = label;
+  });
+}
+
 function build() {
   bar = document.createElement('nav');
   bar.className = 'tabbar';
-  bar.setAttribute('aria-label', '주요 화면');
   bar.innerHTML = TABS.map(
-    (t) =>
-      `<button class="tab" type="button" data-screen="${t.id}" aria-label="${t.label}">` +
-      `<span class="tab-icon">${ICON[t.icon]}</span>` +
-      `<span class="tab-label">${t.label}</span></button>`
+    (tab) =>
+      `<button class="tab" type="button" data-screen="${tab.id}">` +
+      `<span class="tab-icon">${ICON[tab.icon]}</span>` +
+      `<span class="tab-label"></span></button>`
   ).join('');
+  paintLabels();
 
   bar.addEventListener('click', (e) => {
     const btn = e.target.closest('.tab');
     if (!btn) return;
     const id = btn.dataset.screen;
     if (document.querySelector('.screen.active')?.id === id) return;
-    const tab = TABS.find((t) => t.id === id);
+    const tab = TABS.find((tb) => tb.id === id);
     const opener = tab?.via && document.querySelector(tab.via);
     if (opener) opener.click();
     else showScreenById(id);
@@ -103,8 +119,16 @@ function paint(id) {
   document.body.classList.toggle('immersive', IMMERSIVE.has(id));
 }
 
-export function initNav() {
+export function initNav({ translate, STATIC_UI } = {}) {
+  if (typeof translate === 'function') t = translate;
+  if (STATIC_UI) S = STATIC_UI;
   build();
+
+  // 탭바는 build() 때 한 번만 세워지고 그 뒤로는 다시 만들지 않는다(클릭
+  // 리스너를 새로 붙이는 것보다 그대로 두고 글자만 바꾸는 것이 안전하다).
+  // 언어가 바뀌면 라벨만 새로 칠한다 — 예전엔 TABS 에 한국어를 그대로
+  // 박아 둬서 언어를 바꿔도 탭바만 한국어로 남아 있었다(2026-09-15 확인).
+  document.addEventListener('qfit:lang', () => paintLabels());
 
   document.addEventListener('screenchange', (e) => {
     const id = e.detail.id;
@@ -151,7 +175,7 @@ export function initNav() {
     const target = e.state?.s || 'start-screen';
     if (target === current) return;
     ignoreNextPush = true;
-    const tab = TABS.find((t) => t.id === target);
+    const tab = TABS.find((tb) => tb.id === target);
     const opener = tab?.via && document.querySelector(tab.via);
     if (opener) opener.click();
     else showScreenById(target);
