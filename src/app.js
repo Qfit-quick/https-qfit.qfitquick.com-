@@ -4147,12 +4147,28 @@ document.addEventListener('visibilitychange', ()=>{
 window.addEventListener('pageshow', ()=> Sound.unlock());
 window.addEventListener('focus', ()=> Sound.unlock());
 
-// ---------- IN-APP BROWSER DETECTION (KakaoTalk, etc.) ----------
+// ---------- IN-APP BROWSER DETECTION (KakaoTalk, Instagram, etc.) ----------
 // These webviews restrict/block audio playback entirely — no JS fix
 // exists for that. The only real fix is opening in the real browser.
+//
+// window.open(location.href, '_blank') 는 인스타그램 등에서 "새 탭"이 아니라
+// 그 앱 안의 인앱 브라우저를 하나 더 여는 것뿐이다 — 새로 연 페이지도 똑같은
+// 인스타그램 UA 라 checkInAppBrowser() 가 다시 걸리고, 그 화면에서 또
+// 같은 버튼을 누르면 또 하나 열리고... 눌러도 반응이 똑같아서 사용자에게는
+// "기본 브라우저로 열기 버튼이 무한 반복된다"로 보였다(2026-09-16 버그
+// 리포트). 실제로 창을 하나도 벗어나지 못한 채 계속 같은 화면만 다시
+// 그리는 것이었다.
+//
+// 안드로이드는 intent: 스킴으로 크롬을 앱 밖에서 직접 지정해 부를 수 있어
+// 확실히 탈출한다. iOS 는 인스타그램·페이스북·네이버 인앱 브라우저를 JS만으로
+// 강제로 벗어날 방법이 아예 없다(각 앱이 막아 둔다) — 그런 기기에서는
+// 안 되는 버튼을 계속 보여주는 대신, 처음부터 유일하게 되는 방법인
+// "오른쪽 위 ··· 메뉴" 안내만 보여준다.
 try{
  (function checkInAppBrowser(){
  const ua = navigator.userAgent || '';
+ const isAndroid = /android/i.test(ua);
+ const isIOS = /iphone|ipad|ipod/i.test(ua) && !window.MSStream;
  const isKakao = /kakaotalk/i.test(ua);
  const isInstagram = /instagram/i.test(ua);
  const isFacebook = /FBAN|FBAV/i.test(ua);
@@ -4166,16 +4182,25 @@ try{
  const openBtn = document.getElementById('inapp-open-btn');
  const dismissBtn = document.getElementById('inapp-dismiss-btn');
  if(openBtn){
- openBtn.addEventListener('click', ()=>{
- const url = encodeURIComponent(location.href);
  if(isKakao){
- location.href = 'kakaotalk://web/openExternal?url=' + url;
- } else {
- // most other in-app browsers don't expose a scheme — best effort:
- // try opening in a new tab, which sometimes escapes the webview.
- window.open(location.href, '_blank');
- }
+ // 카카오톡은 iOS·안드로이드 둘 다 이 스킴으로 확실히 탈출한다.
+ openBtn.addEventListener('click', ()=>{
+ location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
  });
+ } else if(isAndroid){
+ // package 를 크롬으로 못박아 인텐트로 직접 넘긴다 — 지금 창을 벗어나
+ // 진짜 크롬 앱이 새 프로세스로 뜨므로 같은 웹뷰가 다시 열릴 일이 없다.
+ openBtn.addEventListener('click', ()=>{
+ const bare = location.href.replace(/^https?:\/\//, '');
+ location.href = 'intent://' + bare + '#Intent;scheme=https;package=com.android.chrome;end';
+ });
+ } else if(isIOS){
+ // 인스타그램·페이스북·네이버의 iOS 인앱 브라우저는 눌러도 열리지
+ // 않는 버튼을 보여줄 이유가 없다 — 아래 안내(··· 메뉴)만 남긴다.
+ openBtn.style.display = 'none';
+ } else {
+ openBtn.style.display = 'none';
+ }
  }
  if(dismissBtn){
  dismissBtn.addEventListener('click', ()=>{
