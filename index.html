@@ -36,7 +36,7 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-5-4nv_Lo.js"></script>
+  <script type="module" crossorigin src="./assets/index-CcbHDTKy.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-C3c6_bgC.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -84,17 +84,6 @@
  <span class="home-top-gap"></span>
  <button class="txtb lang-btn" id="lang-btn" type="button" aria-label="언어 바꾸기">EN</button>
  <button class="txtb" id="open-account-btn" data-i18n="accountBtn">로그인</button>
- </div>
-
- <div class="install-banner" id="install-banner" style="display:none;">
- <div class="install-banner-main" id="install-banner-main">
- <span class="install-banner-text" id="install-banner-text" data-i18n="installText">홈 화면에 추가하면 더 빠르게 써요</span>
- <button class="install-action-btn" id="install-action-btn" data-i18n="installBtn">설치</button>
- <button class="install-dismiss-btn icb" id="install-dismiss-btn" data-icon="close" aria-label="닫기"></button>
- </div>
- <div class="install-banner-detail" id="install-banner-detail" style="display:none;" data-i18n="installDetail1">
- Safari 하단 공유 버튼()을 누르고 <b data-i18n="installDetail2">"홈 화면에 추가"</b>를 선택해보십시오.
- </div>
  </div>
 
  <div class="weekend-banner" id="weekend-banner" style="display:none;" data-i18n="weekendBanner">주말 한정! 오늘 완주하면 XP 2배</div>
@@ -551,6 +540,22 @@
  <span class="settings-val">›</span>
  </button>
  </div>
+ </div>
+
+ <!-- 홈 화면 추가 — 원래는 홈 화면 맨 위에 항상 뜨는 배너였다. 앱을 열 때마다
+      위쪽을 차지하는 게 거슬린다는 요청(2026-09-15)으로 설정 안의 평범한 줄
+      하나로 옮겼다. 이미 홈 화면 앱(standalone)으로 열려 있으면 눌러도 할 일이
+      없으므로 app.js 가 이 그룹 자체를 숨긴다. -->
+ <div class="settings-group" id="settings-install-group" style="display:none;">
+ <div class="settings-list">
+ <button type="button" class="settings-row settings-link" id="settings-install-row">
+ <span class="row-main"><span class="row-t" data-i18n="settingsInstallLabel">📲 홈 화면에 추가</span><span class="row-d dim" data-i18n="settingsInstallSub">앱처럼 더 빠르게 열려요</span></span>
+ <span class="settings-val">›</span>
+ </button>
+ </div>
+ <p class="dim-note" id="settings-install-detail" style="display:none;" data-i18n="installDetail1">
+ Safari 하단 공유 버튼()을 누르고 <b data-i18n="installDetail2">"홈 화면에 추가"</b>를 선택해보십시오.
+ </p>
  </div>
 
  <div class="settings-group">
