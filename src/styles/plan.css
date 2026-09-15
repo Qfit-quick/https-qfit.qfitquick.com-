@@ -514,6 +514,8 @@ body.gated { overflow: hidden; }
   font-size: var(--t-xs);
   color: var(--text-dim);
 }
+.pmr-sub-name { font-weight: 600; word-break: keep-all; }
+.pmr-sub-amt { white-space: nowrap; }
 .pmr-sub-kcal { font-family: var(--font-num); font-variant-numeric: tabular-nums; text-align: right; }
 .plan-meal-macro { font-size: var(--t-xs); }
 .plan-water { font-size: var(--t-sm); word-break: keep-all; }
