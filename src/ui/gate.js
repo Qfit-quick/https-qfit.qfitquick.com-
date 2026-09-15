@@ -2,9 +2,15 @@
 //
 // 흐름: 기분 → 운동 생각 → 명언 → (명언을 누르면) 앱.
 //
-// 하루에 한 번만 세운다. 같은 날 다시 열면 관문이 없다 — 앱을 여는 것이
-// 하루에 다섯 번이면 설문도 다섯 번이 되고, 그러면 두 번째부터는 아무 답이나
-// 눌러 치우게 된다. 그렇게 모인 답으로 강도를 정하면 없는 편이 낫다.
+// 설문 두 문항(기분·운동 생각)은 하루에 한 번만 묻는다. 같은 날 다시 열면
+// 설문은 건너뛴다 — 앱을 여는 것이 하루에 다섯 번이면 설문도 다섯 번이
+// 되고, 그러면 두 번째부터는 아무 답이나 눌러 치우게 된다. 그렇게 모인
+// 답으로 강도를 정하면 없는 편이 낫다.
+//
+// 명언은 다르다(2026-09-15) — 설문과 달리 매번 앱을 열 때마다 그날 뽑힌
+// 한 줄을 다시 보여준다(사용자 요청). quoteFor() 가 날짜+결을 씨앗으로
+// 결정적으로 뽑으므로, 같은 날 몇 번을 다시 봐도 같은 문장이 나온다 —
+// "오늘의 한 줄"이라는 말이 하루 안에서는 거짓이 되지 않는다.
 //
 // ⚠ 이 덮개는 앱 전체를 막는다. 그래서 무슨 일이 나도 반드시 걷힌다 —
 // 모든 진입점이 try/catch 로 감싸여 있고, 실패하면 dismiss() 로 끝난다.
@@ -101,13 +107,18 @@ function quoteFor(tone, dateStr) {
   return pool[(h >>> 0) % pool.length];
 }
 
-function paintQuote(tone, dateStr) {
-  const q = quoteFor(tone, dateStr);
+/** 이미 뽑힌 명언 객체를 화면에 그린다(뽑는 것과 그리는 것을 나눠서,
+ *  오늘 이미 답한 날 재진입 때는 새로 뽑지 않고 저장된 것을 그대로 그린다). */
+function renderQuote(q) {
   const text = el('gate-quote-text');
   const author = el('gate-quote-author');
   if (text) text.textContent = t(q.text);
   if (author) author.textContent = '— ' + t(q.author);
   return q;
+}
+
+function paintQuote(tone, dateStr) {
+  return renderQuote(quoteFor(tone, dateStr));
 }
 
 function paintAdvice() {
@@ -135,7 +146,7 @@ function paintDate() {
  * @param {(o:object)=>string} opts.translate  app.js 의 t
  * @param {object} opts.STATIC_UI              사전
  * @param {()=>void} [opts.onEnter]            관문이 걷힌 뒤 부를 것
- * @returns {boolean} 관문을 세웠는가(오늘 이미 했으면 false)
+ * @returns {boolean} 관문을 세웠는가
  */
 export function initGate({ translate, STATIC_UI, onEnter } = {}) {
   if (typeof translate === 'function') t = translate;
@@ -147,12 +158,31 @@ export function initGate({ translate, STATIC_UI, onEnter } = {}) {
 
   const today = dayKey();
 
-  // 오늘 이미 답했다면 관문 없이 앱으로. 답은 남아 있으므로 계획 화면의
-  // '오늘 권장 강도' 는 그대로 어제가 아니라 오늘 것을 쓴다.
+  // 오늘 이미 답했다면 설문 두 문항은 건너뛰고 명언 단계로 바로 간다.
+  // 설문은 하루 한 번이지만, 명언은 앱을 열 때마다 다시 보여 달라는
+  // 요청(2026-09-15)이라 관문 자체는 그대로 세운다 — 답만 다시 묻지 않는다.
   if (hasCheckin(today)) {
-    gate.remove();
-    if (typeof onDone === 'function') { const cb = onDone; onDone = null; cb(); }
-    return false;
+    try {
+      gate.hidden = false;
+      document.body.classList.add('gated');
+
+      const day = loadDay(today);
+      answer.mood = day.mood;
+      answer.drive = day.drive;
+      const q = todaysQuote(today);
+      if (q) renderQuote(q);
+      paintAdvice();
+
+      const card = el('gate-quote-card');
+      if (card) card.addEventListener('click', dismiss);
+
+      showStep('quote');
+      return true;
+    } catch (e) {
+      console.error('gate re-show failed:', e);
+      dismiss();
+      return false;
+    }
   }
 
   try {
