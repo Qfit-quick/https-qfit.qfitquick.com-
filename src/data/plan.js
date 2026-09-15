@@ -435,8 +435,13 @@ function fitTo(item, key, need) {
  *  · 탄수화물이 남은 칼로리를 받는다. 밥은 반 공기 단위로 조절이 쉬운
  *    유일한 항목이라, 오차를 여기서 흡수하는 것이 실제로 지킬 수 있다.
  * 채소는 절대 줄이지 않는다 — 칼로리를 채소에서 깎는 것은 방향이 반대다.
+ *
+ * @param {object} [swaps] 사람이 직접 고른 대체재. `{ [끼니id]: { [그 끼니
+ *   안 몇 번째]: 음식key } }` — src/health/store.js 의 loadDietSwaps() 가
+ *   이 모양 그대로 돌려준다. 자리를 role 이 아니라 순번으로 짚는 이유는
+ *   substitutesFor() 의 문서를 볼 것(채소 두 자리 문제와 같다).
  */
-export function mealPlan(nutrition, dateStr) {
+export function mealPlan(nutrition, dateStr, swaps = {}) {
   if (!nutrition) return null;
   const rnd = seeded(dateSeed(dateStr));
 
@@ -461,6 +466,17 @@ export function mealPlan(nutrition, dateStr) {
       items.push(carbItem, proteinItem, veg1);
       if (veg2) items.push(veg2);
       items.push(fatItem);
+    }
+
+    // 사람이 고른 대체재를 씨앗이 뽑은 자리에 덮어쓴다. items 에 넣은 것과
+    // carbItem 등은 같은 객체 참조라, 여기서 food 만 바꿔 두면 아래 fitTo()
+    // 들이 자동으로 바뀐 음식 기준으로 그램수를 다시 맞춘다.
+    const mealSwap = swaps[meal.id];
+    if (mealSwap) {
+      items.forEach((it, idx) => {
+        const swapped = FOOD_BY_KEY[mealSwap[idx]];
+        if (swapped) it.food = swapped;
+      });
     }
 
     const sumOf = (key, skip) =>

@@ -14,6 +14,7 @@ const LOG_KEY = 'qfit_daylog_v1';
 const LEGACY_WEIGHT_KEY = 'wodrush_weight_kg_v1';
 const PROGRAM_KEY = 'qfit_program_v1';
 const PROGRAM_HISTORY_KEY = 'qfit_program_history_v1';
+const DIET_SWAP_KEY = 'qfit_diet_swaps_v1';
 
 // 기록지는 하루에 한 줄씩 쌓인다. 400일이면 400줄 — 로컬 저장소에는
 // 넉넉하지만 무한히 두면 언젠가 한도에 닿는다. 400일을 넘긴 것은 버린다.
@@ -157,6 +158,39 @@ export function saveCheckin(dateStr, { mood, drive, quoteId }) {
 export function hasCheckin(dateStr = dayKey()) {
   const day = loadDay(dateStr);
   return !!(day.mood && day.drive);
+}
+
+// ── 식단 대체재 선택 ──────────────────────────────────────────
+//
+// "고구마 대신 밥" 처럼 대체재를 눌러 고르면 그날 그 자리에 고정한다
+// (2026-09-15). mealPlan() 은 날짜를 씨앗으로 한 순수 함수라 다시 그릴
+// 때마다 같은 조합을 내놓는데, 그 조합의 한 자리를 사람이 직접 바꾼
+// 것이니 다음 다시 그리기에서도 그대로 있어야 한다 — 안 그러면 화면을
+// 나갔다 들어올 때마다 고른 것이 되돌아가 있는 것처럼 보인다.
+//
+// 자리는 role(탄·단·채·지)이 아니라 **그 끼니 안 몇 번째 항목인가**로
+// 짚는다. 채소 두 자리(veg1·veg2)가 role 이 같아서, role 로 짚으면 어느
+// 채소를 바꾼 것인지 구별이 안 된다.
+
+export function loadDietSwaps(dateStr = dayKey()) {
+  const all = read(DIET_SWAP_KEY, {});
+  return all[dateStr] || {};
+}
+
+export function saveDietSwap(dateStr, mealId, rowIndex, foodKey) {
+  const all = read(DIET_SWAP_KEY, {});
+  const day = { ...(all[dateStr] || {}) };
+  day[mealId] = { ...(day[mealId] || {}), [rowIndex]: foodKey };
+  all[dateStr] = day;
+
+  // 기록지와 같은 한도. 날짜 문자열이 'YYYY-MM-DD' 라 사전순 정렬이 곧 시간순이다.
+  const keys = Object.keys(all).sort();
+  if (keys.length > MAX_DAYS) {
+    for (const k of keys.slice(0, keys.length - MAX_DAYS)) delete all[k];
+  }
+
+  write(DIET_SWAP_KEY, all);
+  return day;
 }
 
 // ── 상태 판정 ─────────────────────────────────────────────────
@@ -325,6 +359,7 @@ export function wipeHealthData() {
     localStorage.removeItem(LOG_KEY);
     localStorage.removeItem(PROGRAM_KEY);
     localStorage.removeItem(PROGRAM_HISTORY_KEY);
+    localStorage.removeItem(DIET_SWAP_KEY);
   } catch (e) {
     console.error('wipe health data failed:', e);
   }

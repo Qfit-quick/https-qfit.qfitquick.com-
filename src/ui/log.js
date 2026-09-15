@@ -10,7 +10,7 @@
 
 import {
   dayKey, loadDay, saveDay, dietState, dayStatus,
-  recentDays, streakOf, monthTally, loadBody, saveBody, weightHistory,
+  recentDays, streakOf, monthTally, loadBody, saveBody, weightHistory, loadDietSwaps,
 } from '../health/store.js';
 import { MEAL_SPLIT } from '../data/foods.js';
 import { MOOD_OPTIONS, DRIVE_OPTIONS } from '../data/checkin.js';
@@ -83,7 +83,10 @@ function paintChecks(dateStr) {
   const day = loadDay(dateStr);
   const body = loadBody();
   const nut = nutritionPlan(body);
-  const meals = nut ? mealPlan(nut, dateStr) : null;
+  // 계획 화면에서 고른 대체재(2026-09-15)를 여기도 반영한다 — 안 그러면
+  // 계획 화면은 '백미밥'을 보여주는데 기록지는 그대로 '고구마'를 보여줘서,
+  // 같은 오늘의 식단이 화면마다 다른 말을 하게 된다.
+  const meals = nut ? mealPlan(nut, dateStr, loadDietSwaps(dateStr)) : null;
 
   const row = (id, kind, on, title, sub) =>
     `<button class="log-row card${on ? ' on' : ''}" type="button" data-check="${kind}" data-id="${id}">` +

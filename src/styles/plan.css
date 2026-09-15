@@ -506,14 +506,24 @@ body.gated { overflow: hidden; }
   background: var(--surface-2);
 }
 .pmr-sub-hint { font-size: var(--t-xs); margin: 0 0 2px; }
+/* 대체재 한 줄은 버튼이다(눌러서 실제로 바꾼다, 2026-09-15) — 그런데
+   생김새는 정보성 텍스트 줄처럼 보여야 해서, 너비·정렬·둥근 자리까지
+   .pmr 과 최대한 맞춘다. 눌렀을 때만 살짝 배경이 들어와 '누를 수 있는
+   줄'이라는 걸 알려 준다. */
 .pmr-sub-row {
   display: grid;
   grid-template-columns: 1fr auto 3.2em;
   gap: var(--s-2);
   align-items: baseline;
+  width: 100%;
+  padding: 4px 6px;
+  margin: 0 -6px;
+  border-radius: var(--r-sm);
+  text-align: left;
   font-size: var(--t-xs);
   color: var(--text-dim);
 }
+.pmr-sub-row:active { background: var(--surface); }
 .pmr-sub-name { font-weight: 600; word-break: keep-all; }
 .pmr-sub-amt { white-space: nowrap; }
 .pmr-sub-kcal { font-family: var(--font-num); font-variant-numeric: tabular-nums; text-align: right; }

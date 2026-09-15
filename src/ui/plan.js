@@ -15,7 +15,7 @@ import {
 } from '../data/plan.js';
 import { EATING_OUT } from '../data/foods.js';
 import { INTENSITY } from '../data/checkin.js';
-import { loadBody, saveBody, bodyReady, dayKey, loadDay } from '../health/store.js';
+import { loadBody, saveBody, bodyReady, dayKey, loadDay, loadDietSwaps, saveDietSwap } from '../health/store.js';
 import { todaysIntensity, todaysQuote } from './gate.js';
 import { EXERCISES } from '../data/exercises.js';
 import { toast } from './toast.js';
@@ -352,11 +352,11 @@ function paintDiet(nut, meals) {
             ? `<div class="pmr-subs" id="pmr-subs-${m.id}-${ri}" hidden>` +
               `<p class="pmr-sub-hint dim">${esc(t(S.planSubHint))}</p>` +
               subs.map((s) =>
-                '<div class="pmr-sub-row">' +
+                `<button type="button" class="pmr-sub-row" data-pmr-sub-pick="${m.id}:${ri}:${s.food.key}">` +
                 `<span class="pmr-sub-name">${esc(t(s.food.label))}</span>` +
                 `<span class="pmr-sub-amt">${grams(s.grams)}</span>` +
                 `<span class="pmr-sub-kcal">${s.kcal}</span>` +
-                '</div>'
+                '</button>'
               ).join('') +
               '</div>'
             : '') +
@@ -454,7 +454,7 @@ export function renderPlanScreen() {
 
   const nut = nutritionPlan(body);
   const week = workoutPlan(body, todaysIntensity());
-  const meals = mealPlan(nut, dayKey());
+  const meals = mealPlan(nut, dayKey(), loadDietSwaps(dayKey()));
 
   try { paintToday(body, nut, week, meals); } catch (e) { console.error('paintToday failed:', e); }
   try { paintWeek(body, week); } catch (e) { console.error('paintWeek failed:', e); }
@@ -533,6 +533,16 @@ export function initPlan({ translate, STATIC_UI, onStartRoutine, onShowScreen } 
         const [mealId, ri] = subToggle.dataset.pmrSubToggle.split(':');
         const box = el(`pmr-subs-${mealId}-${ri}`);
         if (box) box.hidden = !box.hidden;
+        return;
+      }
+      // 대체재 한 줄을 누르면 그 자리에 실제로 바꿔 고정한다(2026-09-15).
+      // 원래 음식은 사라지지 않는다 — 바뀐 음식의 대체재 목록에 다시
+      // 나타나므로, 되돌리고 싶으면 거기서 원래 것을 누르면 된다.
+      const subPick = e.target.closest('[data-pmr-sub-pick]');
+      if (subPick) {
+        const [mealId, ri, foodKey] = subPick.dataset.pmrSubPick.split(':');
+        saveDietSwap(dayKey(), mealId, Number(ri), foodKey);
+        renderPlanScreen();
         return;
       }
       if (e.target.closest('#plan-edit-body')) {
