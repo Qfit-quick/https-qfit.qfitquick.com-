@@ -48,7 +48,7 @@
   background: var(--surface-2);
   border: 1px solid var(--line);
 }
-.gate-dot.on { background: var(--mint); border-color: var(--mint); }
+.gate-dot.on { background: var(--mint-text); border-color: var(--mint-text); }
 
 .gate-step { display: flex; flex-direction: column; gap: var(--s-4); }
 .gate-kick {
@@ -99,7 +99,7 @@
   flex-direction: column;
   gap: var(--s-3);
   padding: var(--s-6) var(--s-5) var(--s-5);
-  border: 1px solid var(--mint);
+  border: 1px solid var(--mint-text);
   border-radius: var(--r-xl);
   background: var(--surface);
   color: var(--text);
@@ -196,7 +196,7 @@ body.gated { overflow: hidden; }
 
 /* 세 갈래 이상. 설명 한 줄이 붙어야 고를 수 있는 값들이라 줄로 세운다. */
 .pick-row { justify-content: space-between; }
-.pick-row.on { border-color: var(--mint); }
+.pick-row.on { border-color: var(--mint-text); }
 .pick-mark {
   flex: none;
   width: 20px;
@@ -205,9 +205,9 @@ body.gated { overflow: hidden; }
   border-radius: var(--r-full);
 }
 .pick-row.on .pick-mark {
-  border-color: var(--mint);
+  border-color: var(--mint-text);
   background:
-    radial-gradient(circle at center, var(--mint) 0 5px, transparent 5px);
+    radial-gradient(circle at center, var(--mint-text) 0 5px, transparent 5px);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -307,7 +307,7 @@ body.gated { overflow: hidden; }
 .plan-day-card,
 .plan-diet-card {
   border: 2px solid transparent;
-  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg in oklch, var(--mint), var(--accent));
+  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg in oklch, var(--mint-text), var(--accent));
   background-origin: border-box;
   background-clip: padding-box, border-box;
 }
@@ -330,7 +330,7 @@ body.gated { overflow: hidden; }
 .plan-day-chips { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .plan-day-chip {
   padding: 6px var(--s-3);
-  border: 1px solid var(--mint);
+  border: 1px solid var(--mint-text);
   border-radius: var(--r-full);
   font-size: var(--t-sm);
   font-weight: 600;
@@ -447,7 +447,7 @@ body.gated { overflow: hidden; }
   font-weight: 700;
 }
 .pw-go:active { background: var(--mint); color: var(--on-mint); }
-.plan-week-row.today { border-color: var(--mint); }
+.plan-week-row.today { border-color: var(--mint-text); }
 .plan-week-row.rest .pw-focus { color: var(--text-dim); }
 
 /* 끼니 한 장. 항목마다 이름 · 양 · 칼로리 세 칸. */
@@ -589,13 +589,13 @@ body.gated { overflow: hidden; }
 .tc-mark.d.on { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
 /* 반만 채운 것(세 끼 중 일부)은 색이 아니라 채움으로 구별한다 —
    색을 하나 더 만들면 범례를 봐야 읽히는 화면이 된다. */
-.tc-mark.partial { border-color: var(--mint); background: var(--surface-2); }
+.tc-mark.partial { border-color: var(--mint-text); background: var(--surface-2); }
 .tc-mark.d.partial { border-color: var(--accent); }
 .tc-open { margin-top: var(--s-1); height: var(--tap); }
 
 /* 기록지 맨 위 한 줄. 이 화면이 답하는 질문의 답이 여기다. */
 .log-status { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
-.log-status[data-status='both'] { border-color: var(--mint); }
+.log-status[data-status='both'] { border-color: var(--mint-text); }
 .log-status-line {
   font-size: var(--t-xl);
   font-weight: 800;
@@ -621,7 +621,7 @@ body.gated { overflow: hidden; }
    있으므로 같은 것을 가리키는 자리는 전부 같은 색이어야 한다 — 화면마다
    색이 달라지면 색은 정보가 아니라 장식이 된다. */
 .log-chip.w.on { border-color: var(--mint); background: var(--mint); color: var(--on-mint); }
-.log-chip.w.partial { border-color: var(--mint); color: var(--mint-text); }
+.log-chip.w.partial { border-color: var(--mint-text); color: var(--mint-text); }
 .log-chip.d.on { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
 .log-chip.d.partial { border-color: var(--accent); color: var(--accent-text); }
 .log-partial { font-size: var(--t-sm); line-height: 1.6; word-break: keep-all; }
@@ -639,7 +639,7 @@ body.gated { overflow: hidden; }
   text-align: left;
   min-width: 0;
 }
-.log-row.on { border-color: var(--mint); }
+.log-row.on { border-color: var(--mint-text); }
 /* 끼니 네 칸은 식단이다. 운동 한 칸만 민트로 남는다. */
 .log-row[data-check='meal'].on { border-color: var(--accent); }
 .log-box {
@@ -688,7 +688,7 @@ body.gated { overflow: hidden; }
    (.bottle-outline·.bottle-cap)를 그대로 쓴다 — 채움 색·목표선만 여기서 더한다. */
 .log-water-body { display: flex; align-items: center; gap: var(--s-4); }
 .log-water-bottle { width: 40px; height: 76px; flex: none; }
-.log-water-fill { fill: var(--mint); transition: y var(--dur-slow) var(--ease-out), height var(--dur-slow) var(--ease-out); }
+.log-water-fill { fill: var(--mint-text); transition: y var(--dur-slow) var(--ease-out), height var(--dur-slow) var(--ease-out); }
 /* 권장 2L 지점을 병에 눈금 하나로 표시한다 — 숫자만으로는 '어디까지 채워야
    적당한지' 가 안 와닿는다. */
 .log-water-target-line { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 2 2; }
@@ -712,8 +712,8 @@ body.gated { overflow: hidden; }
 .log-weight-chart-cap { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); font-size: var(--t-xs); color: var(--text-dim); }
 .log-weight-chart-delta { font-weight: 700; color: var(--text); }
 .log-weight-chart { width: 100%; height: 64px; display: block; }
-.log-weight-line { fill: none; stroke: var(--mint); stroke-width: 2; }
-.log-weight-dot { fill: var(--mint); }
+.log-weight-line { fill: none; stroke: var(--mint-text); stroke-width: 2; }
+.log-weight-dot { fill: var(--mint-text); }
 .log-mood-row { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
 .log-mood-v { font-size: var(--t-sm); color: var(--text-dim); }
 /* base.css 의 img{display:block} 을 되돌린다 — 이 아이콘은 문장 속 글자처럼
@@ -740,7 +740,7 @@ body.gated { overflow: hidden; }
   overflow: hidden;
 }
 .log-half { background: var(--surface-2); border: 1px solid var(--line); }
-.log-half.w.on { background: var(--mint); border-color: var(--mint); }
+.log-half.w.on { background: var(--mint-text); border-color: var(--mint-text); }
 .log-half.d.on { background: var(--accent); border-color: var(--accent); }
 /* 세 끼 중 일부. 같은 색을 옅게 쓰는 대신 위쪽 절반만 채운다 —
    옅은 색은 다크 모드에서 '꺼짐' 과 구별이 안 됐다. */
@@ -755,7 +755,7 @@ body.gated { overflow: hidden; }
 .log-legend { display: flex; gap: var(--s-3); flex-wrap: wrap; }
 .lg-item { display: flex; align-items: center; gap: 5px; font-size: var(--t-xs); color: var(--text-dim); }
 .lg-sw { width: 10px; height: 10px; border-radius: 2px; flex: none; }
-.lg-sw.w { background: var(--mint); }
+.lg-sw.w { background: var(--mint-text); }
 .lg-sw.d { background: var(--accent); }
 .lg-sw.p { background: linear-gradient(to top, var(--surface-2) 50%, var(--accent) 50%); border: 1px solid var(--accent); }
 
@@ -777,12 +777,12 @@ body.gated { overflow: hidden; }
   border-radius: var(--r-full);
   background: var(--line);
 }
-.log-cal-marks .lc-w.on { background: var(--mint); }
+.log-cal-marks .lc-w.on { background: var(--mint-text); }
 .log-cal-marks .lc-d.on { background: var(--accent); }
 .log-cal-marks .lc-d.partial {
   background: linear-gradient(to top, var(--line) 50%, var(--accent) 50%);
 }
-.cal-day.log-cal[data-status='both'] { background: var(--surface); border: 1px solid var(--mint); }
+.cal-day.log-cal[data-status='both'] { background: var(--surface); border: 1px solid var(--mint-text); }
 /* 오늘 표시는 '둘 다' 의 민트 테두리보다 뒤에 와야 한다. 앞에 두었더니
    둘 다 한 날과 오늘이 같은 테두리가 되어 오늘이 어디인지 사라졌다. */
 .cal-day.log-cal.today {

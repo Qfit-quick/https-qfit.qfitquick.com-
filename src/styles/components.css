@@ -221,7 +221,7 @@
   align-items: center;
   gap: var(--s-3);
   background: linear-gradient(120deg, color-mix(in srgb, var(--mint) 14%, transparent), color-mix(in srgb, var(--accent) 14%, transparent));
-  border: 1px solid var(--mint);
+  border: 1px solid var(--mint-text);
   border-radius: var(--r-lg);
   padding: var(--s-3);
   margin-bottom: var(--s-3);
@@ -436,7 +436,7 @@
   width: 22px;
   height: 22px;
   flex: none;
-  accent-color: var(--mint);
+  accent-color: var(--mint-text);
 }
 
 /* 준비운동 토글은 설계의 .sw(52×32) 를 쓴다. 진짜 체크박스는 감추지 않고
@@ -455,9 +455,9 @@
   opacity: 0;
   cursor: pointer;
 }
-.sw-input:checked + .sw { background: var(--mint); }
+.sw-input:checked + .sw { background: var(--mint-text); }
 .sw-input:checked + .sw i { transform: translateX(20px); }
-.sw-input:focus-visible + .sw { outline: 3px solid var(--mint); outline-offset: 2px; }
+.sw-input:focus-visible + .sw { outline: 3px solid var(--mint-text); outline-offset: 2px; }
 .warmup-toggle .sw { margin-left: auto; }
 .save-routine-row { flex-wrap: wrap; }
 .save-routine-msg { font-size: var(--t-sm); color: var(--success); }
@@ -495,9 +495,9 @@
   color: var(--text-dim);
   text-align: left;
 }
-.comeback-banner { border-left-color: var(--mint); }
+.comeback-banner { border-left-color: var(--mint-text); }
 .challenge-invite { border-left-color: var(--hot); }
-.result-recovery-tip { border-left-color: var(--mint); }
+.result-recovery-tip { border-left-color: var(--mint-text); }
 .comeback-banner b,
 .result-recovery-tip b { color: var(--text); font-weight: 700; }
 .ci-title { font-weight: 700; font-size: var(--t-md); color: var(--text); }
@@ -977,7 +977,7 @@ button.card:active { background: var(--surface-2); }
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   transition: transform var(--dur) var(--ease-pop);
 }
-.sw[data-on="1"] { background: var(--mint); }
+.sw[data-on="1"] { background: var(--mint-text); }
 .sw[data-on="1"] i { transform: translateX(20px); }
 
 /* ── 시작 방식 시트(설계 02) ───────────────────────────
@@ -1021,7 +1021,7 @@ button.card:active { background: var(--surface-2); }
 .row-accent .row-ic { background: rgba(22, 19, 10, 0.12); color: var(--on-accent); }
 .row-accent .row-d { color: var(--on-accent); opacity: 0.75; }
 .row-accent:active { transform: scale(0.98); }
-.row-mint { border-color: var(--mint); }
+.row-mint { border-color: var(--mint-text); }
 .row-mint .row-ic { color: var(--mint-text); }
 
 /* ── 칩 ────────────────────────────────────────────────
@@ -1088,8 +1088,8 @@ button.card:active { background: var(--surface-2); }
 .inp::placeholder { color: var(--text-dim); }
 .inp:focus {
   outline: none;
-  border-color: var(--mint);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--mint) 26%, transparent);
+  border-color: var(--mint-text);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--mint-text) 26%, transparent);
 }
 .inp-wrap { position: relative; display: block; }
 .inp-wrap .inp { padding-left: 40px; }

@@ -122,7 +122,7 @@
   height: 100%;
   width: 0;
   border-radius: var(--r-full);
-  background: var(--mint);
+  background: var(--mint-text);
   transition: width var(--dur-slow) var(--ease-out);
 }
 .pet-xp { font-family: var(--font-num); font-size: var(--t-sm); color: var(--text-dim); }
@@ -282,7 +282,7 @@
      JS 가 한 번이라도 못 돌면 "아직 뱃지 없음" 옆에 100% 막대가 뜬다. */
   width: 0;
   border-radius: var(--r-full);
-  background: var(--mint);
+  background: var(--mint-text);
   transition: width var(--dur-slow) var(--ease-out);
 }
 
@@ -306,7 +306,7 @@
 .xp-bottle { width: 40px; height: 76px; flex: none; }
 .bottle-outline { fill: none; stroke: var(--line); stroke-width: 3; }
 .bottle-cap { fill: var(--text-dim); }
-.xp-water { fill: var(--mint); transition: y var(--dur-slow) var(--ease-out), height var(--dur-slow) var(--ease-out); }
+.xp-water { fill: var(--mint-text); transition: y var(--dur-slow) var(--ease-out), height var(--dur-slow) var(--ease-out); }
 .xp-bottle-info { display: flex; flex-direction: column; gap: 2px; }
 .xp-bottle-info #xp-level-label { font-size: var(--t-xl); font-weight: 800; letter-spacing: -0.02em; }
 .xp-bottle-info #xp-progress-label { font-size: var(--t-sm); color: var(--text-dim); }
@@ -752,7 +752,7 @@
    늘어서 있어서 어디까지 왔는지 알 수 없었다 — 번호가 그 일을 한다. */
 #setup-screen { gap: var(--s-6); padding-bottom: 0; }
 
-.setup-summary { padding: var(--s-4); border-color: var(--mint); }
+.setup-summary { padding: var(--s-4); border-color: var(--mint-text); }
 .setup-summary-kick { color: var(--mint-text); }
 .setup-summary-nums {
   display: flex;
@@ -815,7 +815,7 @@
   color: var(--text);
   -moz-appearance: textfield;
 }
-.stepper-val:focus { outline: 2px solid var(--mint); outline-offset: 2px; border-radius: var(--r-sm); }
+.stepper-val:focus { outline: 2px solid var(--mint-text); outline-offset: 2px; border-radius: var(--r-sm); }
 .stepper-val::-webkit-outer-spin-button,
 .stepper-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
@@ -843,7 +843,7 @@
 }
 .chk::after { content: '✓'; font-size: 13px; font-weight: 700; line-height: 1; }
 .chk-input:checked + .chk { background: var(--mint); border-color: var(--mint); color: var(--on-mint); }
-.chk-input:focus-visible + .chk { outline: 3px solid var(--mint); outline-offset: 2px; }
+.chk-input:focus-visible + .chk { outline: 3px solid var(--mint-text); outline-offset: 2px; }
 
 /* ── AI 퀴즈 (설계 04) ─────────────────────────────────
    질문이 이 화면의 큰 제목이다. 머리에는 진행 점과 건너뛰기만 둔다. */
@@ -904,7 +904,7 @@
   background: var(--surface-2);
   overflow: hidden;
 }
-.bp-fill { display: block; height: 100%; background: var(--mint); border-radius: var(--r-full); }
+.bp-fill { display: block; height: 100%; background: var(--mint-text); border-radius: var(--r-full); }
 .bp-pct {
   flex: none;
   width: 3em;
@@ -933,7 +933,7 @@
   gap: var(--s-2);
   padding: var(--s-4);
   border: 2px solid transparent;
-  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg in oklch, var(--mint), var(--accent));
+  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg in oklch, var(--mint-text), var(--accent));
   background-origin: border-box;
   background-clip: padding-box, border-box;
 }

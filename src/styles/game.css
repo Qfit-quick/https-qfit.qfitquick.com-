@@ -15,7 +15,7 @@
   align-items: stretch;
   gap: var(--s-3);
 }
-.preview-warm { padding: var(--s-3); border-color: var(--mint); }
+.preview-warm { padding: var(--s-3); border-color: var(--mint-text); }
 .preview-warm .row-ic { color: var(--mint-text); }
 .preview-note { text-align: center; }
 
@@ -364,7 +364,7 @@
 .rest-touch-ring circle { fill: none; stroke-width: 5; }
 .rest-touch-ring .track { stroke: var(--line); }
 .rest-touch-ring .prog { stroke: var(--volt); stroke-linecap: round; }
-.rest-touch-zone.verified .rest-touch-ring .prog { stroke: var(--mint); }
+.rest-touch-zone.verified .rest-touch-ring .prog { stroke: var(--mint-text); }
 .rest-touch-icon {
   position: relative;
   font-size: 22px;
@@ -378,7 +378,7 @@
   font-weight: 700;
   color: var(--text);
 }
-.rest-touch-zone.verified ~ .rest-touch-label { color: var(--mint); }
+.rest-touch-zone.verified ~ .rest-touch-label { color: var(--mint-text); }
 .rest-touch-caption {
   margin: 0;
   font-size: var(--t-xs);
@@ -422,7 +422,7 @@
 .hold-ring circle { fill: none; stroke-width: 9; }
 .hold-ring .track { stroke: var(--line); }
 .hold-ring .prog {
-  stroke: var(--mint);
+  stroke: var(--mint-text);
   stroke-linecap: round;
   transition: stroke-dashoffset 1s linear;
 }
@@ -517,7 +517,7 @@
 .wod-side-fill {
   position: relative;
   width: 100%;
-  background: var(--mint);
+  background: var(--mint-text);
   transition: height var(--dur-slow) var(--ease-out);
 }
 .wod-side-badge {

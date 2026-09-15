@@ -65,9 +65,12 @@ button {
   cursor: pointer;
 }
 
-/* 키보드로 다니는 사람이 자기 위치를 알 수 있게. 예전에는 focus 스타일이 아예 없었다. */
+/* 키보드로 다니는 사람이 자기 위치를 알 수 있게. 예전에는 focus 스타일이 아예 없었다.
+   --mint 가 아니라 --mint-text 를 쓴다(2026-09-15) — 새 민트(#99ffc2)는 밝은
+   바탕에서 거의 안 보인다(대비 1.2:1). 링·글자처럼 배경 위에 직접 보여야
+   하는 자리는 전부 글자용 민트(--mint-text, 대비 5:1)를 쓴다. */
 :focus-visible {
-  outline: 3px solid var(--mint);
+  outline: 3px solid var(--mint-text);
   outline-offset: 2px;
   border-radius: var(--r-sm);
 }
