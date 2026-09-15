@@ -464,14 +464,14 @@ body.gated { overflow: hidden; }
 .plan-meal-rows { display: flex; flex-direction: column; gap: 1px; }
 .pmr {
   display: grid;
-  grid-template-columns: 1fr auto 3.2em;
+  grid-template-columns: 1fr auto 3.2em auto;
   gap: var(--s-2);
   align-items: baseline;
   padding: 8px 0;
   border-bottom: 1px solid var(--line);
   font-size: var(--t-sm);
 }
-.pmr:last-child { border-bottom: 0; }
+.pmr-group:last-child .pmr { border-bottom: 0; }
 .pmr-name { font-weight: 600; word-break: keep-all; }
 .pmr-amt { color: var(--text-dim); font-size: var(--t-xs); white-space: nowrap; }
 .pmr-kcal {
@@ -480,6 +480,41 @@ body.gated { overflow: hidden; }
   font-weight: 700;
   text-align: right;
 }
+/* 대체재 — "고구마 대신 밥 몇 그램" 같은 질문에 그램 수로 답하는 펼침
+   목록(2026-09-15). 항목마다 여닫는 작은 버튼 하나만 두고, 목록은
+   눌렀을 때만 펼친다 — 늘 펼쳐 두면 끼니 한 장이 너무 길어진다. */
+.pmr-sub-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6em;
+  height: 1.6em;
+  border-radius: var(--r-full);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  font-size: var(--t-sm);
+  line-height: 1;
+}
+.pmr-sub-toggle:active { background: var(--surface-2); }
+.pmr-subs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 8px;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.pmr-sub-hint { font-size: var(--t-xs); margin: 0 0 2px; }
+.pmr-sub-row {
+  display: grid;
+  grid-template-columns: 1fr auto 3.2em;
+  gap: var(--s-2);
+  align-items: baseline;
+  font-size: var(--t-xs);
+  color: var(--text-dim);
+}
+.pmr-sub-kcal { font-family: var(--font-num); font-variant-numeric: tabular-nums; text-align: right; }
 .plan-meal-macro { font-size: var(--t-xs); }
 .plan-water { font-size: var(--t-sm); word-break: keep-all; }
 

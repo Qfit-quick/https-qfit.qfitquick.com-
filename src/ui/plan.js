@@ -9,7 +9,7 @@
 
 import {
   SEX_OPTIONS, ACTIVITY_OPTIONS, GOAL_OPTIONS,
-  nutritionPlan, workoutPlan, mealPlan, mealPlanTotals,
+  nutritionPlan, workoutPlan, mealPlan, mealPlanTotals, substitutesFor,
   bmiOf, bmiBand, healthyWeightRange, todayIndex,
   FOCUS_LABEL, DOW_LABEL, ADD_ONS,
 } from '../data/plan.js';
@@ -334,13 +334,31 @@ function paintDiet(nut, meals) {
       `<span class="plan-meal-kcal">${m.kcal}<span class="num-u">kcal</span></span>` +
       '</div>' +
       '<div class="plan-meal-rows">' +
-      m.rows.map((r) =>
-        '<div class="pmr">' +
-        `<span class="pmr-name">${esc(t(r.food.label))}</span>` +
-        `<span class="pmr-amt">${esc(portionText(r))}</span>` +
-        `<span class="pmr-kcal">${r.kcal}</span>` +
-        '</div>'
-      ).join('') +
+      m.rows.map((r, ri) => {
+        const subs = substitutesFor(m.id, r);
+        return '<div class="pmr-group">' +
+          '<div class="pmr">' +
+          `<span class="pmr-name">${esc(t(r.food.label))}</span>` +
+          `<span class="pmr-amt">${esc(portionText(r))}</span>` +
+          `<span class="pmr-kcal">${r.kcal}</span>` +
+          (subs.length
+            ? `<button class="pmr-sub-toggle" type="button" data-pmr-sub-toggle="${m.id}:${ri}" aria-label="${esc(t(S.planSubToggle))}">⇄</button>`
+            : '<span></span>') +
+          '</div>' +
+          (subs.length
+            ? `<div class="pmr-subs" id="pmr-subs-${m.id}-${ri}" hidden>` +
+              `<p class="pmr-sub-hint dim">${esc(t(S.planSubHint))}</p>` +
+              subs.map((s) =>
+                '<div class="pmr-sub-row">' +
+                `<span class="pmr-sub-name">${esc(t(s.food.label))}</span>` +
+                `<span class="pmr-sub-amt">${grams(s.grams)}</span>` +
+                `<span class="pmr-sub-kcal">${s.kcal}</span>` +
+                '</div>'
+              ).join('') +
+              '</div>'
+            : '') +
+          '</div>';
+      }).join('') +
       '</div>' +
       `<p class="dim plan-meal-macro">${esc(
         t(S.planMealMacro).replace('%s', m.p).replace('%s', m.c).replace('%s', m.f)
@@ -507,6 +525,13 @@ export function initPlan({ translate, STATIC_UI, onStartRoutine, onShowScreen } 
       }
       const goto = e.target.closest('[data-plan-goto]');
       if (goto) { tabTo(goto.dataset.planGoto); return; }
+      const subToggle = e.target.closest('[data-pmr-sub-toggle]');
+      if (subToggle) {
+        const [mealId, ri] = subToggle.dataset.pmrSubToggle.split(':');
+        const box = el(`pmr-subs-${mealId}-${ri}`);
+        if (box) box.hidden = !box.hidden;
+        return;
+      }
       if (e.target.closest('#plan-edit-body')) {
         paintBodyForm();
         goScreen('body-screen');

@@ -408,6 +408,8 @@ export const STATIC_UI = {
  planFloorNote: {ko:'감량 목표지만 기초대사량 아래로는 내리지 않았습니다. 그보다 적게 먹으면 근육이 먼저 빠집니다.', en:'This is a fat-loss target, but we did not cut below your BMR — eating less than that burns muscle first.', zh:'虽然是减脂目标，但没有降到基础代谢率以下 — 吃得比它更少会先掉肌肉。'},
  planCarbFloorNote: {ko:'탄수화물을 하루 130g(권장섭취량)에 맞춰 두고 지방을 줄였습니다.', en:'Carbs were held at 130g a day (the recommended intake) and fat was trimmed instead.', zh:'碳水保持在每日130克（推荐摄入量），改为减少脂肪。'},
  planMealMacro: {ko:'단백질 %sg · 탄수화물 %sg · 지방 %sg', en:'Protein %sg · carbs %sg · fat %sg', zh:'蛋白质%s克 · 碳水%s克 · 脂肪%s克'},
+ planSubToggle: {ko:'대체재 보기', en:'Show substitutes', zh:'查看替代食材'},
+ planSubHint: {ko:'같은 칼로리로 바꾸면', en:'Same calories if you swap to', zh:'换成同热量的'},
  planWater: {ko:'물은 하루 %smL 정도 — 200mL 컵으로 %s잔입니다.', en:'Aim for about %smL of water a day — that is %s cups of 200mL.', zh:'每天喝水约%s毫升 — 相当于%s杯（每杯200毫升）。'},
  planEatOut: {ko:'외식할 때', en:'Eating out', zh:'在外吃饭'},
  planEatOutSub: {ko:'한 끼는 거의 늘 밖에서 먹습니다. 먹지 말라고 하는 대신 얼마인지와 어떻게 줄이는지를 적었습니다.', en:'One meal a day is usually out. Instead of telling you to skip it, here is what it costs and how to trim it.', zh:'总有一餐在外面吃。这里不劝你别吃，而是写清热量和怎么减。'},

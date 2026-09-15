@@ -446,18 +446,18 @@ export function mealPlan(nutrition, dateStr) {
     let carbItem = null, proteinItem = null, fatItem = null;
 
     if (meal.id === 'snack') {
-      proteinItem = { food: FOOD_BY_KEY[pick(rnd, pool.protein)], mult: 1 };
-      carbItem = { food: FOOD_BY_KEY[pick(rnd, pool.fruit)], mult: 1 };
-      fatItem = { food: FOOD_BY_KEY[pick(rnd, pool.fat)], mult: 1 };
+      proteinItem = { food: FOOD_BY_KEY[pick(rnd, pool.protein)], mult: 1, role: 'protein' };
+      carbItem = { food: FOOD_BY_KEY[pick(rnd, pool.fruit)], mult: 1, role: 'fruit' };
+      fatItem = { food: FOOD_BY_KEY[pick(rnd, pool.fat)], mult: 1, role: 'fat' };
       items.push(proteinItem, carbItem, fatItem);
     } else {
-      carbItem = { food: FOOD_BY_KEY[pick(rnd, pool.carb)], mult: 1 };
-      proteinItem = { food: FOOD_BY_KEY[pick(rnd, pool.protein)], mult: 1 };
-      const veg1 = { food: FOOD_BY_KEY[pick(rnd, pool.veg)], mult: 1 };
+      carbItem = { food: FOOD_BY_KEY[pick(rnd, pool.carb)], mult: 1, role: 'carb' };
+      proteinItem = { food: FOOD_BY_KEY[pick(rnd, pool.protein)], mult: 1, role: 'protein' };
+      const veg1 = { food: FOOD_BY_KEY[pick(rnd, pool.veg)], mult: 1, role: 'veg' };
       // 채소는 두 가지가 기본이다. 한 가지만 두면 실제 밥상과 안 닮는다.
       const rest = pool.veg.filter((k) => k !== veg1.food.key);
-      const veg2 = rest.length ? { food: FOOD_BY_KEY[pick(rnd, rest)], mult: 1 } : null;
-      fatItem = { food: FOOD_BY_KEY[pick(rnd, pool.fat)], mult: 1 };
+      const veg2 = rest.length ? { food: FOOD_BY_KEY[pick(rnd, rest)], mult: 1, role: 'veg' } : null;
+      fatItem = { food: FOOD_BY_KEY[pick(rnd, pool.fat)], mult: 1, role: 'fat' };
       items.push(carbItem, proteinItem, veg1);
       if (veg2) items.push(veg2);
       items.push(fatItem);
@@ -488,6 +488,7 @@ export function mealPlan(nutrition, dateStr) {
       key: it.food.key,
       food: it.food,
       mult: it.mult,
+      role: it.role,
       kcal: ITEM_KCAL(it.food, it.mult),
       p: ITEM_MACRO(it.food, it.mult, 'p'),
       c: ITEM_MACRO(it.food, it.mult, 'c'),
@@ -505,6 +506,37 @@ export function mealPlan(nutrition, dateStr) {
       rows,
     };
   });
+}
+
+/**
+ * 이 항목과 같은 칼로리가 되는 대체재 목록 — "고구마 대신 밥 몇 그램" 같은
+ * 질문에 그램 수로 답한다(2026-09-15 요청).
+ *
+ * 후보는 food.tag 전체가 아니라 **그 끼니, 그 역할의 후보군**(MEAL_POOLS)
+ * 에서만 고른다. tag 를 통째로 쓰면 아침 후보에 저녁 전용 흰살생선이
+ * 섞이거나, 간식의 '단백질' 자리(그릭요거트·유청·우유·두유처럼 tag 가
+ * protein/dairy 로 갈린 것들)가 절반만 나온다 — 화면에 이미 있는 조합
+ * 규칙을 그대로 재사용하는 것이 표를 새로 만드는 것보다 안전하다.
+ */
+export function substitutesFor(mealId, row) {
+  const pool = MEAL_POOLS[mealId];
+  const list = pool && row.role ? pool[row.role] : null;
+  if (!list || row.kcal <= 0) return [];
+  return list
+    .filter((k) => k !== row.key)
+    .map((k) => FOOD_BY_KEY[k])
+    .filter((food) => food && food.per100.kcal > 0)
+    .map((food) => {
+      const g = Math.max(5, Math.round((row.kcal * 100) / food.per100.kcal / 5) * 5);
+      return {
+        food,
+        grams: g,
+        kcal: Math.round((food.per100.kcal * g) / 100),
+        p: Math.round((food.per100.p * g) / 100 * 10) / 10,
+        c: Math.round((food.per100.c * g) / 100 * 10) / 10,
+        f: Math.round((food.per100.f * g) / 100 * 10) / 10,
+      };
+    });
 }
 
 /** 짠 식단이 실제로 목표에 닿았는지. 화면이 이 값을 그대로 보여 준다. */
