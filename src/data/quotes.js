@@ -13,36 +13,16 @@
 // author 는 **확인된 출처만** 적는다. 인터넷에 흔히 도는 오귀속(誤歸屬)을
 // 그대로 실으면 앱이 거짓말을 하는 것이라, 출처가 흐린 문장은 아예 뺐다.
 // 앱이 직접 쓴 문장은 저자를 'Q-fit' 으로 둔다 — 없는 위인을 만들지 않는다.
-// (예: '탁월함은 습관' 은 아리스토텔레스가 아니라 그를 풀어 쓴 윌 듀랜트다.)
+//
+// 저자는 **실제로 경기를 뛴 운동선수**여야 한다(2026-09-15 사용자 요청).
+// 노자·볼테르·프랭클린 같은 철학자·정치인·속담이나, 존 우든·빈스 롬바디
+// 처럼 선수가 아니라 코치로만 알려진 인물은 아무리 유명한 문장이어도 뺀다.
+// Q-fit 자체 문구는 이 규칙 밖이다 — 애초에 위인 행세를 하지 않는다.
 export const QUOTES = [
   // ── drive · 미루는 마음을 잡는다 ────────────────────────────
-  { id:'franklin-today', tone:'drive',
-    text:{ko:'오늘 할 수 있는 일을 내일로 미루지 마라.', en:'Never leave that till tomorrow which you can do today.', zh:'今天能做的事，别留到明天。'},
-    author:{ko:'벤저민 프랭클린', en:'Benjamin Franklin', zh:'本杰明·富兰克林'} },
-  { id:'hillel-now', tone:'drive',
-    text:{ko:'지금이 아니면, 언제 하겠는가?', en:'If not now, when?', zh:'此刻不做，何时做？'},
-    author:{ko:'힐렐', en:'Hillel the Elder', zh:'希列尔'} },
-  { id:'picasso-action', tone:'drive',
-    text:{ko:'행동은 모든 성공의 첫 열쇠다.', en:'Action is the foundational key to all success.', zh:'行动是一切成功的第一把钥匙。'},
-    author:{ko:'파블로 피카소', en:'Pablo Picasso', zh:'巴勃罗·毕加索'} },
-  { id:'earhart-decide', tone:'drive',
-    text:{ko:'가장 어려운 것은 하기로 결심하는 일이다. 나머지는 그저 끈기다.', en:'The most difficult thing is the decision to act. The rest is merely tenacity.', zh:'最难的是下决心去做，其余的只是坚持。'},
-    author:{ko:'아멜리아 에어하트', en:'Amelia Earhart', zh:'阿梅莉亚·埃尔哈特'} },
-  { id:'seneca-dare', tone:'drive',
-    text:{ko:'어려워서 못 하는 것이 아니다. 하지 않으니 어려워지는 것이다.', en:'It is not because things are difficult that we do not dare; it is because we do not dare that they are difficult.', zh:'并非因为难而不敢做，而是因为不敢做才显得难。'},
-    author:{ko:'세네카', en:'Seneca', zh:'塞内卡'} },
-  { id:'ziglar-daily', tone:'drive',
-    text:{ko:'동기는 오래가지 않는다. 그래서 매일 다시 채우라고 하는 것이다.', en:"Motivation doesn't last — that's why we recommend it daily.", zh:'动力不会持久，所以要每天补充。'},
-    author:{ko:'지그 지글러', en:'Zig Ziglar', zh:'金克拉'} },
-  { id:'edison-percent', tone:'drive',
-    text:{ko:'천재는 1퍼센트의 영감과 99퍼센트의 노력이다.', en:'Genius is one percent inspiration and ninety-nine percent perspiration.', zh:'天才是百分之一的灵感加百分之九十九的汗水。'},
-    author:{ko:'토머스 에디슨', en:'Thomas Edison', zh:'托马斯·爱迪生'} },
-  { id:'durant-habit', tone:'drive',
-    text:{ko:'우리는 반복하는 것으로 만들어진다. 그러므로 탁월함은 행동이 아니라 습관이다.', en:'We are what we repeatedly do. Excellence, then, is not an act but a habit.', zh:'我们由重复的行为塑造。所以卓越不是一次行动，而是习惯。'},
-    author:{ko:'윌 듀랜트', en:'Will Durant', zh:'威尔·杜兰特'} },
-  { id:'proverb-halfway', tone:'drive',
-    text:{ko:'시작이 반이다.', en:'Starting is half the work.', zh:'开始就是成功的一半。'},
-    author:{ko:'우리 속담', en:'Korean proverb', zh:'韩国谚语'} },
+  // 운동선수가 아닌 인물(프랭클린·힐렐·피카소·에어하트·세네카·지글러·
+  // 에디슨·듀랜트, 속담)은 2026-09-15 사용자 요청으로 전부 뺐다 —
+  // "운동선수가 말한 것만 넣어야" 하므로, Q-fit 자체 문구만 남긴다.
   { id:'qfit-oneminute', tone:'drive',
     text:{ko:'0분과 1분의 차이가, 이번 달 전체의 차이가 된다.', en:'The gap between zero minutes and one minute becomes the gap of a whole month.', zh:'零分钟与一分钟之差，就是一整个月之差。'},
     author:{ko:'Q-fit', en:'Q-fit', zh:'Q-fit'} },
@@ -51,9 +31,6 @@ export const QUOTES = [
   { id:'ali-champions', tone:'drive',
     text:{ko:'챔피언은 체육관에서 만들어지지 않는다. 챔피언은 그들 안 깊숙이 있는 갈망, 꿈, 비전으로부터 만들어진다.', en:"Champions aren't made in gyms. Champions are made from something they have deep inside them – a desire, a dream, a vision.", zh:'冠军不是在体育馆里造就的。冠军是由内心深处的渴望、梦想和远见造就的。'},
     author:{ko:'무하마드 알리', en:'Muhammad Ali', zh:'穆罕默德·阿里'} },
-  { id:'lombardi-quit', tone:'drive',
-    text:{ko:'승자는 절대 포기하지 않고, 포기하는 자는 절대 승리하지 못한다.', en:'Winners never quit, and quitters never win.', zh:'胜利者从不放弃，放弃者从未胜利。'},
-    author:{ko:'빈스 롬바디', en:'Vince Lombardi', zh:'文斯·隆巴迪'} },
   { id:'rice-today', tone:'drive',
     text:{ko:'오늘 남들이 하지 않는 일을 해야, 내일 남들이 못하는 일을 해낼 수 있다.', en:"Today I will do what others won't, so tomorrow I can accomplish what others can't.", zh:'今天做别人不愿做的事，明天才能完成别人做不到的事。'},
     author:{ko:'제리 라이스', en:'Jerry Rice', zh:'杰里·赖斯'} },
@@ -155,9 +132,7 @@ export const QUOTES = [
     author:{ko:'마이클 펠프스', en:'Michael Phelps', zh:'迈克尔·菲尔普斯'} },
 
   // ── steady · 꾸준함 쪽으로 민다 ─────────────────────────────
-  { id:'laozi-step', tone:'steady',
-    text:{ko:'천 리 길도 발밑에서 시작된다.', en:'A journey of a thousand miles begins beneath your feet.', zh:'千里之行，始于足下。'},
-    author:{ko:'노자 · 도덕경', en:'Laozi, Tao Te Ching', zh:'老子《道德经》'} },
+  // 노자·서양 속담(운동선수 아님)은 2026-09-15 사용자 요청으로 뺐다.
   { id:'lee-onekick', tone:'steady',
     text:{ko:'만 가지 발차기를 한 번씩 연습한 사람은 두렵지 않다. 한 가지 발차기를 만 번 연습한 사람이 두렵다.', en:'I fear not the man who practiced 10,000 kicks once, but the man who practiced one kick 10,000 times.', zh:'我不怕练过一万种踢法各一次的人，只怕把一种踢法练了一万次的人。'},
     author:{ko:'이소룡', en:'Bruce Lee', zh:'李小龙'} },
@@ -167,9 +142,6 @@ export const QUOTES = [
   { id:'jordan-missed', tone:'steady',
     text:{ko:'나는 9천 번 넘게 슛을 놓쳤다. 그래서 성공했다.', en:"I've missed more than 9,000 shots in my career. That's why I succeeded.", zh:'我投失过九千多次球，所以我成功了。'},
     author:{ko:'마이클 조던', en:'Michael Jordan', zh:'迈克尔·乔丹'} },
-  { id:'proverb-thousandli', tone:'steady',
-    text:{ko:'천 리 길도 한 걸음부터.', en:'Even a thousand-mile road starts with one step.', zh:'千里之路，始于一步。'},
-    author:{ko:'우리 속담', en:'Korean proverb', zh:'韩国谚语'} },
   { id:'qfit-yesterday', tone:'steady',
     text:{ko:'어제의 나를 이기는 것이 가장 확실한 승리다.', en:'Beating yesterday is the only win that always counts.', zh:'胜过昨天的自己，是最可靠的胜利。'},
     author:{ko:'Q-fit', en:'Q-fit', zh:'Q-fit'} },
@@ -247,9 +219,6 @@ export const QUOTES = [
   { id:'russell-bill', tone:'steady',
     text:{ko:'내가 얼마나 좋은 경기를 했는지 가장 중요한 척도는, 내가 동료들을 얼마나 더 잘하게 만들었는가였다.', en:"The most important measure of how good a game I played was how much better I'd made my teammates play.", zh:'衡量我这场球打得好不好，最重要的标准是——我让队友们打得更好了多少。'},
     author:{ko:'빌 러셀', en:'Bill Russell', zh:'比尔·拉塞尔'} },
-  { id:'lombardi-perfection', tone:'steady',
-    text:{ko:'완벽은 도달할 수 없다. 하지만 완벽을 좇다 보면 탁월함을 붙잡을 수 있다.', en:'Perfection is not attainable, but if we chase perfection we can catch excellence.', zh:'完美无法企及，但追求完美的过程中，我们能收获卓越。'},
-    author:{ko:'빈스 롬바디', en:'Vince Lombardi', zh:'文斯·隆巴迪'} },
   { id:'ali-greatest', tone:'steady',
     text:{ko:'나는 최고다. 내가 최고라는 걸 알기도 전에 그렇게 말했다.', en:'I am the greatest. I said that even before I knew I was.', zh:'我是最伟大的。在我确信之前，我就已经这么说了。'},
     author:{ko:'무하마드 알리', en:'Muhammad Ali', zh:'穆罕默德·阿里'} },
@@ -264,15 +233,7 @@ export const QUOTES = [
   { id:'ashe-where', tone:'gentle',
     text:{ko:'지금 있는 자리에서 시작하라. 가진 것을 쓰고, 할 수 있는 것을 하라.', en:'Start where you are. Use what you have. Do what you can.', zh:'从你所在的地方开始，用你拥有的，做你能做的。'},
     author:{ko:'아서 애시', en:'Arthur Ashe', zh:'阿瑟·阿什'} },
-  { id:'voltaire-perfect', tone:'gentle',
-    text:{ko:'완벽은 좋음의 적이다.', en:'The perfect is the enemy of the good.', zh:'完美是良好的敌人。'},
-    author:{ko:'볼테르', en:'Voltaire', zh:'伏尔泰'} },
-  { id:'wooden-cannot', tone:'gentle',
-    text:{ko:'할 수 없는 일이 할 수 있는 일을 막게 두지 마라.', en:'Do not let what you cannot do interfere with what you can do.', zh:'别让做不到的事，妨碍你能做到的事。'},
-    author:{ko:'존 우든', en:'John Wooden', zh:'约翰·伍登'} },
-  { id:'proverb-rome', tone:'gentle',
-    text:{ko:'로마는 하루아침에 이루어지지 않았다.', en:'Rome was not built in a day.', zh:'罗马不是一天建成的。'},
-    author:{ko:'서양 속담', en:'Proverb', zh:'西方谚语'} },
+  // 볼테르·우든(코치)·서양 속담(운동선수 아님)은 2026-09-15 사용자 요청으로 뺐다.
   { id:'qfit-oneminuteok', tone:'gentle',
     text:{ko:'오늘은 1분만 해도 된다. 그것도 안 한 날보다 낫다.', en:'One minute is enough today. It still beats a day of none.', zh:'今天做一分钟就够了，也胜过一分钟都没做。'},
     author:{ko:'Q-fit', en:'Q-fit', zh:'Q-fit'} },
@@ -299,12 +260,6 @@ export const QUOTES = [
   { id:'ali-service', tone:'gentle',
     text:{ko:'타인을 위한 봉사는 이 세상에 머무는 동안 내야 하는 방세다.', en:'Service to others is the rent you pay for your room here on earth.', zh:'服务他人，是你在这世上住宿所要支付的房租。'},
     author:{ko:'무하마드 알리', en:'Muhammad Ali', zh:'穆罕默德·阿里'} },
-  { id:'wooden-afterall', tone:'gentle',
-    text:{ko:'다 안다고 생각한 뒤에 배우는 것이야말로 진짜 중요하다.', en:"It's what you learn after you know it all that counts.", zh:'在你自以为全都懂了之后学到的东西，才是真正重要的。'},
-    author:{ko:'존 우든', en:'John Wooden', zh:'约翰·伍登'} },
-  { id:'wooden-changefailure', tone:'gentle',
-    text:{ko:'실패는 치명적이지 않다, 하지만 변화하지 않는 실패는 치명적일 수 있다.', en:'Failure is not fatal, but failure to change might be.', zh:'失败并不致命，但不肯改变的失败可能致命。'},
-    author:{ko:'존 우든', en:'John Wooden', zh:'约翰·伍登'} },
   { id:'zatopek-mile', tone:'gentle',
     text:{ko:'뛰고 싶다면 1마일을 뛰어라. 다른 삶을 경험하고 싶다면 마라톤을 뛰어라.', en:'If you want to run, run a mile. If you want to experience a different life, run a marathon.', zh:'如果你想跑步，就跑一英里；如果你想体验不同的人生，就跑一次马拉松。'},
     author:{ko:'에밀 자토페크', en:'Emil Zátopek', zh:'埃米尔·扎托佩克'} },
