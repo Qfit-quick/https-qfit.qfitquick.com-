@@ -588,6 +588,12 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+/* 관문(.gate, z-index 150)보다 위에 둔다 — 안 그러면 인앱 브라우저 경고가
+   켜져 있어도(.on) 관문에 가려 안 보이다가, 관문을 닫는 순간에야 나타나서
+   "명언 누르면 브라우저 열기 창이 또 뜬다"는 무한 반복처럼 보인다
+   (2026-09-16 버그 리포트). 소리가 아예 안 나오는 웹뷰라는 걸 관문의
+   설문·명언보다 먼저 알려야 순서가 맞다. */
+.inapp-banner { z-index: 210; }
 .pause-overlay.on,
 .video-lightbox.on,
 .inapp-banner.on { display: flex; }
