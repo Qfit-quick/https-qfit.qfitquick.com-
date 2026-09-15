@@ -517,13 +517,19 @@ export function mealPlan(nutrition, dateStr) {
  * 섞이거나, 간식의 '단백질' 자리(그릭요거트·유청·우유·두유처럼 tag 가
  * protein/dairy 로 갈린 것들)가 절반만 나온다 — 화면에 이미 있는 조합
  * 규칙을 그대로 재사용하는 것이 표를 새로 만드는 것보다 안전하다.
+ *
+ * excludeKeys 로 **그 끼니에 이미 올라온 다른 항목**도 걸러 낸다. 채소는
+ * 한 끼에 둘(veg1·veg2)이 같은 role('veg')을 쓰는데, 이걸 안 걸러 내면
+ * "김치 대신 나물" 이 김치와 나물이 이미 한 상에 같이 있는데도 뜬다 —
+ * 이미 먹고 있는 것을 대체재로 권하는 셈이라 대체재로서 의미가 없다.
  */
-export function substitutesFor(mealId, row) {
+export function substitutesFor(mealId, row, excludeKeys = []) {
   const pool = MEAL_POOLS[mealId];
   const list = pool && row.role ? pool[row.role] : null;
   if (!list || row.kcal <= 0) return [];
+  const exclude = new Set([row.key, ...excludeKeys]);
   return list
-    .filter((k) => k !== row.key)
+    .filter((k) => !exclude.has(k))
     .map((k) => FOOD_BY_KEY[k])
     .filter((food) => food && food.per100.kcal > 0)
     .map((food) => {

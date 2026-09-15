@@ -335,7 +335,10 @@ function paintDiet(nut, meals) {
       '</div>' +
       '<div class="plan-meal-rows">' +
       m.rows.map((r, ri) => {
-        const subs = substitutesFor(m.id, r);
+        // 채소 두 가지(veg1·veg2)처럼 같은 role 이 한 끼에 둘일 수 있다.
+        // 서로를 대체재로 권하면 이미 상에 있는 것을 또 권하는 셈이라 뺀다.
+        const others = m.rows.filter((x) => x !== r).map((x) => x.key);
+        const subs = substitutesFor(m.id, r, others);
         return '<div class="pmr-group">' +
           '<div class="pmr">' +
           `<span class="pmr-name">${esc(t(r.food.label))}</span>` +
