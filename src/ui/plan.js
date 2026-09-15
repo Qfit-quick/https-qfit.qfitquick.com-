@@ -85,14 +85,19 @@ const num = (v) => {
  * 막지는 않고 알린다. 진짜로 키 210cm 인 사람이 있고, 막아 버리면 그 사람은
  * 앱을 못 쓴다. 다만 170 을 17 로 잘못 넣은 것은 계산 결과가 이상해지므로
  * 그 자리에서 보여야 한다 — 조용히 받아 두면 하루 400kcal 짜리 식단이 나온다.
+ *
+ * 나이 하한을 5세로 내린 것(2026-09-15)에 맞춰 키·체중 하한도 같이
+ * 내렸다 — 그대로 뒀으면 실제 다섯 살 아이 키(약 110cm)·체중(약 18kg)이
+ * 매번 "확인해주십시오" 경고에 걸렸을 것이다. 하나만 바꾸고 나머지 둘을
+ * 그대로 두면 이 화면은 다섯 살을 절반만 받아들이는 셈이 된다.
  */
 function checkRanges() {
   const warn = el('body-warn');
   if (!warn) return;
   const msgs = [];
-  if (draft.age && (draft.age < 14 || draft.age > 100)) msgs.push(t(S.bodyWarnAge));
-  if (draft.heightCm && (draft.heightCm < 120 || draft.heightCm > 220)) msgs.push(t(S.bodyWarnHeight));
-  if (draft.weightKg && (draft.weightKg < 30 || draft.weightKg > 200)) msgs.push(t(S.bodyWarnWeight));
+  if (draft.age && (draft.age < 5 || draft.age > 100)) msgs.push(t(S.bodyWarnAge));
+  if (draft.heightCm && (draft.heightCm < 90 || draft.heightCm > 220)) msgs.push(t(S.bodyWarnHeight));
+  if (draft.weightKg && (draft.weightKg < 12 || draft.weightKg > 200)) msgs.push(t(S.bodyWarnWeight));
   warn.textContent = msgs.join(' ');
   warn.hidden = msgs.length === 0;
 }
@@ -354,7 +359,7 @@ function paintDiet(nut, meals) {
               subs.map((s) =>
                 `<button type="button" class="pmr-sub-row" data-pmr-sub-pick="${m.id}:${ri}:${s.food.key}">` +
                 `<span class="pmr-sub-name">${esc(t(s.food.label))}</span>` +
-                `<span class="pmr-sub-amt">${grams(s.grams)}</span>` +
+                `<span class="pmr-sub-amt">${esc(amountText(s.food, s.grams))}</span>` +
                 `<span class="pmr-sub-kcal">${s.kcal}</span>` +
                 '</button>'
               ).join('') +
@@ -390,12 +395,44 @@ function paintDiet(nut, meals) {
   pane.innerHTML = html;
 }
 
-/** '1공기(210g)' 를 배수에 맞춰 고쳐 쓴다. 1배면 그대로 둔다. */
+/**
+ * 그램을 사람이 실제로 세는 낱개로 바꾼다 — "아몬드 20g" 은 저울이 있어야
+ * 맞추지만 "약 16알" 은 바로 셀 수 있다(2026-09-15 요청). food.unit 이
+ * 없는 음식(고기·요거트처럼 순수 무게로만 재는 것)은 null 을 돌려주고,
+ * 부르는 쪽이 그램만 보여준다 — 세지 않는 음식에 개수를 지어내지 않는다.
+ */
+function unitCountText(food, g) {
+  if (!food.unit) return null;
+  const step = food.unit.step || 0.5;
+  const n = Math.max(step, Math.round(g / food.unit.g / step) * step);
+  return t(S.dietUnitAbout).replace('%s', String(n)).replace('%s', t(food.unit.label));
+}
+
+/** 단위 글자. 그램이 기본이고, mL 로 재는 음식(우유·두유)만 따로 셈한다. */
+function gramUnit(food) {
+  return food.unitSuffix ? t(food.unitSuffix) : 'g';
+}
+
+/** 그램수를 사람이 읽을 말로. 낱개로 셀 수 있으면 개수를 앞에 적고
+ *  그램은 괄호로 남긴다. */
+function amountText(food, g) {
+  const unit = unitCountText(food, g);
+  const suffix = gramUnit(food);
+  return unit ? `${unit}(${g}${suffix})` : `${g}${suffix}`;
+}
+
+/**
+ * '1공기(210g)' 를 배수에 맞춰 고쳐 쓴다. 1배면 원래 문구를 그대로 둔다 —
+ * '약 12알(15g)' 처럼 그 자체로 이미 자연스러운 말이기 때문이다.
+ *
+ * 예전에는 배수를 그대로 적었다('아몬드 x1.25 (19g)') — 숫자 두 개가
+ * 무엇을 뜻하는지 계량 도구 없이는 짐작이 안 됐다. 이제는 grams() 가 아닌
+ * amountText() 를 지나 '약 16알(19g)' 처럼 실제로 셀 수 있는 말이 된다.
+ */
 function portionText(row) {
-  const base = t(row.food.serve);
-  if (row.mult === 1) return base;
+  if (row.mult === 1) return t(row.food.serve);
   const g = Math.round((row.food.serveG * row.mult) / 5) * 5;
-  return `${base.replace(/\(.*\)/, '').trim()} x${row.mult} (${g}g)`;
+  return amountText(row.food, g);
 }
 
 // ── 내 숫자 판 ────────────────────────────────────────────────

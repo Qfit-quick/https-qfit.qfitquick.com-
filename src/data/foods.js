@@ -10,28 +10,43 @@
 // 차이가 나서, 상태를 안 적으면 표가 맞는지 틀린지 확인할 방법이 없어진다.
 //
 // tag 가 식단 조합의 규칙이다: 한 끼 = carb 1 + protein 1 + veg 1~2 (+ fat).
-
-/** @type {{key:string,tag:string,serveG:number,per100:{kcal:number,p:number,c:number,f:number}}[]} */
+//
+// unit 은 그램을 사람이 실제로 세는 낱개로 되돌리는 자리다(2026-09-15
+// 요청) — "아몬드 20g" 은 저울 없이는 못 맞추지만 "약 16알" 은 바로 셀 수
+// 있다. serve 텍스트에 이미 개수가 적힌 것(약 12알, 2개, 반 모 등)에만
+// 붙인다 — 세지 않은 음식(고기·요거트 같은 순수 무게)에 개수를 지어내면
+// 출처 없는 숫자가 된다. g 는 '낱개 하나의 그램', step 은 반올림 단위
+// (아몬드처럼 반 알이 의미 없는 것만 1, 나머지는 0.5). unitSuffix 는
+// 그램이 아니라 mL 로 재는 음식(우유·두유)의 단위 글자를 언어별로 정한다.
+/** @type {{key:string,tag:string,serveG:number,per100:{kcal:number,p:number,c:number,f:number},
+  *   unit?:{g:number,step:number,label:{ko:string,en:string,zh:string}},
+  *   unitSuffix?:{ko:string,en:string,zh:string}}[]} */
 export const FOODS = [
   // ── 탄수화물 ────────────────────────────────────────────────
   { key:'rice-white', tag:'carb', serveG:210, per100:{kcal:145, p:3.0, c:33.2, f:0.1},
     label:{ko:'백미밥', en:'White rice', zh:'白米饭'},
-    serve:{ko:'1공기(210g)', en:'1 bowl (210g)', zh:'1碗(210g)'} },
+    serve:{ko:'1공기(210g)', en:'1 bowl (210g)', zh:'1碗(210g)'},
+    unit:{g:210, step:0.25, label:{ko:'공기', en:'bowl', zh:'碗'}} },
   { key:'rice-brown', tag:'carb', serveG:210, per100:{kcal:148, p:3.4, c:32.4, f:0.9},
     label:{ko:'현미밥', en:'Brown rice', zh:'糙米饭'},
-    serve:{ko:'1공기(210g)', en:'1 bowl (210g)', zh:'1碗(210g)'} },
+    serve:{ko:'1공기(210g)', en:'1 bowl (210g)', zh:'1碗(210g)'},
+    unit:{g:210, step:0.25, label:{ko:'공기', en:'bowl', zh:'碗'}} },
   { key:'rice-multi', tag:'carb', serveG:210, per100:{kcal:155, p:4.0, c:32.0, f:1.2},
     label:{ko:'잡곡밥', en:'Multigrain rice', zh:'杂粮饭'},
-    serve:{ko:'1공기(210g)', en:'1 bowl (210g)', zh:'1碗(210g)'} },
+    serve:{ko:'1공기(210g)', en:'1 bowl (210g)', zh:'1碗(210g)'},
+    unit:{g:210, step:0.25, label:{ko:'공기', en:'bowl', zh:'碗'}} },
   { key:'sweet-potato', tag:'carb', serveG:150, per100:{kcal:141, p:1.7, c:33.0, f:0.2},
     label:{ko:'고구마(찐것)', en:'Steamed sweet potato', zh:'蒸红薯'},
-    serve:{ko:'중간 것 1개(150g)', en:'1 medium (150g)', zh:'中等1个(150g)'} },
+    serve:{ko:'중간 것 1개(150g)', en:'1 medium (150g)', zh:'中等1个(150g)'},
+    unit:{g:150, step:0.5, label:{ko:'개', en:'pcs', zh:'个'}} },
   { key:'potato', tag:'carb', serveG:200, per100:{kcal:66, p:1.9, c:15.0, f:0.1},
     label:{ko:'감자(삶은것)', en:'Boiled potato', zh:'水煮土豆'},
-    serve:{ko:'중간 것 2개(200g)', en:'2 medium (200g)', zh:'中等2个(200g)'} },
+    serve:{ko:'중간 것 2개(200g)', en:'2 medium (200g)', zh:'中等2个(200g)'},
+    unit:{g:100, step:0.5, label:{ko:'개', en:'pcs', zh:'个'}} },
   { key:'bread-whole', tag:'carb', serveG:70, per100:{kcal:260, p:10.0, c:46.0, f:4.0},
     label:{ko:'통밀식빵', en:'Whole wheat bread', zh:'全麦面包'},
-    serve:{ko:'2쪽(70g)', en:'2 slices (70g)', zh:'2片(70g)'} },
+    serve:{ko:'2쪽(70g)', en:'2 slices (70g)', zh:'2片(70g)'},
+    unit:{g:35, step:0.5, label:{ko:'쪽', en:'slice', zh:'片'}} },
   { key:'oatmeal', tag:'carb', serveG:40, per100:{kcal:380, p:13.0, c:66.0, f:7.0},
     label:{ko:'오트밀(건조)', en:'Oats (dry)', zh:'燕麦(干)'},
     serve:{ko:'40g', en:'40g', zh:'40g'} },
@@ -45,10 +60,12 @@ export const FOODS = [
     serve:{ko:'150g', en:'150g', zh:'150g'} },
   { key:'egg', tag:'protein', serveG:100, per100:{kcal:143, p:12.4, c:0.8, f:9.6},
     label:{ko:'달걀', en:'Egg', zh:'鸡蛋'},
-    serve:{ko:'2개(100g)', en:'2 eggs (100g)', zh:'2个(100g)'} },
+    serve:{ko:'2개(100g)', en:'2 eggs (100g)', zh:'2个(100g)'},
+    unit:{g:50, step:0.5, label:{ko:'개', en:'pcs', zh:'个'}} },
   { key:'tofu', tag:'protein', serveG:150, per100:{kcal:84, p:8.5, c:2.4, f:4.9},
     label:{ko:'두부', en:'Tofu', zh:'豆腐'},
-    serve:{ko:'반 모(150g)', en:'Half block (150g)', zh:'半块(150g)'} },
+    serve:{ko:'반 모(150g)', en:'Half block (150g)', zh:'半块(150g)'},
+    unit:{g:300, step:0.5, label:{ko:'모', en:'block', zh:'块'}} },
   { key:'salmon', tag:'protein', serveG:120, per100:{kcal:183, p:20.6, c:0, f:9.8},
     label:{ko:'연어(생것)', en:'Salmon (raw)', zh:'三文鱼(生)'},
     serve:{ko:'120g', en:'120g', zh:'120g'} },
@@ -66,13 +83,11 @@ export const FOODS = [
     serve:{ko:'120g', en:'120g', zh:'120g'} },
   { key:'tuna-can', tag:'protein', serveG:100, per100:{kcal:110, p:26.0, c:0, f:0.8},
     label:{ko:'참치캔(기름 뺀 것)', en:'Canned tuna (drained)', zh:'金枪鱼罐头(沥油)'},
-    serve:{ko:'1캔(100g)', en:'1 can (100g)', zh:'1罐(100g)'} },
+    serve:{ko:'1캔(100g)', en:'1 can (100g)', zh:'1罐(100g)'},
+    unit:{g:100, step:0.5, label:{ko:'캔', en:'can', zh:'罐'}} },
   { key:'greek-yogurt', tag:'protein', serveG:150, per100:{kcal:59, p:10.0, c:3.6, f:0.4},
     label:{ko:'그릭요거트(무가당)', en:'Greek yogurt (plain)', zh:'希腊酸奶(无糖)'},
     serve:{ko:'150g', en:'150g', zh:'150g'} },
-  { key:'whey', tag:'protein', serveG:30, per100:{kcal:400, p:80.0, c:8.0, f:5.0},
-    label:{ko:'유청 단백 파우더', en:'Whey protein powder', zh:'乳清蛋白粉'},
-    serve:{ko:'1스쿱(30g)', en:'1 scoop (30g)', zh:'1勺(30g)'} },
 
   // ── 채소·국 ─────────────────────────────────────────────────
   { key:'broccoli', tag:'veg', serveG:100, per100:{kcal:33, p:3.0, c:5.2, f:0.4},
@@ -103,36 +118,45 @@ export const FOODS = [
   // ── 지방 ────────────────────────────────────────────────────
   { key:'almond', tag:'fat', serveG:15, per100:{kcal:597, p:21.2, c:21.6, f:52.2},
     label:{ko:'아몬드', en:'Almonds', zh:'杏仁'},
-    serve:{ko:'약 12알(15g)', en:'about 12 (15g)', zh:'约12颗(15g)'} },
+    serve:{ko:'약 12알(15g)', en:'about 12 (15g)', zh:'约12颗(15g)'},
+    unit:{g:1.25, step:1, label:{ko:'알', en:'pcs', zh:'颗'}} },
   { key:'avocado', tag:'fat', serveG:70, per100:{kcal:187, p:2.0, c:8.5, f:17.3},
     label:{ko:'아보카도', en:'Avocado', zh:'牛油果'},
-    serve:{ko:'반 개(70g)', en:'Half (70g)', zh:'半个(70g)'} },
+    serve:{ko:'반 개(70g)', en:'Half (70g)', zh:'半个(70g)'},
+    unit:{g:140, step:0.5, label:{ko:'개', en:'pcs', zh:'个'}} },
   { key:'olive-oil', tag:'fat', serveG:10, per100:{kcal:884, p:0, c:0, f:100},
     label:{ko:'올리브유', en:'Olive oil', zh:'橄榄油'},
-    serve:{ko:'2작은술(10g)', en:'2 tsp (10g)', zh:'2小勺(10g)'} },
+    serve:{ko:'2작은술(10g)', en:'2 tsp (10g)', zh:'2小勺(10g)'},
+    unit:{g:5, step:0.5, label:{ko:'작은술', en:'tsp', zh:'小勺'}} },
   { key:'peanut-butter', tag:'fat', serveG:16, per100:{kcal:590, p:25.0, c:20.0, f:50.0},
     label:{ko:'땅콩버터', en:'Peanut butter', zh:'花生酱'},
-    serve:{ko:'1큰술(16g)', en:'1 tbsp (16g)', zh:'1大勺(16g)'} },
+    serve:{ko:'1큰술(16g)', en:'1 tbsp (16g)', zh:'1大勺(16g)'},
+    unit:{g:16, step:0.5, label:{ko:'큰술', en:'tbsp', zh:'大勺'}} },
 
   // ── 과일·유제품 (간식) ──────────────────────────────────────
   { key:'banana', tag:'fruit', serveG:120, per100:{kcal:84, p:1.2, c:22.0, f:0.2},
     label:{ko:'바나나', en:'Banana', zh:'香蕉'},
-    serve:{ko:'1개(120g)', en:'1 (120g)', zh:'1根(120g)'} },
+    serve:{ko:'1개(120g)', en:'1 (120g)', zh:'1根(120g)'},
+    unit:{g:120, step:0.5, label:{ko:'개', en:'pcs', zh:'根'}} },
   { key:'apple', tag:'fruit', serveG:200, per100:{kcal:53, p:0.3, c:14.0, f:0.1},
     label:{ko:'사과', en:'Apple', zh:'苹果'},
-    serve:{ko:'중간 것 1개(200g)', en:'1 medium (200g)', zh:'中等1个(200g)'} },
+    serve:{ko:'중간 것 1개(200g)', en:'1 medium (200g)', zh:'中等1个(200g)'},
+    unit:{g:200, step:0.5, label:{ko:'개', en:'pcs', zh:'个'}} },
   { key:'blueberry', tag:'fruit', serveG:100, per100:{kcal:57, p:0.7, c:14.5, f:0.3},
     label:{ko:'블루베리', en:'Blueberries', zh:'蓝莓'},
     serve:{ko:'100g', en:'100g', zh:'100g'} },
   { key:'tangerine', tag:'fruit', serveG:160, per100:{kcal:40, p:0.7, c:10.5, f:0.1},
     label:{ko:'귤', en:'Tangerine', zh:'橘子'},
-    serve:{ko:'2개(160g)', en:'2 (160g)', zh:'2个(160g)'} },
+    serve:{ko:'2개(160g)', en:'2 (160g)', zh:'2个(160g)'},
+    unit:{g:80, step:0.5, label:{ko:'개', en:'pcs', zh:'个'}} },
   { key:'milk-low', tag:'dairy', serveG:200, per100:{kcal:46, p:3.4, c:5.0, f:1.0},
     label:{ko:'저지방우유', en:'Low-fat milk', zh:'低脂牛奶'},
-    serve:{ko:'200mL', en:'200mL', zh:'200毫升'} },
+    serve:{ko:'200mL', en:'200mL', zh:'200毫升'},
+    unitSuffix:{ko:'mL', en:'mL', zh:'毫升'} },
   { key:'soymilk', tag:'dairy', serveG:200, per100:{kcal:45, p:3.5, c:2.0, f:2.2},
     label:{ko:'무가당 두유', en:'Unsweetened soy milk', zh:'无糖豆浆'},
-    serve:{ko:'200mL', en:'200mL', zh:'200毫升'} },
+    serve:{ko:'200mL', en:'200mL', zh:'200毫升'},
+    unitSuffix:{ko:'mL', en:'mL', zh:'毫升'} },
 ];
 
 /** key → 항목. 조합기가 매번 find 하지 않게. */

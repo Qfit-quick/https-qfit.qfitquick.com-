@@ -387,9 +387,11 @@ const ITEM_MACRO = (food, mult, key) =>
   Math.round((food.per100[key] * food.serveG * mult) / 100 * 10) / 10;
 
 // 끼니별로 어울리는 후보만 쓴다. 아침에 제육볶음을 권하지 않기 위해서다.
+// 단백 파우더(유청)는 뺐다(2026-09-15 요청) — 보충제보다 자연식품 위주로
+// 권하는 것이 이 표의 방향과 맞다.
 const MEAL_POOLS = {
   breakfast: { carb:['oatmeal','bread-whole','sweet-potato','rice-white'],
-               protein:['egg','greek-yogurt','tofu','whey'],
+               protein:['egg','greek-yogurt','tofu'],
                veg:['cherry-tomato','cabbage','broccoli'],
                fat:['almond','peanut-butter','avocado'] },
   lunch:     { carb:['rice-white','rice-brown','rice-multi','potato'],
@@ -400,7 +402,7 @@ const MEAL_POOLS = {
                protein:['salmon','whitefish','tofu','shrimp','chicken-tender'],
                veg:['spinach','seaweed-soup','cabbage','kimchi'],
                fat:['olive-oil','almond','avocado'] },
-  snack:     { protein:['greek-yogurt','whey','milk-low','soymilk'],
+  snack:     { protein:['greek-yogurt','milk-low','soymilk'],
                fruit:['banana','apple','blueberry','tangerine'],
                fat:['almond','peanut-butter'] },
 };

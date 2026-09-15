@@ -378,9 +378,9 @@ export const STATIC_UI = {
  bodyMissing: {ko:'%s 을(를) 넣어야 계산할 수 있어요', en:'Need %s to calculate', zh:'需要填写%s才能计算'},
  bodyNotSet: {ko:'아직 넣지 않았습니다', en:'Not set yet', zh:'还没填写'},
  bodySummary: {ko:'%scm · %skg · 하루 %skcal · %s', en:'%scm · %skg · %skcal/day · %s', zh:'%s厘米 · %s公斤 · 每日%s千卡 · %s'},
- bodyWarnAge: {ko:'나이가 14~100 밖입니다 — 잘못 넣은 것이 아닌지 확인해주십시오.', en:'Age is outside 14-100 — please double-check.', zh:'年龄不在14~100之间，请再确认。'},
- bodyWarnHeight: {ko:'키가 120~220cm 밖입니다 — 단위가 cm 인지 확인해주십시오.', en:'Height is outside 120-220cm — check the unit.', zh:'身高不在120~220厘米之间，请确认单位。'},
- bodyWarnWeight: {ko:'체중이 30~200kg 밖입니다 — 단위가 kg 인지 확인해주십시오.', en:'Weight is outside 30-200kg — check the unit.', zh:'体重不在30~200公斤之间，请确认单位。'},
+ bodyWarnAge: {ko:'나이가 5~100 밖입니다 — 잘못 넣은 것이 아닌지 확인해주십시오.', en:'Age is outside 5-100 — please double-check.', zh:'年龄不在5~100之间，请再确认。'},
+ bodyWarnHeight: {ko:'키가 90~220cm 밖입니다 — 단위가 cm 인지 확인해주십시오.', en:'Height is outside 90-220cm — check the unit.', zh:'身高不在90~220厘米之间，请确认单位。'},
+ bodyWarnWeight: {ko:'체중이 12~200kg 밖입니다 — 단위가 kg 인지 확인해주십시오.', en:'Weight is outside 12-200kg — check the unit.', zh:'体重不在12~200公斤之间，请确认单位。'},
  unitYear: {ko:'세', en:'yrs', zh:'岁'},
 
  // ── 계획 (운동 · 식단) ───────────────────────────────────────
@@ -418,6 +418,12 @@ export const STATIC_UI = {
  planMealMacro: {ko:'단백질 %sg · 탄수화물 %sg · 지방 %sg', en:'Protein %sg · carbs %sg · fat %sg', zh:'蛋白质%s克 · 碳水%s克 · 脂肪%s克'},
  planSubToggle: {ko:'대체재 보기', en:'Show substitutes', zh:'查看替代食材'},
  planSubHint: {ko:'같은 칼로리로 바꾸면', en:'Same calories if you swap to', zh:'换成同热量的'},
+ // 그램을 낱개로 보여줄 때 쓰는 틀(2026-09-15) — "약 16알" 처럼 숫자와
+ // 단위 글자(food.unit.label)를 붙인다. 영어는 복수형을 정확히 맞추지
+ // 않는다(almond→almonds, potato→potatoes 같은 불규칙 변화표를 음식마다
+ // 또 만들어야 한다) — 대신 'pcs' 처럼 단수·복수 상관없이 그대로 쓰는
+ // 낱말을 골라 문법 오류 없이 넘어간다.
+ dietUnitAbout: {ko:'약 %s%s', en:'about %s %s', zh:'约%s%s'},
  planWater: {ko:'물은 하루 %smL 정도 — 200mL 컵으로 %s잔입니다.', en:'Aim for about %smL of water a day — that is %s cups of 200mL.', zh:'每天喝水约%s毫升 — 相当于%s杯（每杯200毫升）。'},
  planEatOut: {ko:'외식할 때', en:'Eating out', zh:'在外吃饭'},
  planEatOutSub: {ko:'한 끼는 거의 늘 밖에서 먹습니다. 먹지 말라고 하는 대신 얼마인지와 어떻게 줄이는지를 적었습니다.', en:'One meal a day is usually out. Instead of telling you to skip it, here is what it costs and how to trim it.', zh:'总有一餐在外面吃。这里不劝你别吃，而是写清热量和怎么减。'},
