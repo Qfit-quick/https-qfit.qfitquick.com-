@@ -81,7 +81,16 @@ button {
   z-index: 1;
   width: 100%;
   max-width: 480px;
-  height: 100dvh;
+  /* 100dvh 가 아니라 100% 다. body 가 이미 position:fixed; inset:0 으로
+     실제 화면에 정확히 못박혀 있는데(위 주석), #app 이 따로 100dvh 로
+     자기 키를 재면 일부 기기(특히 PWA 홈 화면 설치 상태)에서 dvh 계산이
+     실제 화면보다 살짝 커져 #app 이 body 박스 밖으로 넘친다. body 는
+     overflow:hidden 에 스크롤도 못 하니 그 초과분(탭바가 여기 안에서
+     bottom:0 으로 앉아 있다)이 화면 밖으로 통째로 잘려 나가 보이지도,
+     스크롤로 닿지도 않게 된다("홈 화면 아래로 스크롤이 안 된다" 피드백).
+     100% 로 부모(body)의 이미 정확한 박스를 그대로 물려받으면 이 계산
+     오차 자체가 생기지 않는다. */
+  height: 100%;
   display: flex;
   flex-direction: column;
 }

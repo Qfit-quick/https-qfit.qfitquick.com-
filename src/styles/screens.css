@@ -6,10 +6,14 @@
  */
 
 /* ── 홈 ──────────────────────────────────────────────── */
+/* var(--tap) 을 얹지 않는다 — #video-lightbox 처럼 그 자리를 덮는
+   떠 있는(absolute) 버튼이 없다. 설정·소리 아이콘은 그냥 이 화면의
+   첫 번째 자식(.home-top)이라 다른 화면들과 같은 기본 여백이면 된다.
+   전에는 44px 을 더 얹어서 화면 전체가 아래로 가라앉아 보였다. */
 #start-screen {
   justify-content: flex-start;
   gap: var(--s-5);
-  padding-top: calc(var(--s-6) + var(--tap) + env(safe-area-inset-top));
+  padding-top: calc(var(--s-6) + env(safe-area-inset-top));
 }
 
 /* 로고는 설계 규격 그대로 — --t-logo(390 폭에서 66px), Barlow Condensed 700,
