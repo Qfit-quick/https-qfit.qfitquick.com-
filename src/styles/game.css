@@ -170,7 +170,7 @@
 }
 .mission-timebar-fill {
   height: 100%;
-  background: var(--accent);
+  background: var(--accent-text);
   transition: width 1s linear;
 }
 #game-screen.boss .mission-timebar-fill { background: var(--hot); }
@@ -363,7 +363,7 @@
 }
 .rest-touch-ring circle { fill: none; stroke-width: 5; }
 .rest-touch-ring .track { stroke: var(--line); }
-.rest-touch-ring .prog { stroke: var(--volt); stroke-linecap: round; }
+.rest-touch-ring .prog { stroke: var(--accent-text); stroke-linecap: round; }
 .rest-touch-zone.verified .rest-touch-ring .prog { stroke: var(--mint-text); }
 .rest-touch-icon {
   position: relative;

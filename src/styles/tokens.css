@@ -90,8 +90,11 @@
   /* 노랑은 밝은 바탕에서 글자로 못 쓴다(#ffd60a on #eef2f6 = 1.25:1).
    * 그래서 '칠하는 색'과 '글자로 쓰는 색'을 나눈다. 라이트에서 노랑 글자를
    * 쓰고 싶으면 --accent-text 를, 노랑으로 칠하고 싶으면 --accent 에
-   * --on-accent 를 얹는다. */
-  --accent: #ffd60a;
+   * --on-accent 를 얹는다.
+   * 칠하는 색(--accent)은 새 브랜드 값(CMYK 7/28/76/0 = #EDB83D,
+   * 2026-09-15 요청)으로 바꿨다. 글자색(--accent-text)은 그대로 둔다 —
+   * 새 값도 흰 바탕 대비 1.8:1 이라 글자 기준(4.5:1)을 못 넘는다. */
+  --accent: #edb83d;
   --on-accent: #16130a;
   --accent-text: #8a6200;
 
@@ -120,9 +123,9 @@
     --line: #26302f;
     --text: #fafafa;
     --text-dim: #8f959d;
-    --accent: #ffd60a;
+    --accent: #edb83d;
     --on-accent: #16130a;
-    --accent-text: #ffd60a;
+    --accent-text: #edb83d;
     --mint: #99ffc2;
     --on-mint: #04211d;
     --mint-text: #99ffc2;
@@ -141,9 +144,9 @@
   --line: #26302f;
   --text: #fafafa;
   --text-dim: #8f959d;
-  --accent: #ffd60a;
+  --accent: #edb83d;
   --on-accent: #16130a;
-  --accent-text: #ffd60a;
+  --accent-text: #edb83d;
   --mint: #99ffc2;
   --on-mint: #04211d;
   --mint-text: #99ffc2;

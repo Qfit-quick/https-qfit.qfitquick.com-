@@ -307,7 +307,7 @@ body.gated { overflow: hidden; }
 .plan-day-card,
 .plan-diet-card {
   border: 2px solid transparent;
-  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg in oklch, var(--mint-text), var(--accent));
+  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg in oklch, var(--mint-text), var(--accent-text));
   background-origin: border-box;
   background-clip: padding-box, border-box;
 }
@@ -392,7 +392,7 @@ body.gated { overflow: hidden; }
 }
 .plan-note.warn {
   padding: var(--s-3);
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--accent-text);
   border-radius: var(--r-sm);
   background: var(--surface-2);
 }
@@ -460,7 +460,7 @@ body.gated { overflow: hidden; }
   font-weight: 700;
   letter-spacing: -0.03em;
 }
-.plan-meal.done { border-color: var(--accent); }
+.plan-meal.done { border-color: var(--accent-text); }
 .plan-meal-rows { display: flex; flex-direction: column; gap: 1px; }
 .pmr {
   display: grid;
@@ -590,7 +590,7 @@ body.gated { overflow: hidden; }
 /* 반만 채운 것(세 끼 중 일부)은 색이 아니라 채움으로 구별한다 —
    색을 하나 더 만들면 범례를 봐야 읽히는 화면이 된다. */
 .tc-mark.partial { border-color: var(--mint-text); background: var(--surface-2); }
-.tc-mark.d.partial { border-color: var(--accent); }
+.tc-mark.d.partial { border-color: var(--accent-text); }
 .tc-open { margin-top: var(--s-1); height: var(--tap); }
 
 /* 기록지 맨 위 한 줄. 이 화면이 답하는 질문의 답이 여기다. */
@@ -623,7 +623,7 @@ body.gated { overflow: hidden; }
 .log-chip.w.on { border-color: var(--mint); background: var(--mint); color: var(--on-mint); }
 .log-chip.w.partial { border-color: var(--mint-text); color: var(--mint-text); }
 .log-chip.d.on { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
-.log-chip.d.partial { border-color: var(--accent); color: var(--accent-text); }
+.log-chip.d.partial { border-color: var(--accent-text); color: var(--accent-text); }
 .log-partial { font-size: var(--t-sm); line-height: 1.6; word-break: keep-all; }
 
 /* 체크칸. 운동 하나와 끼니 넷. */
@@ -641,7 +641,7 @@ body.gated { overflow: hidden; }
 }
 .log-row.on { border-color: var(--mint-text); }
 /* 끼니 네 칸은 식단이다. 운동 한 칸만 민트로 남는다. */
-.log-row[data-check='meal'].on { border-color: var(--accent); }
+.log-row[data-check='meal'].on { border-color: var(--accent-text); }
 .log-box {
   display: flex;
   align-items: center;
@@ -691,7 +691,7 @@ body.gated { overflow: hidden; }
 .log-water-fill { fill: var(--mint-text); transition: y var(--dur-slow) var(--ease-out), height var(--dur-slow) var(--ease-out); }
 /* 권장 2L 지점을 병에 눈금 하나로 표시한다 — 숫자만으로는 '어디까지 채워야
    적당한지' 가 안 와닿는다. */
-.log-water-target-line { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 2 2; }
+.log-water-target-line { stroke: var(--accent-text); stroke-width: 2; stroke-dasharray: 2 2; }
 .log-water-btns { display: flex; flex-direction: column; gap: var(--s-2); flex: 1 1 auto; min-width: 0; }
 .log-water-btn { min-height: var(--tap); }
 .log-water-n {
@@ -741,12 +741,12 @@ body.gated { overflow: hidden; }
 }
 .log-half { background: var(--surface-2); border: 1px solid var(--line); }
 .log-half.w.on { background: var(--mint-text); border-color: var(--mint-text); }
-.log-half.d.on { background: var(--accent); border-color: var(--accent); }
+.log-half.d.on { background: var(--accent-text); border-color: var(--accent-text); }
 /* 세 끼 중 일부. 같은 색을 옅게 쓰는 대신 위쪽 절반만 채운다 —
    옅은 색은 다크 모드에서 '꺼짐' 과 구별이 안 됐다. */
 .log-half.d.partial {
-  background: linear-gradient(to top, var(--surface-2) 50%, var(--accent) 50%);
-  border-color: var(--accent);
+  background: linear-gradient(to top, var(--surface-2) 50%, var(--accent-text) 50%);
+  border-color: var(--accent-text);
 }
 .log-day-n { font-size: 9px; line-height: 1; color: var(--text-dim); }
 .log-day.today .log-day-cells { outline: 2px solid var(--text); outline-offset: 1px; }
@@ -756,8 +756,8 @@ body.gated { overflow: hidden; }
 .lg-item { display: flex; align-items: center; gap: 5px; font-size: var(--t-xs); color: var(--text-dim); }
 .lg-sw { width: 10px; height: 10px; border-radius: 2px; flex: none; }
 .lg-sw.w { background: var(--mint-text); }
-.lg-sw.d { background: var(--accent); }
-.lg-sw.p { background: linear-gradient(to top, var(--surface-2) 50%, var(--accent) 50%); border: 1px solid var(--accent); }
+.lg-sw.d { background: var(--accent-text); }
+.lg-sw.p { background: linear-gradient(to top, var(--surface-2) 50%, var(--accent-text) 50%); border: 1px solid var(--accent-text); }
 
 /* 이번 달 캘린더. 날짜 아래에 점 두 개 — 왼쪽 운동, 오른쪽 식단.
    screens.css 의 .cal-day 는 가운데 한 줄이므로 여기서 두 단으로 바꾼다. */
@@ -778,9 +778,9 @@ body.gated { overflow: hidden; }
   background: var(--line);
 }
 .log-cal-marks .lc-w.on { background: var(--mint-text); }
-.log-cal-marks .lc-d.on { background: var(--accent); }
+.log-cal-marks .lc-d.on { background: var(--accent-text); }
 .log-cal-marks .lc-d.partial {
-  background: linear-gradient(to top, var(--line) 50%, var(--accent) 50%);
+  background: linear-gradient(to top, var(--line) 50%, var(--accent-text) 50%);
 }
 .cal-day.log-cal[data-status='both'] { background: var(--surface); border: 1px solid var(--mint-text); }
 /* 오늘 표시는 '둘 다' 의 민트 테두리보다 뒤에 와야 한다. 앞에 두었더니

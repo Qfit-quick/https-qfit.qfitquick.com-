@@ -164,7 +164,7 @@
 }
 /* 다섯 가지 상태. 설계의 cell() 과 같은 순서다. */
 .week-day.done .wd-dot { background: var(--mint); color: var(--on-mint); }
-.week-day.today .wd-dot { border: 2px solid var(--accent); color: var(--text); }
+.week-day.today .wd-dot { border: 2px solid var(--accent-text); color: var(--text); }
 .week-day.miss .wd-dot { background: var(--surface-2); color: var(--text-dim); }
 .week-day.future .wd-dot { opacity: 0.55; }
 
@@ -248,14 +248,14 @@
 .cal-day.miss { background: var(--surface-2); }
 /* 앞으로 올 날은 미완이 아니다 — 아직 오지 않았을 뿐이라 칠하지 않는다 */
 .cal-day.future { opacity: 0.55; }
-.cal-day.today { border: 2px solid var(--accent); color: var(--text); font-weight: 700; }
+.cal-day.today { border: 2px solid var(--accent-text); color: var(--text); font-weight: 700; }
 
 .cal-legend { display: flex; gap: var(--s-3); flex-wrap: wrap; }
 .cal-legend > span { display: flex; align-items: center; gap: 5px; }
 .lg { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
 .lg-done { background: var(--mint); }
 .lg-miss { background: var(--surface-2); border: 1px solid var(--line); }
-.lg-today { border: 2px solid var(--accent); }
+.lg-today { border: 2px solid var(--accent-text); }
 
 /* ── 진행 막대 ───────────────────────────────────────── */
 .badge-progress { display: flex; flex-direction: column; gap: var(--s-2); }
@@ -650,7 +650,7 @@
 }
 .ex-card:active { transform: scale(0.98); }
 /* 고른 카드는 테두리 2px + 채운 체크. 색 하나로만 구분하지 않는다. */
-.ex-card.checked { border: 2px solid var(--accent); }
+.ex-card.checked { border: 2px solid var(--accent-text); }
 /* flex:none 이 없으면 사진이 눌려서 카드가 이름·설명 높이까지 줄어든다.
    세로 flex 안에서 height 만 준 항목은 기본값(flex-shrink:1)이라 줄어든다. */
 .ex-card-photo {
@@ -868,7 +868,7 @@
   background: var(--line);
   transition: width var(--dur) var(--ease-out), background var(--dur) var(--ease-out);
 }
-.quiz-progress .dot.active { width: 20px; background: var(--accent); }
+.quiz-progress .dot.active { width: 20px; background: var(--accent-text); }
 
 .quiz-body { display: flex; flex-direction: column; gap: var(--s-2); }
 .quiz-step-label { color: var(--accent-text); }
@@ -880,7 +880,7 @@
 .quiz-opt-t { font-size: var(--t-lg); }
 /* 고른 행은 테두리 2px + 라디오가 찬다. 테두리가 굵어지는 만큼
    안쪽 여백을 1px 줄여 글자가 옆으로 밀리지 않게 한다. */
-.quiz-btn.on { border: 2px solid var(--accent); padding: calc(var(--s-4) - 1px); }
+.quiz-btn.on { border: 2px solid var(--accent-text); padding: calc(var(--s-4) - 1px); }
 .radio {
   width: 24px;
   height: 24px;
@@ -889,7 +889,7 @@
   border: 1.5px solid var(--line);
   transition: border var(--dur-fast) var(--ease-pop);
 }
-.quiz-btn.on .radio { border: 7px solid var(--accent); }
+.quiz-btn.on .radio { border: 7px solid var(--accent-text); }
 
 /* ── 이번 주 운동 부위 (FR-12) ─────────────────────────
    최근 7일 동안 어느 부위를 얼마나 했나. 한 동작이 두 묶음에 들어 있을 수
@@ -933,7 +933,7 @@
   gap: var(--s-2);
   padding: var(--s-4);
   border: 2px solid transparent;
-  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg in oklch, var(--mint-text), var(--accent));
+  background-image: linear-gradient(var(--surface), var(--surface)), linear-gradient(135deg in oklch, var(--mint-text), var(--accent-text));
   background-origin: border-box;
   background-clip: padding-box, border-box;
 }
