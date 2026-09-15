@@ -395,30 +395,31 @@ function paintDiet(nut, meals) {
   pane.innerHTML = html;
 }
 
-/**
- * 그램을 사람이 실제로 세는 낱개로 바꾼다 — "아몬드 20g" 은 저울이 있어야
- * 맞추지만 "약 16알" 은 바로 셀 수 있다(2026-09-15 요청). food.unit 이
- * 없는 음식(고기·요거트처럼 순수 무게로만 재는 것)은 null 을 돌려주고,
- * 부르는 쪽이 그램만 보여준다 — 세지 않는 음식에 개수를 지어내지 않는다.
- */
-function unitCountText(food, g) {
-  if (!food.unit) return null;
-  const step = food.unit.step || 0.5;
-  const n = Math.max(step, Math.round(g / food.unit.g / step) * step);
-  return t(S.dietUnitAbout).replace('%s', String(n)).replace('%s', t(food.unit.label));
-}
-
 /** 단위 글자. 그램이 기본이고, mL 로 재는 음식(우유·두유)만 따로 셈한다. */
 function gramUnit(food) {
   return food.unitSuffix ? t(food.unitSuffix) : 'g';
 }
 
-/** 그램수를 사람이 읽을 말로. 낱개로 셀 수 있으면 개수를 앞에 적고
- *  그램은 괄호로 남긴다. */
+/**
+ * 그램수를 사람이 읽을 말로. food.unit 이 있으면 실제로 세는 낱개로
+ * 바꿔 앞에 적는다 — "아몬드 20g" 은 저울이 있어야 맞추지만 "약 16알
+ * (20g)" 은 바로 셀 수 있다(2026-09-15 요청). 없는 음식(고기·요거트처럼
+ * 순수 무게로만 재는 것)은 그램만 보여준다 — 세지 않는 음식에 개수를
+ * 지어내지 않는다.
+ *
+ * 괄호 앞 띄어쓰기까지 dietUnitAbout 사전에 맡긴다 — 이 파일의 다른
+ * serve 문구도 영어만 "1 medium (150g)" 처럼 띄고 한국어·중국어는
+ * 붙여 쓰므로, 여기서 언어를 가리지 않고 직접 조립하면 그 규칙이 깨진다.
+ */
 function amountText(food, g) {
-  const unit = unitCountText(food, g);
-  const suffix = gramUnit(food);
-  return unit ? `${unit}(${g}${suffix})` : `${g}${suffix}`;
+  const gramsText = `${g}${gramUnit(food)}`;
+  if (!food.unit) return gramsText;
+  const step = food.unit.step || 0.5;
+  const n = Math.max(step, Math.round(g / food.unit.g / step) * step);
+  return t(S.dietUnitAbout)
+    .replace('%s', String(n))
+    .replace('%s', t(food.unit.label))
+    .replace('%s', gramsText);
 }
 
 /**

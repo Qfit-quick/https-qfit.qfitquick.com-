@@ -418,12 +418,15 @@ export const STATIC_UI = {
  planMealMacro: {ko:'단백질 %sg · 탄수화물 %sg · 지방 %sg', en:'Protein %sg · carbs %sg · fat %sg', zh:'蛋白质%s克 · 碳水%s克 · 脂肪%s克'},
  planSubToggle: {ko:'대체재 보기', en:'Show substitutes', zh:'查看替代食材'},
  planSubHint: {ko:'같은 칼로리로 바꾸면', en:'Same calories if you swap to', zh:'换成同热量的'},
- // 그램을 낱개로 보여줄 때 쓰는 틀(2026-09-15) — "약 16알" 처럼 숫자와
- // 단위 글자(food.unit.label)를 붙인다. 영어는 복수형을 정확히 맞추지
- // 않는다(almond→almonds, potato→potatoes 같은 불규칙 변화표를 음식마다
- // 또 만들어야 한다) — 대신 'pcs' 처럼 단수·복수 상관없이 그대로 쓰는
- // 낱말을 골라 문법 오류 없이 넘어간다.
- dietUnitAbout: {ko:'약 %s%s', en:'about %s %s', zh:'约%s%s'},
+ // 그램을 낱개로 보여줄 때 쓰는 틀(2026-09-15) — "약 16알(20g)" 처럼
+ // 숫자·단위 글자(food.unit.label)·그램을 한 문장으로 묶는다. 괄호 앞
+ // 띄어쓰기가 언어마다 다르다 — 이 파일의 다른 serve 문구들도 영어만
+ // "1 medium (150g)" 처럼 띄고 한국어·중국어는 "약 12알(15g)"/"约12颗(15g)"
+ // 처럼 붙여 쓴다. 영어는 복수형을 정확히 맞추지 않는다(almond→almonds,
+ // potato→potatoes 같은 불규칙 변화표를 음식마다 또 만들어야 한다) —
+ // 대신 'pcs' 처럼 단수·복수 상관없이 그대로 쓰는 낱말을 골라 문법 오류
+ // 없이 넘어간다.
+ dietUnitAbout: {ko:'약 %s%s(%s)', en:'about %s %s (%s)', zh:'约%s%s(%s)'},
  planWater: {ko:'물은 하루 %smL 정도 — 200mL 컵으로 %s잔입니다.', en:'Aim for about %smL of water a day — that is %s cups of 200mL.', zh:'每天喝水约%s毫升 — 相当于%s杯（每杯200毫升）。'},
  planEatOut: {ko:'외식할 때', en:'Eating out', zh:'在外吃饭'},
  planEatOutSub: {ko:'한 끼는 거의 늘 밖에서 먹습니다. 먹지 말라고 하는 대신 얼마인지와 어떻게 줄이는지를 적었습니다.', en:'One meal a day is usually out. Instead of telling you to skip it, here is what it costs and how to trim it.', zh:'总有一餐在外面吃。这里不劝你别吃，而是写清热量和怎么减。'},
