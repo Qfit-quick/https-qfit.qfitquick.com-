@@ -7,10 +7,13 @@
 // 되고, 그러면 두 번째부터는 아무 답이나 눌러 치우게 된다. 그렇게 모인
 // 답으로 강도를 정하면 없는 편이 낫다.
 //
-// 명언은 다르다(2026-09-15) — 설문과 달리 매번 앱을 열 때마다 그날 뽑힌
-// 한 줄을 다시 보여준다(사용자 요청). quoteFor() 가 날짜+결을 씨앗으로
-// 결정적으로 뽑으므로, 같은 날 몇 번을 다시 봐도 같은 문장이 나온다 —
-// "오늘의 한 줄"이라는 말이 하루 안에서는 거짓이 되지 않는다.
+// 명언은 다르다 — 설문과 달리 매번 앱을 열 때마다 다시 보여준다
+// (2026-09-15 요청). 처음에는 날짜를 씨앗으로 결정적으로 뽑아서 같은 날은
+// 늘 같은 문장이 나오게 했는데, "들어갈 때마다 다른 명언"을 보고 싶다는
+// 요청(2026-09-15)으로 뒤집었다 — randomQuote() 는 부를 때마다 무작위로
+// 뽑고, 그 결과를 그날 줄에 다시 적어 둔다. 그래서 같은 앱 열기 안에서는
+// (관문과 계획 화면처럼) 같은 문장을 보지만, 다음에 앱을 다시 열면 새로
+// 뽑는다.
 //
 // ⚠ 이 덮개는 앱 전체를 막는다. 그래서 무슨 일이 나도 반드시 걷힌다 —
 // 모든 진입점이 try/catch 로 감싸여 있고, 실패하면 dismiss() 로 끝난다.
@@ -90,25 +93,20 @@ function optionButton(opt, onPick, urlFn) {
 }
 
 /**
- * 오늘의 명언을 뽑는다.
+ * 결(tone) 안에서 명언 하나를 무작위로 뽑는다.
  *
- * 결(tone) 안에서 **날짜를 씨앗으로** 뽑는다. 순수 난수로 뽑으면 같은 날
- * 두 번 열었을 때(설문은 안 다시 하지만 명언은 다시 그린다) 다른 문장이
- * 나와서 '오늘의 한 줄' 이라는 말이 거짓이 된다.
+ * 앱을 열 때마다 다른 문장을 보고 싶다는 요청(2026-09-15)이라 순수 난수를
+ * 쓴다. 부를 때마다 다른 값이 나오므로, 이 앱 열기 안에서 명언을 두 번
+ * 다시 그려야 하는 자리(관문 재진입, 계획 화면)는 이 함수를 다시 부르지
+ * 않고 저장된 quoteId 를 읽어야 한다 — todaysQuote() 가 그 문이다.
  */
-function quoteFor(tone, dateStr) {
+function randomQuote(tone) {
   const pool = QUOTES_BY_TONE[tone] || QUOTES;
-  let h = 2166136261;
-  const seed = dateStr + '|' + tone;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return pool[(h >>> 0) % pool.length];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 /** 이미 뽑힌 명언 객체를 화면에 그린다(뽑는 것과 그리는 것을 나눠서,
- *  오늘 이미 답한 날 재진입 때는 새로 뽑지 않고 저장된 것을 그대로 그린다). */
+ *  이미 저장된 명언을 다시 그릴 때는 새로 뽑지 않는다). */
 function renderQuote(q) {
   const text = el('gate-quote-text');
   const author = el('gate-quote-author');
@@ -117,8 +115,8 @@ function renderQuote(q) {
   return q;
 }
 
-function paintQuote(tone, dateStr) {
-  return renderQuote(quoteFor(tone, dateStr));
+function paintQuote(tone) {
+  return renderQuote(randomQuote(tone));
 }
 
 function paintAdvice() {
@@ -159,8 +157,11 @@ export function initGate({ translate, STATIC_UI, onEnter } = {}) {
   const today = dayKey();
 
   // 오늘 이미 답했다면 설문 두 문항은 건너뛰고 명언 단계로 바로 간다.
-  // 설문은 하루 한 번이지만, 명언은 앱을 열 때마다 다시 보여 달라는
-  // 요청(2026-09-15)이라 관문 자체는 그대로 세운다 — 답만 다시 묻지 않는다.
+  // 설문은 하루 한 번이지만, 명언은 앱을 열 때마다 **새로** 뽑아 달라는
+  // 요청(2026-09-15)이라 관문 자체는 그대로 세우고, 명언도 매번 다시
+  // 뽑는다 — 답만 다시 묻지 않는다. 새로 뽑은 명언은 그날 줄에 다시
+  // 적어 둔다. 그래야 이 앱 열기 안에서 계획 화면이 todaysQuote() 로
+  // 읽어 가는 것도 방금 여기서 뽑은 것과 같아진다.
   if (hasCheckin(today)) {
     try {
       gate.hidden = false;
@@ -169,8 +170,9 @@ export function initGate({ translate, STATIC_UI, onEnter } = {}) {
       const day = loadDay(today);
       answer.mood = day.mood;
       answer.drive = day.drive;
-      const q = todaysQuote(today);
-      if (q) renderQuote(q);
+      const q = randomQuote(toneFor(day.mood, day.drive));
+      renderQuote(q);
+      saveCheckin(today, { mood: day.mood, drive: day.drive, quoteId: q.id });
       paintAdvice();
 
       const card = el('gate-quote-card');
@@ -206,7 +208,7 @@ export function initGate({ translate, STATIC_UI, onEnter } = {}) {
       DRIVE_OPTIONS.forEach((opt) => driveBox.appendChild(optionButton(opt, (o) => {
         answer.drive = o.id;
         const tone = toneFor(answer.mood, answer.drive);
-        const q = paintQuote(tone, today);
+        const q = paintQuote(tone);
         paintAdvice();
         // 답과 뽑힌 명언을 그날 줄에 적는다. 기록지에서 "그날 기분이 어땠나"
         // 를 되돌아볼 수 있어야 설문이 버려지는 질문이 아니게 된다.
@@ -231,7 +233,11 @@ export function initGate({ translate, STATIC_UI, onEnter } = {}) {
   }
 }
 
-/** 오늘 뽑힌 명언. 계획 화면과 기록지가 같은 문장을 다시 보여 준다. */
+/**
+ * 이 앱 열기에서 방금 뽑힌 명언. 관문이 매번 새로 뽑아 그날 줄에 적어
+ * 두므로, 계획 화면이 이 함수로 읽으면 관문과 같은 문장을 본다 — 단,
+ * 다음에 앱을 다시 열면 관문이 또 새로 뽑으므로 그때는 다른 문장이 된다.
+ */
 export function todaysQuote(dateStr = dayKey()) {
   const day = loadDay(dateStr);
   if (day.quoteId) {
@@ -239,7 +245,7 @@ export function todaysQuote(dateStr = dayKey()) {
     if (found) return found;
   }
   if (!day.mood || !day.drive) return null;
-  return quoteFor(toneFor(day.mood, day.drive), dateStr);
+  return randomQuote(toneFor(day.mood, day.drive));
 }
 
 /** 오늘 설문이 정한 강도. 없으면 'normal'. */
