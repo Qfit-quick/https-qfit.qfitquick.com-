@@ -96,8 +96,11 @@
   --accent-text: #8a6200;
 
   /* 민트: 브랜드 두 번째 색. 노랑과 같은 규칙으로 칠하는 색과 글자색을 나눈다.
-     밝은 민트는 흰 바탕에서 글자로 못 쓴다 — 노랑과 같은 이유다. */
-  --mint: #12c4b0;
+     밝은 민트는 흰 바탕에서 글자로 못 쓴다 — 노랑과 같은 이유다.
+     칠하는 색(--mint)은 새 브랜드 값(CMYK 40/0/24/0 = #99FFC2, 2026-09-15
+     요청)으로 바꿨다. 글자색(--mint-text)은 그대로 둔다 — 이 밝기로는
+     흰 바탕에서 글자 대비(scripts/contrast.mjs, 4.5:1)를 못 넘는다. */
+  --mint: #99ffc2;
   --on-mint: #052622;
   --mint-text: #0a7d72;
 
@@ -120,9 +123,9 @@
     --accent: #ffd60a;
     --on-accent: #16130a;
     --accent-text: #ffd60a;
-    --mint: #2ed3b7;
+    --mint: #99ffc2;
     --on-mint: #04211d;
-    --mint-text: #2ed3b7;
+    --mint-text: #99ffc2;
     --hot: #ff5a2b;
     --on-hot: #1a0a03;
     --danger: #ff7a6b;
@@ -141,9 +144,9 @@
   --accent: #ffd60a;
   --on-accent: #16130a;
   --accent-text: #ffd60a;
-  --mint: #2ed3b7;
+  --mint: #99ffc2;
   --on-mint: #04211d;
-  --mint-text: #2ed3b7;
+  --mint-text: #99ffc2;
   --hot: #ff5a2b;
   --on-hot: #1a0a03;
   --danger: #ff7a6b;
