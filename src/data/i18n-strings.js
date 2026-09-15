@@ -472,6 +472,10 @@ export const STATIC_UI = {
  logNoPlan: {ko:'신체정보를 넣으면 여기에 오늘 식단이 나옵니다', en:'Add your body info and the menu appears here', zh:'填写身体信息后这里会显示今日菜单'},
  logDietSuggested: {ko:'추천', en:'Suggested', zh:'推荐'},
  logExtra: {ko:'물 · 체중', en:'Water & weight', zh:'饮水与体重'},
+ // '물·체중'만 위의 운동·식단 체크와 달리 아무 설명 없이 병 그림과 입력칸부터
+ // 나왔다 — 눌러도 위 '오늘 상태'는 안 바뀌니 뭐 하는 칸인지 몰라 헤맨다는
+ // 피드백(2026-09-15). 식단 칸의 logDietRule 처럼 kick 바로 아래 한 줄을 둔다.
+ logExtraNote: {ko:'위 체크 표시에는 들어가지 않습니다 — 물은 그날 마신 양을, 체중은 변화 추이를 남겨 두는 자리입니다.', en:"These don't count toward the check-off above — water logs how much you drank today, weight tracks the trend over time.", zh:'不计入上面的打勾状态 — 饮水记录当天喝了多少，体重记录变化趋势。'},
  logWater: {ko:'물', en:'Water', zh:'饮水'},
  logWeight: {ko:'오늘 체중', en:'Weight today', zh:'今日体重'},
  logWeightNote: {ko:'여기 적으면 신체정보의 체중도 같이 바뀝니다 — 계획이 옛 체중으로 계산되지 않게.', en:'Entering it here also updates your body info, so the plan is never calculated from an old weight.', zh:'在这里填写会同时更新身体信息，避免计划用旧体重计算。'},

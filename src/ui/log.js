@@ -172,6 +172,9 @@ function paintExtra(dateStr) {
   const drive = DRIVE_OPTIONS.find((o) => o.id === day.drive);
 
   let html = `<div class="kick">${esc(t(S.logExtra))}</div>`;
+  // 위 운동·식단 체크와 달리 설명 없이 병 그림부터 나와서 뭐 하는 칸인지
+  // 몰라 헤맨다는 피드백(2026-09-15) — 식단 칸의 logDietRule 처럼 한 줄을 둔다.
+  html += `<p class="dim log-note">${esc(t(S.logExtraNote))}</p>`;
 
   // 물. 병을 눌러서 채운다 — 숫자 입력칸으로 두면 아무도 안 적는다.
   const drank = Math.min(day.water || 0, WATER_MAX);
@@ -208,7 +211,7 @@ function paintExtra(dateStr) {
   html += '<div class="log-weight-row">' +
     `<label class="log-weight-l" for="log-weight-input">${esc(t(S.logWeight))}</label>` +
     '<span class="inp-wrap">' +
-    `<input class="inp" id="log-weight-input" type="number" inputmode="decimal" min="25" max="250" step="0.1" ` +
+    `<input class="inp" id="log-weight-input" type="number" inputmode="decimal" min="12" max="250" step="0.1" ` +
     `value="${day.weightKg == null ? '' : day.weightKg}" placeholder="${body.weightKg == null ? '65' : body.weightKg}">` +
     '<span class="inp-unit">kg</span></span>' +
     '</div>';
