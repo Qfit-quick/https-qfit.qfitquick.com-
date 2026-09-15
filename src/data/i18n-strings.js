@@ -80,9 +80,9 @@ export const STATIC_UI = {
  // 큐피드 하트 슈팅 미니게임(2026-09-12). 더보기의 '지난 루틴 다시 시작'
  // 자리를 대신한다 — 그 기능 자체는 홈의 1분 시작 시트·결과 화면에
  // 그대로 남아 있어 여기서 하나 빠져도 사라지지 않는다.
- heartgameMenuLabel: {ko:'큐피드 하트 슈팅', en:'Cupid Heart Shooter', zh:'丘比特爱心射击'},
+ heartgameMenuLabel: {ko:'큐피드 게임', en:'Cupid Game', zh:'丘比特游戏'},
  heartgamePauseLabel: {ko:'일시정지', en:'Pause', zh:'暂停'},
- heartgameTitle: {ko:'큐피드 하트 슈팅 💘', en:'Cupid Heart Shooter 💘', zh:'丘比特爱心射击 💘'},
+ heartgameTitle: {ko:'큐피드 게임 💘', en:'Cupid Game 💘', zh:'丘比特游戏 💘'},
  heartgameIntro: {
   ko:'날아오는 하트가 큐피드 근처(민트색 구역)에 오면<br>그 줄을 탭해서 화살을 쏘세요.<br><br>❤️ +10&nbsp;&nbsp; 💔 -10&nbsp;&nbsp; ⭐ +50<br>시간이 지날수록 하트가 점점 빨라져요!<br><b>❤️/⭐를 한 번이라도 놓치면 게임 종료!</b>',
   en:'When a flying heart reaches Cupid (the mint zone),<br>tap that row to fire an arrow.<br><br>❤️ +10&nbsp;&nbsp; 💔 -10&nbsp;&nbsp; ⭐ +50<br>Hearts speed up the longer you play!<br><b>Miss even one ❤️/⭐ and it\'s game over!</b>',
@@ -187,6 +187,7 @@ export const STATIC_UI = {
  pauseTitle: {ko:'쉬는 중', en:'Taking a break', zh:'休息中'},
  resume: {ko:'계속하기', en:'Resume', zh:'继续'},
  skipThis: {ko:'이번 운동 건너뛰기', en:'Skip this exercise', zh:'跳过这个动作'},
+ skipRestBtn: {ko:'쉬는 시간 건너뛰기', en:'Skip rest', zh:'跳过休息'},
  quitWorkout: {ko:'운동 종료', en:'End workout', zh:'结束训练'},
  resultTitle: {ko:'오늘 완료!', en:'Done for today!', zh:'今天完成！'},
  timeLabel: {ko:'운동시간', en:'Time', zh:'训练时长'},

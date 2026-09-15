@@ -367,6 +367,7 @@ let missionIndex = 0;
 let warmupCompletedThisSession = false;
 let wodStartTimestamp = 0;
 let missionActive = false;
+let isResting = false;
 let isPaused = false;
 let missionInterval = null;
 
@@ -752,6 +753,9 @@ try{
  // n/N 을 못 읽으므로, 여기서 다시 말해 주지 않으면 알 길이 없다.
  const stepEl = document.getElementById('pause-step');
  if(stepEl) stepEl.textContent = t(STATIC_UI.paused) + ' · ' + (missionIndex + 1) + '/' + missions.length;
+ // 휴식 중에 멈추면 건너뛰기 글자도 "쉬는 시간 건너뛰기"로 바꾼다 —
+ // 실제로 건너뛰는 것이 운동이 아니라 휴식이니 그대로 두면 헷갈린다.
+ if(skipBtn) skipBtn.textContent = t(isResting ? STATIC_UI.skipRestBtn : STATIC_UI.skipThis);
  try{ syncPauseClipBtn(); }catch(e){ console.error('syncPauseClipBtn failed:', e); }
  Sound.stopBGM();
  // 초점을 '계속하기' 로. 안 옮기면 키보드 사용자는 가려진 뒤 화면을
@@ -879,6 +883,7 @@ function fireConfetti(){
 let restTapHandler = null;
 
 function stopRest(){
+ isResting = false;
  if(restWrap) restWrap.style.display = 'none';
  if(restGo) restGo.hidden = true;
  if(restNum) restNum.hidden = false;
@@ -3543,6 +3548,18 @@ function runTimer(m){
 const REST_DURATION = 11; // seconds between missions
 
 function skipMission(){
+ // 휴식 중에도 건너뛰기가 먹혀야 한다 — 쉬는 시간을 원치 않는 사람이
+ // 있다(2026-09-15 요청). runRest() 뒤 "탭해서 계속"과 같은 길로
+ // 보낸다: 남은 카운트다운을 끊고 바로 다음 동작을 시작한다.
+ if(isResting){
+ isResting = false;
+ clearInterval(missionInterval);
+ stopRest();
+ stopRestTouch();
+ Sound.markIntensified();
+ runMission();
+ return;
+ }
  if(!missionActive) return;
  missionActive = false;
  clearInterval(missionInterval);
@@ -3612,6 +3629,7 @@ function completeMission(m){
 }
 
 function runRest(){
+ isResting = true;
  bossBanner.classList.remove('on');
  gameScreen.classList.remove('boss');
  stopPhotoDemo();
