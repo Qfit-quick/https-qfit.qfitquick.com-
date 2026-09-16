@@ -2120,7 +2120,15 @@ function renderBodyparts(){
 function recordCompletion(){
  const today = todayStr();
  const mKey = monthKeyStr();
+ const isFirstEverCompletion = (myProfile.totalCompletions||0) === 0;
  myProfile.totalCompletions = (myProfile.totalCompletions||0) + 1;
+ // 리마인더 기본값이 켜짐이라(2026-09-16), 첫 완주 직후 딱 한 번 브라우저
+ // 알림 권한을 대신 물어본다 — 이미 이 앱이 뭘 해줬는지 본 시점이라 무작정
+ // 부팅 시 묻는 것보다 거절될 확률이 낮다. reminder.js 의 maybeAutoEnable()
+ // 이 "이미 물어봤음" 을 기억해서 두 번 다시 안 묻는다.
+ if(isFirstEverCompletion){
+ try{ reminder.maybeAutoEnable(today); }catch(e){ console.error('reminder auto-enable failed:', e); }
+ }
  if(myProfile.lastPlayDate === today){
  // already counted today, streak unchanged
  } else if(myProfile.lastPlayDate && isYesterday(myProfile.lastPlayDate)){

@@ -12,6 +12,17 @@
 //     Safari 가 웹푸시를 허용한다. 미지원 기기에서는 subscribePush() 가
 //     조용히 실패해도 위 "앱이 열려 있을 때" 알림은 그대로 동작한다.
 //
+// ── 기본값을 켜짐으로(2026-09-16 요청) ──────────────────────────────
+// isEnabled() 는 이제 "명시적으로 끈 적이 없으면 켜진 것"으로 본다 — 껐다
+// 켰다는 설정 화면에서 언제든 할 수 있으니 "선택사항"은 그대로 남아 있다.
+// 다만 브라우저 알림 권한(Notification.requestPermission)은 사람이 직접
+// 누르는 팝업이라 코드로 조용히 "켜 둘" 방법이 없다 — 그래서
+// maybeAutoEnable() 이 첫 완주 직후(한 번만) 그 팝업을 대신 띄워 준다.
+// 부팅하자마자 띄우지 않는 이유는 여전히 유효하다 — 앱이 뭘 하는지도
+// 모르는 사람에게 물으면 대부분 거절하고, 그 거절은 브라우저가 기억해서
+// 되돌리기 어렵다. 첫 완주 직후는 "방금 이 앱이 뭘 해줬는지" 를 이미 본
+// 시점이라 그 문제를 피한다.
+//
 // 이렇게 두는 이유: 규칙과 UI 를 나중에 몰아서 만들면, 그때는 배포 문제와
 // 로직 문제가 섞여 무엇이 안 되는지 가려내기 어려워진다.
 
@@ -19,6 +30,7 @@ import { savePushSubscription, removePushSubscription } from '../cloud/presence.
 
 const KEY_ON = 'qfit_reminder_on_v1';
 const KEY_LAST_SENT = 'qfit_reminder_sent_v1';
+const KEY_ASKED = 'qfit_reminder_asked_v1';
 
 // VAPID 공개키 — 이 값 자체는 공개해도 되는 값이다(브라우저가 구독을 만들
 // 때 서버 신원을 확인하는 용도). 개인키는 절대 이 저장소에 두지 않는다 —
@@ -42,7 +54,8 @@ const read = (k) => { try { return localStorage.getItem(k); } catch { return nul
 const write = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
 
 export function isEnabled() {
-  return read(KEY_ON) === '1';
+  const v = read(KEY_ON);
+  return v === null ? true : v === '1'; // 명시적으로 끈 적 없으면 켜진 것으로 본다
 }
 
 /** 알림을 받을 수 있는 상태인가. 거절했거나 지원 안 하면 false. */
@@ -141,4 +154,17 @@ export async function subscribePush(lastPlayDate) {
     console.error('push subscribe failed:', e);
     return { ok: false, reason: 'error' };
   }
+}
+
+/** 알림이 기본값(켜짐)인 사람에게 딱 한 번, 브라우저 권한 팝업을 대신
+ *  띄워 준다 — 설정 화면에서 토글을 직접 누르지 않아도 되게 하기 위해서다.
+ *  이미 물어본 적이 있으면(허용했든 거절했든) 다시 묻지 않는다 — 매번
+ *  물으면 그 자체가 성가신 알림이 된다. 첫 완주 직후에 한 번 부르는 것을
+ *  전제로 한다(app.js recordCompletion()). */
+export async function maybeAutoEnable(lastPlayDate) {
+  if (read(KEY_ASKED) === '1') return;
+  write(KEY_ASKED, '1');
+  if (!isEnabled()) return; // 설정에서 미리 꺼 둔 적이 있으면 묻지 않는다
+  if (typeof Notification === 'undefined' || Notification.permission !== 'default') return;
+  await enable(lastPlayDate);
 }
