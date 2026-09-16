@@ -31,6 +31,11 @@ export default defineConfig({
         // 실제로 그렇게 들어갔다 — 제외 목록을 늘리는 쪽은 새 파일이 생길
         // 때마다 또 새므로, 담을 것을 적는 쪽이 맞다.
         globPatterns: ['index.html', 'assets/**/*.{js,css}', 'icons/*.png', 'manifest.webmanifest'],
+        // 4일 주기 웹푸시(2026-09-16) 의 push/notificationclick 처리.
+        // generateSW 모드라 워크박스 코드를 직접 못 고치므로, sw.js 맨 위에서
+        // 이 파일을 importScripts() 로 불러 붙인다 — public/sw-push.js 가
+        // 빌드로 산출물 루트에 그대로 복사되어 있어야 한다.
+        importScripts: ['sw-push.js'],
         globIgnores: [
           // 미디어는 프리캐시에서 뺀다. 이 한 줄이 첫 로드 22.5MB 를 없앴다.
           '**/media/**',

@@ -42,6 +42,12 @@
   letter-spacing: 0;
   color: var(--text-dim);
 }
+/* 랭킹 대신 지금 접속자·오늘 사용자 수(2026-09-16) — 캡션 크기로 조용히,
+   숫자를 받기 전에는 [hidden] 이라 표어와 다음 카드 사이에 빈 줄이 안 생긴다. */
+.live-stats {
+  font-size: var(--t-xs);
+  color: var(--text-dim);
+}
 
 /* 홈 머리 — 왼쪽 아이콘 · 오른쪽 글자, 52px 한 줄.
    맨 위에 고정해 달라는 요청(2026-09-16) — sticky 로 붙인다. #start-screen 이

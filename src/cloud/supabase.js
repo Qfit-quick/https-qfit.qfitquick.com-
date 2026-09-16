@@ -27,6 +27,13 @@ const URL = 'https://pdmjlleaheqyldhitkty.supabase.co';
 // 그게 꺼져 있으면 profiles 테이블이 통째로 열린다.
 const KEY = 'sb_publishable_dUj4X1NhnU95YihrUzmkWg_kuJGy1eW';
 
+// 접속자 수 집계(src/cloud/presence.js)는 SDK 없이 순수 fetch() 로 RPC 를
+// 부른다 — 로그인과 무관하게 모두에게 켜져 있어야 하는 기능인데, 그러자고
+// 전부에게 Supabase SDK(약 219KB)를 받게 하면 이 파일 맨 위 주석의 원칙이
+// 깨진다. URL·KEY 를 여기 한 곳에서만 내보내 두 파일이 같은 값을 쓰게 한다.
+export const SUPABASE_URL = URL;
+export const SUPABASE_ANON_KEY = KEY;
+
 let client = null;
 let loading = null;
 

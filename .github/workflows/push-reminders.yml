@@ -1,0 +1,30 @@
+name: 4일 리마인더 발송
+
+# 4일 넘게 쉰 기기에 웹푸시를 보내는 send-reminders Edge Function 을
+# 하루 한 번 깨운다(2026-09-16 요청). 실제 발송 로직은 전부 Supabase
+# 쪽(supabase/functions/send-reminders/index.ts)에 있고, 여기는 그냥
+# 정해진 시각에 그 주소를 한 번 부르는 역할만 한다 — 그래서 비밀 값이
+# 필요 없다: 호출에 쓰는 anon 키는 어차피 클라이언트 번들에도 있는
+# 공개 값이고, devices 테이블 접근 권한(SUPABASE_SERVICE_ROLE_KEY)은
+# Edge Function 안에만 있다.
+
+on:
+  schedule:
+    # 매일 03:00 UTC(한국 시간 낮 12시 무렵). "4일마다"라는 기준 자체가
+    # 하루 단위라, 하루 한 번으로 충분하다 — 더 자주 부를 이유가 없다.
+    - cron: '0 3 * * *'
+  workflow_dispatch: {} # 배포 직후 수동으로 한 번 눌러 테스트할 수 있게
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: send-reminders Edge Function 호출
+        run: |
+          curl -sf -X POST \
+            "https://pdmjlleaheqyldhitkty.supabase.co/functions/v1/send-reminders" \
+            -H "apikey: sb_publishable_dUj4X1NhnU95YihrUzmkWg_kuJGy1eW" \
+            -H "Authorization: Bearer sb_publishable_dUj4X1NhnU95YihrUzmkWg_kuJGy1eW" \
+            -H "Content-Type: application/json" \
+            -o response.json
+          cat response.json
