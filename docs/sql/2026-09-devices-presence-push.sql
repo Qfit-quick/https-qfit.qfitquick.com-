@@ -1,9 +1,10 @@
--- Q-fit "지금 접속자 수 · 오늘 사용자 수" + 4일 주기 푸시 알림용 테이블.
+-- Q-fit "오늘 사용자 수" + 4일 주기 푸시 알림용 테이블.
 --
--- 배경: 랭킹 대신 실시간 접속자 수·오늘 사용자 수를 보여 달라는 요청과,
--- 4일 쉬면 앱이 닫혀 있어도(웹 푸시로) 알려 달라는 요청(둘 다 2026-09-16).
--- 두 기능 다 "누구"가 아니라 "몇 대"가 필요해서 로그인 계정과 엮지 않고,
--- 기기 하나당 익명 id(src/core/device.js) 로 구분한다.
+-- 배경: 랭킹 대신 오늘 사용자 수를 보여 달라는 요청과(접속자 실시간 수는
+-- 처음에 넣었다가 빼기로 함, 2026-09-16), 4일 쉬면 앱이 닫혀 있어도
+-- (웹 푸시로) 알려 달라는 요청(같은 날). 두 기능 다 "누구"가 아니라
+-- "몇 대"가 필요해서 로그인 계정과 엮지 않고, 기기 하나당 익명 id
+-- (src/core/device.js) 로 구분한다.
 --
 -- 실행 방법: Supabase 프로젝트 대시보드 → SQL Editor 에 아래를 그대로
 -- 붙여넣고 실행. 이 리포는 마이그레이션을 자동 적용하는 CI 단계가 없으므로
@@ -12,8 +13,8 @@
 -- 보안: devices 테이블 자체는 RLS 를 켜서 anon 이 직접 읽거나 쓸 수 없게
 -- 막는다 — 대신 아래 RPC 함수들(SECURITY DEFINER)로만 접근한다. 그래서
 -- "다른 기기의 익명 id 목록"이나 "누군가의 푸시 구독 정보"가 anon 키만으로
--- 그대로 노출되는 일이 없다. get_online_count/get_today_active_count 는
--- 개수(정수) 하나만 돌려준다.
+-- 그대로 노출되는 일이 없다. get_today_active_count 는 개수(정수) 하나만
+-- 돌려준다.
 
 create table if not exists public.devices (
   device_id text primary key,
@@ -34,8 +35,8 @@ alter table public.devices enable row level security;
 create index if not exists devices_last_seen_idx on public.devices (last_seen);
 create index if not exists devices_last_play_date_idx on public.devices (last_play_date);
 
--- 하트비트: 접속자 수·오늘 사용자 수 집계용. 로그인 여부와 무관하게 앱을
--- 열어 둔 모든 기기가 주기적으로 부른다(src/cloud/presence.js).
+-- 하트비트: 오늘 사용자 수 집계용. 로그인 여부와 무관하게 앱을 열어 둔
+-- 모든 기기가 주기적으로 부른다(src/cloud/presence.js).
 create or replace function public.heartbeat(p_device_id text, p_last_play_date date default null)
 returns void
 language plpgsql
@@ -52,17 +53,6 @@ begin
 end;
 $$;
 grant execute on function public.heartbeat(text, date) to anon, authenticated;
-
-create or replace function public.get_online_count()
-returns integer
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select count(*)::int from public.devices where last_seen > now() - interval '90 seconds';
-$$;
-grant execute on function public.get_online_count() to anon, authenticated;
 
 create or replace function public.get_today_active_count()
 returns integer

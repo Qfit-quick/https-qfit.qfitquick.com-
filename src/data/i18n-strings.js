@@ -144,7 +144,7 @@ export const STATIC_UI = {
  inappHint1: {ko:'버튼이 안 되면 오른쪽 위', en:'If the button fails, tap the top-right', zh:'按钮无效时，点右上角'},
  inappHint2: {ko:'"다른 브라우저로 열기"를 선택해주십시오.', en:'and choose "Open in browser".', zh:'并选择“在浏览器中打开”。'},
  heroLine: {ko:'1분이면 끝. 귀찮지 않은 운동.', en:'One minute. No excuses.', zh:'一分钟搞定，不用犹豫。'},
- liveStats: {ko:'지금 %s명 접속 중 · 오늘 %s명 참여', en:'%s online now · %s today', zh:'现在 %s 人在线 · 今天 %s 人参与'},
+ liveStats: {ko:'오늘 %s명 참여', en:'%s joined today', zh:'今天 %s 人参与'},
  startCta: {ko:'1분 시작', en:'Start 1 min', zh:'开始1分钟'},
  settingsInstallLabel: {ko:'📲 홈 화면에 추가', en:'📲 Add to Home Screen', zh:'📲 添加到主屏幕'},
  settingsInstallSub: {ko:'앱처럼 더 빠르게 열려요', en:'Opens faster, like an app', zh:'像应用一样打开更快'},

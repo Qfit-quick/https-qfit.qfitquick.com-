@@ -1,5 +1,5 @@
-// "지금 몇 명 접속 중 · 오늘 몇 명 사용" — 랭킹 대신 보여 달라는 요청
-// (2026-09-16). 로그인 여부와 무관하게 전부에게 켜져 있어야 해서, Supabase
+// "오늘 몇 명 사용" — 랭킹 대신 보여 달라는 요청(2026-09-16, 접속자 수는
+// 같은 날 빼기로 함). 로그인 여부와 무관하게 전부에게 켜져 있어야 해서, Supabase
 // SDK(cloud/supabase.js, 약 219KB, 로그인할 때만 받음)는 쓰지 않는다.
 // 서버 REST 엔드포인트를 순수 fetch() 로 직접 부른다 — 그러면 이 기능
 // 하나 때문에 앱을 안 쓰는 로그인 기능까지 모두가 다운로드하게 되는 일이
@@ -40,14 +40,9 @@ export function heartbeat(lastPlayDate) {
   return rpc('heartbeat', { p_device_id: getDeviceId(), p_last_play_date: lastPlayDate || null });
 }
 
-/** 최근 90초 안에 하트비트를 보낸 기기 수. null 이면 실패 — 부르는 쪽이
- *  화면에 아무것도 안 띄우면 된다(0명이라고 잘못 보여주는 것보다 낫다). */
-export async function getOnlineCount() {
-  const n = await rpc('get_online_count');
-  return typeof n === 'number' ? n : null;
-}
-
-/** 오늘 하루 하트비트를 한 번이라도 보낸 기기 수(자정 기준, 서버 UTC). */
+/** 오늘 하루 하트비트를 한 번이라도 보낸 기기 수(자정 기준, 서버 UTC).
+ *  null 이면 실패 — 부르는 쪽이 화면에 아무것도 안 띄우면 된다(0명이라고
+ *  잘못 보여주는 것보다 낫다). */
 export async function getTodayActiveCount() {
   const n = await rpc('get_today_active_count');
   return typeof n === 'number' ? n : null;

@@ -3,7 +3,7 @@ import { openSheet, closeSheet } from './ui/sheet.js';
 import { toast } from './ui/toast.js';
 import { advanceProgramProgress, clearPendingProgramDay } from './ui/programs.js';
 import { getSupabase, hasStoredSession, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
-import { heartbeat as presenceHeartbeat, getOnlineCount, getTodayActiveCount } from './cloud/presence.js';
+import { heartbeat as presenceHeartbeat, getTodayActiveCount } from './cloud/presence.js';
 import * as reminder from './notify/reminder.js';
 import { RECOVERY_CARDS, INJURY_GUIDES, SPECIAL_GUIDES, DIET_GUIDES } from './data/recovery.js';
 import { INJURY_AVOID } from './data/injury-avoid.js';
@@ -4599,26 +4599,22 @@ try{
 
 try{ checkSupabaseSession(); }catch(e){ console.error('checkSupabaseSession failed:', e); }
 
-// ---------- LIVE STATS (지금 접속자 수 · 오늘 사용자 수) ----------
-// 랭킹 대신 보여 달라는 요청(2026-09-16). 로그인 여부와 무관하게 전부에게
-// 켜져 있어야 해서 위 checkSupabaseSession() (로그인한 적 있는 기기만
-// 돈다)과는 완전히 별개로 항상 돈다 — Supabase SDK 는 안 쓰고 순수
-// fetch() 로만 되어 있어(cloud/presence.js) 로그인 안 하는 사람에게
-// 그 SDK 를 받게 만들지 않는다.
-let lastOnlineCount = null;
+// ---------- LIVE STATS (오늘 사용자 수) ----------
+// 랭킹 대신 보여 달라는 요청(2026-09-16, 접속자 수는 같은 날 빼기로 함).
+// 로그인 여부와 무관하게 전부에게 켜져 있어야 해서 위 checkSupabaseSession()
+// (로그인한 적 있는 기기만 돈다)과는 완전히 별개로 항상 돈다 — Supabase
+// SDK 는 안 쓰고 순수 fetch() 로만 되어 있어(cloud/presence.js) 로그인
+// 안 하는 사람에게 그 SDK 를 받게 만들지 않는다.
 let lastTodayCount = null;
 function renderLiveStats(){
  const el = document.getElementById('live-stats');
  if(!el) return;
- if(lastOnlineCount == null && lastTodayCount == null){ el.hidden = true; return; }
+ if(lastTodayCount == null){ el.hidden = true; return; }
  el.hidden = false;
- el.textContent = t(STATIC_UI.liveStats)
- .replace('%s', lastOnlineCount == null ? '-' : lastOnlineCount)
- .replace('%s', lastTodayCount == null ? '-' : lastTodayCount);
+ el.textContent = t(STATIC_UI.liveStats).replace('%s', lastTodayCount);
 }
 async function refreshLiveStats(){
- const [online, today] = await Promise.all([getOnlineCount(), getTodayActiveCount()]);
- if(online != null) lastOnlineCount = online;
+ const today = await getTodayActiveCount();
  if(today != null) lastTodayCount = today;
  renderLiveStats();
 }
