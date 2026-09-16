@@ -43,8 +43,22 @@
   color: var(--text-dim);
 }
 
-/* 홈 머리 — 왼쪽 아이콘 · 오른쪽 글자, 52px 한 줄 */
-.home-top { display: flex; align-items: center; gap: var(--s-1); min-height: 52px; flex: none; }
+/* 홈 머리 — 왼쪽 아이콘 · 오른쪽 글자, 52px 한 줄.
+   맨 위에 고정해 달라는 요청(2026-09-16) — sticky 로 붙인다. #start-screen 이
+   스크롤 컨테이너라 top:0 만으로는 부모(#start-screen)의 padding-top 만큼
+   틈이 남으므로, 그 padding-top 을 음수로 상쇄해 화면 진짜 꼭대기에 붙인다.
+   배경을 깔아야 스크롤되는 내용이 그 뒤로 비치지 않는다. */
+.home-top {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: 52px;
+  flex: none;
+  position: sticky;
+  top: calc(-1 * (var(--s-6) + env(safe-area-inset-top)));
+  z-index: 5;
+  background: var(--bg);
+}
 .home-top-gap { flex: 1; }
 
 /* 시작 묶음은 아래에 붙여 엄지에 가깝게 둔다 */
