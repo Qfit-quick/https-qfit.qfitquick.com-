@@ -12,19 +12,24 @@
 // ───────────────────────────────────────────────────────────────
 // 잠금. 지금은 클라우드를 쓰지 않는다.
 //
-// 왜 지웠는지가 아니라 왜 잠갔는지가 중요하다. 지금 이 자리는
-// '안 쓰는 기능' 이 아니라 **켜져 있으면 기록을 지우는 기능** 이다:
-// applyCloudProfile 이 서버 행으로 프로필을 통째로 갈아 끼우는데
-// profiles 테이블에 xp·achievements·totalCalories·totalWorkoutSeconds
-// 칼럼이 없다. 로그인하면 그 값들이 0 이 되고 서버에 백업도 없다.
+// 원래 이 자리는 '안 쓰는 기능' 이 아니라 **켜져 있으면 기록을 지우는
+// 기능** 이었다: 옛 applyCloudProfile 이 서버 행으로 프로필을 통째로
+// 갈아 끼웠는데, profiles 테이블에 xp·achievements·totalCalories·
+// totalWorkoutSeconds 칼럼이 없어서 로그인하면 그 값들이 0 이 됐다.
 //
-// 그래서 화면만 감추면 모자라다. 이 기기에 예전 로그인 흔적이 남아
-// 있으면 앱을 여는 것만으로 checkSupabaseSession 이 같은 길을 탄다.
-// 문을 여기 하나로 모아 둔 이유가 그것이다 — 부르는 쪽 열 몇 군데에
-// if 를 뿌리면 언젠가 한 곳을 빠뜨린다.
+// (2026-09-16) src/app.js 에 mergeCloudProfile()/syncProfileFromCloud() 를
+// 넣어 이 문제를 고쳤다 — 이제 로그인은 덮어쓰지 않고 로컬·서버 값을
+// 필드별로 합친다(숫자는 max, 배열은 합집합). 그래도 아직 false 인 이유는
+// 서버 profiles 테이블에 그 필드들을 담을 칼럼 자체가 없기 때문이다 —
+// docs/sql/2026-09-cloud-profile-columns.sql 을 Supabase SQL Editor 에서
+// 먼저 실행해야 한다. 그 전에 켜면 sync/login 이 조용히 반쪽으로 동작한다
+// (예외는 잡히니 앱이 죽지는 않지만, 새 필드들이 서버에 저장·복원되지 않는다).
 //
-// 되살리는 법: 이 상수를 true 로. 그 전에 profile jsonb 칼럼과
-// 필드별 병합(max·합집합)을 먼저 넣어야 한다. 그 전에 켜면 같은 사고다.
+// 이 기기에 예전 로그인 흔적이 남아 있으면 앱을 여는 것만으로
+// checkSupabaseSession 이 같은 길을 탄다. 문을 여기 하나로 모아 둔 이유가
+// 그것이다 — 부르는 쪽 열 몇 군데에 if 를 뿌리면 언젠가 한 곳을 빠뜨린다.
+//
+// 되살리는 법: 위 SQL 을 실행했다는 걸 확인한 뒤, 이 상수를 true 로.
 const CLOUD_ENABLED = false;
 
 const URL = 'https://pdmjlleaheqyldhitkty.supabase.co';

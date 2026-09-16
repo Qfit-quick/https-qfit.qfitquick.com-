@@ -1185,7 +1185,7 @@ function applySetupPrefs(prefs){
 }
 const PROFILE_KEY = 'wodrush_profile_v1';
 let myNickname = '';
-let myProfile = { totalCompletions:0, currentStreak:0, bestStreakEver:0, lastPlayDate:null, monthlyCounts:{}, history:[], totalWorkoutSeconds:0, xp:0, totalCalories:0, achievements:[], comebackCount:0 };
+let myProfile = { totalCompletions:0, currentStreak:0, bestStreakEver:0, lastPlayDate:null, monthlyCounts:{}, history:[], totalWorkoutSeconds:0, xp:0, totalCalories:0, achievements:[], comebackCount:0, bestScoreEver:0, bestCaloriesEver:0, referredBy:null };
 
 function levelFor(total){
  if(total >= 100) return { label:'Gold', icon:'', next:null };
@@ -1253,7 +1253,7 @@ function loadProfile(){
  const val = localStorage.getItem(PROFILE_KEY);
  if(val){
  const p = JSON.parse(val);
- myProfile = Object.assign({ totalCompletions:0, currentStreak:0, bestStreakEver:0, lastPlayDate:null, monthlyCounts:{}, history:[], totalWorkoutSeconds:0, xp:0, totalCalories:0, achievements:[], comebackCount:0 }, p);
+ myProfile = Object.assign({ totalCompletions:0, currentStreak:0, bestStreakEver:0, lastPlayDate:null, monthlyCounts:{}, history:[], totalWorkoutSeconds:0, xp:0, totalCalories:0, achievements:[], comebackCount:0, bestScoreEver:0, bestCaloriesEver:0, referredBy:null }, p);
  }
  }catch(e){}
  updateBestBox();
@@ -1277,6 +1277,14 @@ async function syncProfileToCloud(){
  last_play_date: myProfile.lastPlayDate,
  monthly_counts: myProfile.monthlyCounts || {},
  history: myProfile.history || [],
+ xp: myProfile.xp || 0,
+ total_calories: myProfile.totalCalories || 0,
+ best_calories_ever: myProfile.bestCaloriesEver || 0,
+ total_workout_seconds: myProfile.totalWorkoutSeconds || 0,
+ achievements: myProfile.achievements || [],
+ comeback_count: myProfile.comebackCount || 0,
+ best_score_ever: myProfile.bestScoreEver || 0,
+ referred_by: myProfile.referredBy || null,
  updated_at: new Date().toISOString(),
  });
  }catch(e){ console.error('cloud sync failed:', e); }
@@ -1293,19 +1301,84 @@ async function fetchProfileFromCloud(){
  }catch(e){ console.error('cloud fetch failed:', e); return null; }
 }
 
-function applyCloudProfile(row){
- if(!row) return;
- myNickname = row.nickname || myNickname || '익명';
- myProfile = {
- totalCompletions: row.total_completions || 0,
- currentStreak: row.current_streak || 0,
- bestStreakEver: row.best_streak_ever || 0,
- lastPlayDate: row.last_play_date || null,
- monthlyCounts: row.monthly_counts || {},
- history: row.history || [],
+// 순수 함수. remoteRow 가 없으면(서버에 행이 아직 없음) 전부 0/빈 값으로
+// 취급해 결과가 local 그대로 나오게 한다 — 첫 로그인/가입 경로도 이 함수
+// 하나로 통일해서 부르는 쪽이 "행이 있었나 없었나"를 안 갈라도 되게 한다.
+//
+// 왜 덮어쓰지 않고 합치는가: 예전 applyCloudProfile 은 서버 행으로 로컬을
+// 통째로 갈아 끼웠는데, 서버엔 xp·achievements·totalCalories 등의 칼럼이
+// 없어서 로그인할 때마다 그 값들이 0 이 됐다(2026-09-16 요청으로 병합 도입).
+// 그래서 누적/최고 기록 계열은 각자 Math.max — 뒤로 가는 일이 없다.
+function mergeCloudProfile(local, localNickname, remoteRow){
+ const r = remoteRow || {};
+ const remote = {
+ nickname: r.nickname || '',
+ totalCompletions: r.total_completions || 0,
+ currentStreak: r.current_streak || 0,
+ bestStreakEver: r.best_streak_ever || 0,
+ lastPlayDate: r.last_play_date || null,
+ monthlyCounts: r.monthly_counts || {},
+ history: r.history || [],
+ totalWorkoutSeconds: r.total_workout_seconds || 0,
+ xp: r.xp || 0,
+ totalCalories: r.total_calories || 0,
+ bestCaloriesEver: r.best_calories_ever || 0,
+ bestScoreEver: r.best_score_ever || 0,
+ achievements: r.achievements || [],
+ comebackCount: r.comeback_count || 0,
+ referredBy: r.referred_by || null,
  };
+
+ // 연속기록은 lastPlayDate 와 한 쌍으로만 옮긴다 — 이 둘은 recordCompletion()
+ // 에서 원래 한 트랜잭션으로 갱신되므로 서로 다른 쪽에서 섞어 오면 안 된다.
+ const localDate = local.lastPlayDate || '';
+ const remoteDate = remote.lastPlayDate || '';
+ const useRemote = remoteDate > localDate; // todayStr() 은 YYYY-MM-DD 라 문자열 비교로 충분
+ const currentStreak = useRemote ? remote.currentStreak : (local.currentStreak || 0);
+ const lastPlayDate = useRemote ? remote.lastPlayDate : (local.lastPlayDate || null);
+ const bestStreakEver = Math.max(local.bestStreakEver || 0, remote.bestStreakEver || 0, currentStreak);
+
+ const monthlyCounts = {};
+ new Set([...Object.keys(local.monthlyCounts || {}), ...Object.keys(remote.monthlyCounts || {})])
+ .forEach(k => { monthlyCounts[k] = Math.max((local.monthlyCounts || {})[k] || 0, (remote.monthlyCounts || {})[k] || 0); });
+
+ const seen = new Map();
+ [...(local.history || []), ...(remote.history || [])].forEach(e => {
+ const key = histTime(e);
+ if(!seen.has(key)) seen.set(key, e);
+ });
+ const history = [...seen.values()].sort((a, b) => histTime(b) - histTime(a)).slice(0, 50);
+
+ const achievements = [...new Set([...(local.achievements || []), ...(remote.achievements || [])])];
+
+ return {
+ profile: {
+ ...local,
+ totalCompletions: Math.max(local.totalCompletions || 0, remote.totalCompletions || 0),
+ currentStreak, bestStreakEver, lastPlayDate, monthlyCounts, history,
+ totalWorkoutSeconds: Math.max(local.totalWorkoutSeconds || 0, remote.totalWorkoutSeconds || 0),
+ xp: Math.max(local.xp || 0, remote.xp || 0),
+ totalCalories: Math.max(local.totalCalories || 0, remote.totalCalories || 0),
+ bestCaloriesEver: Math.max(local.bestCaloriesEver || 0, remote.bestCaloriesEver || 0),
+ bestScoreEver: Math.max(local.bestScoreEver || 0, remote.bestScoreEver || 0),
+ achievements,
+ comebackCount: Math.max(local.comebackCount || 0, remote.comebackCount || 0),
+ referredBy: local.referredBy || remote.referredBy || null,
+ },
+ nickname: (localNickname && localNickname.trim()) ? localNickname : (remote.nickname || localNickname || '익명'),
+ };
+}
+
+// 오케스트레이션: 서버 행을 받아 merge 하고 로컬에 앉힌 뒤, saveProfile()
+// 이 알아서 다시 서버로 밀게 한다(위 syncProfileToCloud 호출) — 병합 결과가
+// 이겨도 서버가 그걸 반영해야 다음 기기 로그인 때 다시 낮은 값과 마주치지 않는다.
+async function syncProfileFromCloud(){
+ const row = await fetchProfileFromCloud();
+ const merged = mergeCloudProfile(myProfile, myNickname, row);
+ myProfile = merged.profile;
+ myNickname = merged.nickname;
  saveNickname(myNickname);
- try{ localStorage.setItem(PROFILE_KEY, JSON.stringify(myProfile)); }catch(e){}
+ saveProfile();
  updateBestBox();
 }
 
@@ -1357,9 +1430,7 @@ async function checkSupabaseSession(){
  const { data } = await sb.auth.getSession();
  if(data && data.session && data.session.user){
  currentUserId = data.session.user.id;
- const row = await fetchProfileFromCloud();
- if(row) applyCloudProfile(row);
- else await syncProfileToCloud(); // first login on this device — push local data up
+ await syncProfileFromCloud();
  updateAccountUI();
  updateBestBox();
  }
@@ -4467,8 +4538,7 @@ try{
  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
  if(error) throw error;
  currentUserId = data.user.id;
- const row = await fetchProfileFromCloud();
- if(row) applyCloudProfile(row);
+ await syncProfileFromCloud();
  updateAccountUI();
  showScreen(startScreen);
  }catch(e){
