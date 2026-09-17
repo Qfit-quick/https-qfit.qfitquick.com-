@@ -120,9 +120,78 @@ function paintChecks(dateStr) {
 const WATER_STEP = 100;
 const WATER_TARGET = 2000;
 const WATER_MAX = 3000;
+// "만보기" 이름 그대로 목표는 만 보. 이 숫자로 딱히 근거를 대는 기능이
+// 아니라(공식 건강 권고치는 사람마다 다르다) 이름과 맞춘 익숙한 기준값이다.
+const STEPS_TARGET = 10000;
 // app.js 의 XP 병(#xp-water-fill)과 같은 모양(viewBox, clip path)을 쓴다 —
 // 이미 검증된 '병 채우기' 그림이라 굳이 새로 그리지 않는다.
 const BOTTLE_TOP = 34, BOTTLE_BOTTOM = 104, BOTTLE_H = BOTTLE_BOTTOM - BOTTLE_TOP;
+
+// ── 만보기 "측정" 보조 기능 ───────────────────────────────────
+//
+// 폰의 진짜 걸음 센서(구글 핏 등)는 웹에서 접근할 방법이 없다. 대신 이
+// 화면이 열려 있는 동안 가속도 센서로 걸음 같은 진동을 대략 세는 보조
+// 기능만 둔다 — 화면을 나가거나 잠그면 멈추고, 그때까지 센 걸음만
+// 저장된 값에 더한다. "만보기"라고 자칭하면서 실제로는 이 정도만 되는
+// 것을 화면 문구(logStepsNote)로 숨기지 않는다.
+let stepMeasureSession = null; // { handler, count, lastMag, lastStepAt, baseSteps }
+
+async function ensureMotionPermission() {
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    try { return (await DeviceMotionEvent.requestPermission()) === 'granted'; }
+    catch (e) { return false; }
+  }
+  return typeof DeviceMotionEvent !== 'undefined';
+}
+
+function stepMagnitude(a) {
+  return Math.sqrt((a.x || 0) ** 2 + (a.y || 0) ** 2 + (a.z || 0) ** 2);
+}
+
+async function toggleStepMeasure(date) {
+  const btn = el('log-steps-measure-btn');
+  const note = el('log-steps-note');
+
+  if (stepMeasureSession) {
+    window.removeEventListener('devicemotion', stepMeasureSession.handler);
+    const counted = stepMeasureSession.count;
+    stepMeasureSession = null;
+    const day = loadDay(date);
+    saveDay(date, { steps: (day.steps || 0) + counted });
+    paintExtra(date);
+    return;
+  }
+
+  const ok = await ensureMotionPermission();
+  if (!ok) {
+    if (note) note.textContent = t(S.logStepsUnsupported);
+    return;
+  }
+
+  const THRESHOLD = 12; // m/s² — 걷는 진동은 중력(약 9.8)보다 순간적으로 크게 튄다
+  const MIN_INTERVAL_MS = 300; // 한 걸음을 두 번 세지 않게
+  const session = { count: 0, lastMag: 9.8, lastStepAt: 0, baseSteps: loadDay(date).steps || 0 };
+  session.handler = (e) => {
+    const a = e.accelerationIncludingGravity || e.acceleration;
+    if (!a || a.x == null) return;
+    const mag = stepMagnitude(a);
+    const now = Date.now();
+    if (mag > THRESHOLD && session.lastMag <= THRESHOLD && (now - session.lastStepAt) > MIN_INTERVAL_MS) {
+      session.count++;
+      session.lastStepAt = now;
+      const numEl = el('log-steps-input');
+      if (numEl) numEl.value = session.baseSteps + session.count;
+      const headEl = document.querySelector('.log-steps-row .log-water-n');
+      if (headEl) headEl.innerHTML = (session.baseSteps + session.count).toLocaleString() + esc(t(S.logStepsUnit)) +
+        ` <span class="dim">/ ${STEPS_TARGET.toLocaleString()}${esc(t(S.logStepsUnit))}</span>`;
+    }
+    session.lastMag = mag;
+  };
+  window.addEventListener('devicemotion', session.handler);
+  stepMeasureSession = session;
+  if (btn) btn.textContent = t(S.logStepsMeasureStop);
+  if (note) note.textContent = t(S.logStepsMeasuring);
+}
 
 function shortDate(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
@@ -204,6 +273,29 @@ function paintExtra(dateStr) {
     '<button type="button" class="primary log-water-btn" id="log-water-plus">+100mL</button>' +
     '</span>' +
     '</div>' +
+    '</div>';
+
+  // 만보기(2026-09-17). 폰 브라우저는 기기 자체의 걸음 센서(구글 핏·헬스 앱이
+  // 쓰는 것)에 접근할 방법이 없다 — 그래서 두 가지를 같이 둔다: ①숫자를
+  // 직접 적기(폰의 걸음 수 앱을 보고 옮겨 적는 용도), ②"측정" 버튼으로
+  // 이 화면이 열려 있는 동안만 가속도 센서로 대략 세는 보조 기능. ②는
+  // 화면을 벗어나거나 잠그면 멈춘다 — 진짜 만보기처럼 하루 종일 백그라운드로
+  // 세는 것은 웹에서 불가능하다는 것을 숨기지 않는다.
+  const steps = Math.max(0, day.steps || 0);
+  const stepsPct = Math.min(100, Math.round((steps / STEPS_TARGET) * 100));
+  html += '<div class="log-steps-row">' +
+    '<span class="log-water-head">' +
+    `<span class="log-water-l">${esc(t(S.logSteps))}</span>` +
+    `<span class="log-water-n">${steps.toLocaleString()}${esc(t(S.logStepsUnit))} <span class="dim">/ ${STEPS_TARGET.toLocaleString()}${esc(t(S.logStepsUnit))}</span></span>` +
+    '</span>' +
+    '<div class="log-steps-bar"><div class="log-steps-fill" style="width:' + stepsPct + '%"></div></div>' +
+    '<div class="log-steps-controls">' +
+    '<span class="inp-wrap log-steps-inp-wrap">' +
+    `<input class="inp" id="log-steps-input" type="number" inputmode="numeric" min="0" max="99999" step="1" value="${steps || ''}" placeholder="0">` +
+    `<span class="inp-unit">${esc(t(S.logStepsUnit))}</span></span>` +
+    `<button type="button" class="sec2 log-steps-measure-btn" id="log-steps-measure-btn">${esc(t(S.logStepsMeasureStart))}</button>` +
+    '</div>' +
+    `<p class="dim log-note" id="log-steps-note">${esc(t(S.logStepsNote))}</p>` +
     '</div>';
 
   // 오늘 체중. 여기서 적으면 신체정보의 체중도 같이 바뀐다 — 두 곳에 따로
@@ -410,21 +502,34 @@ export function initLog({ translate, STATIC_UI, onShowScreen } = {}) {
         const day = loadDay(date);
         saveDay(date, { water: Math.max(0, (day.water || 0) - WATER_STEP) });
         paintExtra(date);
+        return;
+      }
+
+      if (e.target.closest('#log-steps-measure-btn')) {
+        toggleStepMeasure(date);
+        return;
       }
     });
 
     // 체중은 입력이 끝났을 때 한 번만 저장한다. 글자마다 저장하면
     // '6' 을 넣는 순간 체중 6kg 이 신체정보로 넘어간다.
     el('log-screen')?.addEventListener('change', (e) => {
-      if (e.target.id !== 'log-weight-input') return;
-      const v = Number(e.target.value);
-      if (!Number.isFinite(v) || v <= 0) return;
-      const date = dayKey();
-      saveDay(date, { weightKg: v });
-      saveBody({ weightKg: v });
-      // 방금 적은 값이 그래프에 바로 잡히게 다시 그린다 — 안 그러면
-      // 화면을 나갔다 들어와야만 오늘 점이 보인다.
-      paintExtra(date);
+      if (e.target.id === 'log-weight-input') {
+        const v = Number(e.target.value);
+        if (!Number.isFinite(v) || v <= 0) return;
+        const date = dayKey();
+        saveDay(date, { weightKg: v });
+        saveBody({ weightKg: v });
+        // 방금 적은 값이 그래프에 바로 잡히게 다시 그린다 — 안 그러면
+        // 화면을 나갔다 들어와야만 오늘 점이 보인다.
+        paintExtra(date);
+        return;
+      }
+      if (e.target.id === 'log-steps-input') {
+        const v = Math.max(0, Math.round(Number(e.target.value) || 0));
+        saveDay(dayKey(), { steps: v });
+        paintExtra(dayKey());
+      }
     });
 
     el('log-back-btn')?.addEventListener('click', () => goScreen('start-screen'));

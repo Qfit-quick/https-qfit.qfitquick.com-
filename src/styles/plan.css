@@ -701,6 +701,27 @@ body.gated { overflow: hidden; }
   font-weight: 700;
   flex: none;
 }
+
+/* 만보기(2026-09-17). 병 그림 대신 막대 하나로 목표 대비 진행률만 보여준다
+   — 걸음 수는 물처럼 "그릇에 담기는" 그림이 안 와닿아서 단순 막대로 뒀다. */
+.log-steps-row { display: flex; flex-direction: column; gap: var(--s-2); }
+.log-steps-bar {
+  height: 10px;
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.log-steps-fill {
+  height: 100%;
+  background: var(--mint-text);
+  border-radius: var(--r-full);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+.log-steps-controls { display: flex; align-items: center; gap: var(--s-3); }
+.log-steps-inp-wrap { flex: 1 1 auto; min-width: 0; }
+.log-steps-controls .inp { padding: 0 34px 0 12px; text-align: right; }
+.log-steps-measure-btn { flex: none; min-height: var(--tap); white-space: nowrap; }
+
 .log-weight-row { display: flex; align-items: center; gap: var(--s-3); }
 .log-weight-row .inp-wrap { flex: 1 1 auto; min-width: 0; }
 /* 아이콘 자리로 비워 둔 왼쪽 40px 을 되돌린다(신체정보 칸과 같은 이유). */

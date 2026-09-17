@@ -18,6 +18,7 @@ const SUB_SCREENS = {
   // 설정에서 미리보기로 넘어갔을 때 화면이 바뀐 것을 알 수 없다.
   'setup-screen': ['setupTitle', '#setup-back-btn'],
   'manual-select-screen': ['modeManual', '#manual-back-btn'],
+  'chatbot-screen': ['chatbotTitle', '#chatbot-back-btn'],
   // 퀴즈만 제목이 없다(설계 04). 질문 자체가 화면의 큰 제목이라
   // 머리에도 이름을 달면 제목이 둘이 된다. 머리에는 진행 점과 건너뛰기만.
   'ai-quiz-screen': [null, '#ai-quiz-back-btn'],

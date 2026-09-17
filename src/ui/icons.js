@@ -70,6 +70,14 @@ export const ICON = {
   food: svg('<path d="M6 3v7a2.5 2.5 0 0 0 5 0V3"/><path d="M8.5 12v9"/><path d="M17 3c-1.4 2-2 3.6-2 6 0 2 .8 3 2 3s2-1 2-3c0-2.4-.6-4-2-6Z"/><path d="M17 12v9"/>'),
   // 신체정보. 사람 하나 — 몸에 관한 값이라는 뜻이다.
   body: svg('<circle cx="12" cy="5" r="2.4"/><path d="M12 7.4V14"/><path d="M7 10h10"/><path d="m9.5 21 2.5-7 2.5 7"/>'),
+  // 챗봇(2026-09-17). 말풍선 — 안에 점 셋을 찍어 다른 상자류 아이콘(설정 등)과
+  // 헷갈리지 않게 한다.
+  chat: svg(
+    '<path d="M4 5h16v11H8l-4 4V5Z"/>' +
+    '<circle cx="9" cy="10.5" r="1" fill="currentColor" stroke="none"/>' +
+    '<circle cx="12" cy="10.5" r="1" fill="currentColor" stroke="none"/>' +
+    '<circle cx="15" cy="10.5" r="1" fill="currentColor" stroke="none"/>'
+  ),
 };
 
 // 마크업에 data-icon="close" 라고 적어 두면 부팅할 때 채워 넣는다.

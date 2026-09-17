@@ -35,6 +35,7 @@ const EMPTY_DAY = () => ({
   workout: false,
   meals: { breakfast: false, lunch: false, dinner: false, snack: false },
   water: 0,
+  steps: 0,
   weightKg: null,
   mood: null,
   drive: null,
@@ -290,14 +291,14 @@ export function monthTally(dateStr = dayKey()) {
 /** 기록지를 CSV 로. 설정 화면의 내보내기가 이걸 쓴다. */
 export function logToCsv() {
   const log = loadLog();
-  const rows = [['date', 'workout', 'breakfast', 'lunch', 'dinner', 'snack', 'water_ml', 'weight_kg', 'mood', 'drive', 'status']];
+  const rows = [['date', 'workout', 'breakfast', 'lunch', 'dinner', 'snack', 'water_ml', 'steps', 'weight_kg', 'mood', 'drive', 'status']];
   for (const date of Object.keys(log).sort()) {
     const day = { ...EMPTY_DAY(), ...log[date] };
     const m = day.meals || {};
     rows.push([
       date, day.workout ? 1 : 0,
       m.breakfast ? 1 : 0, m.lunch ? 1 : 0, m.dinner ? 1 : 0, m.snack ? 1 : 0,
-      day.water || 0, day.weightKg || '', day.mood || '', day.drive || '', dayStatus(day),
+      day.water || 0, day.steps || 0, day.weightKg || '', day.mood || '', day.drive || '', dayStatus(day),
     ]);
   }
   return rows.map((r) => r.join(',')).join('\n');

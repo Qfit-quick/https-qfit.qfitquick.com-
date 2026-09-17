@@ -1077,6 +1077,56 @@ button.card:active { background: var(--surface-2); }
 }
 .chip-row::-webkit-scrollbar { display: none; }
 
+/* ── 챗봇(2026-09-17) ──────────────────────────────────
+   실제 AI 가 아니라 키워드 안내라, 말풍선도 요란하게 꾸미지 않는다 —
+   사람 말투를 흉내내려 들면 실제로는 정해진 답만 한다는 것과 어긋난다. */
+.chatbot-messages { display: flex; flex-direction: column; gap: var(--s-3); }
+.chatbot-msg {
+  max-width: 84%;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-lg);
+  font-size: var(--t-sm);
+  line-height: 1.5;
+}
+.chatbot-msg.bot {
+  align-self: flex-start;
+  background: var(--surface-2);
+  color: var(--text);
+  border-bottom-left-radius: var(--r-sm);
+}
+.chatbot-msg.user {
+  align-self: flex-end;
+  background: var(--mint-text);
+  color: var(--on-mint);
+  border-bottom-right-radius: var(--r-sm);
+}
+.chatbot-msg p { margin: 0 0 var(--s-2); }
+.chatbot-msg p:last-child { margin-bottom: 0; }
+.chatbot-list { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--s-1); }
+.chatbot-detail-link { display: block; margin-top: var(--s-2); padding: 0; min-height: 0; color: var(--mint-text); font-weight: 600; }
+.chatbot-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  padding-top: var(--s-2);
+}
+.chatbot-chip { font-size: var(--t-xs); height: auto; min-height: var(--tap); padding: var(--s-2) var(--s-3); }
+.chatbot-input-row { display: flex; align-items: center; gap: var(--s-2); }
+.chatbot-input { flex: 1 1 auto; min-width: 0; }
+.chatbot-send-btn {
+  flex: none;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: var(--r-full);
+  border: none;
+  background: var(--mint-text);
+  color: var(--on-mint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chatbot-send-btn:active { opacity: 0.85; }
+
 /* ── 상자 입력 ─────────────────────────────────────────
    아래 선 하나짜리(.nickname-input 등)와 달리 이쪽은 테두리를 두른다.
    검색처럼 '안에 무언가를 넣는 곳' 은 경계가 보여야 어디를 눌러야 할지 안다. */

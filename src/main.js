@@ -30,6 +30,7 @@ import { initLog, renderLogScreen, renderTodayCard } from './ui/log.js';
 import { initPrograms, renderProgramsScreen } from './ui/programs.js';
 import { initHeartGame } from './ui/heartgame.js';
 import { initChallengeTracker } from './ui/challengeTracker.js';
+import { initChatbot } from './ui/chatbot.js';
 import { ICON } from './ui/icons.js';
 import { STATIC_UI } from './data/i18n-strings.js';
 
@@ -49,6 +50,7 @@ initPrograms({ translate: t, STATIC_UI, onStartDay: startRoutine });
 renderProgramsScreen();
 initHeartGame({ translate: t, STATIC_UI });
 initChallengeTracker({ translate: t, STATIC_UI });
+initChatbot({ translate: t, STATIC_UI, onShowScreen: showScreenById });
 
 // data-icon 이 적힌 자리에 선 아이콘을 채운다
 paintIcons();

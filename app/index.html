@@ -214,6 +214,10 @@
  <span class="row-ic" data-icon="heart"></span>
  <span class="row-main"><span class="row-t" data-i18n="recoveryBtn">회복 · SOS</span><span class="row-d dim" data-i18n="recoverySub">부위별 대처법 · 회복 습관</span></span>
  </button>
+ <button class="menu-btn" id="open-chatbot-btn">
+ <span class="row-ic" data-icon="chat"></span>
+ <span class="row-main"><span class="row-t" data-i18n="chatbotBtn">챗봇</span><span class="row-d dim" data-i18n="chatbotSub">자주 묻는 질문 · 부위별 도움말</span></span>
+ </button>
  <button class="menu-btn" id="open-settings-btn-more">
  <span class="row-ic" data-icon="settings"></span>
  <span class="row-main"><span class="row-t" data-i18n="settingsBtn">설정</span><span class="row-d dim" data-i18n="settingsSub">소리 · 진동 · 알림 · 언어</span></span>
@@ -683,6 +687,19 @@
  <button class="primary" id="manual-confirm-btn"></button>
  </div>
  <button class="back-link-btn" id="manual-back-btn" data-i18n="backBtn">이전</button>
+ </div>
+
+ <!-- CHATBOT(2026-09-17) — 실제 AI 가 아니라 앱 사용법·부위별 대처법을
+      키워드로 찾아 주는 안내다. 회복 화면의 INJURY_GUIDES 를 그대로
+      읽어서 답하므로 내용이 두 곳에서 갈라지지 않는다. -->
+ <div class="screen" id="chatbot-screen">
+ <div class="chatbot-messages" id="chatbot-messages"></div>
+ <div class="chatbot-suggest" id="chatbot-suggest"></div>
+ <form class="chatbot-input-row screen-foot" id="chatbot-form">
+ <input type="text" id="chatbot-input" class="inp chatbot-input" data-i18n-placeholder="chatbotPlaceholder" placeholder="궁금한 걸 물어보세요" autocomplete="off">
+ <button type="submit" class="chatbot-send-btn" id="chatbot-send-btn" aria-label="보내기" data-icon="send"></button>
+ </form>
+ <button class="back-link-btn" id="chatbot-back-btn" data-i18n="backBtn">이전</button>
  </div>
 
  <!-- SETUP (coach + nickname) -->
