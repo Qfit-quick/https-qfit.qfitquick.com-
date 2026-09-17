@@ -138,11 +138,14 @@ export function initChatbot({ translate, STATIC_UI, onShowScreen } = {}) {
 
     el('chatbot-back-btn')?.addEventListener('click', () => goScreen('more-screen'));
 
-    // 화면을 처음 열 때 한 번만 인사 + 제안 칩을 채운다. 다시 열 때마다
-    // 인사가 또 쌓이면 대화가 아니라 로그가 된다.
-    const chatbotScreen = el('chatbot-screen');
+    // "더보기" 목록의 항목은 회복·운동영상 항목처럼 각 화면이 자기 진입
+    // 버튼을 스스로 챙긴다(app.js 의 .recovery-trigger-btn 과 같은 자리) —
+    // 화면으로 들어가는 것과, 처음 열 때 한 번만 인사 + 제안 칩을 채우는
+    // 것을 여기서 같이 한다. 다시 열 때마다 인사가 또 쌓이면 대화가 아니라
+    // 로그가 된다.
     let greeted = false;
     document.getElementById('open-chatbot-btn')?.addEventListener('click', () => {
+      goScreen('chatbot-screen');
       if (greeted) return;
       greeted = true;
       appendMessage('bot', `<p>${esc(t(S.chatbotGreeting))}</p>`);
