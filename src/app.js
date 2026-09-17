@@ -1453,8 +1453,10 @@ async function checkSupabaseSession(){
 // 기록 화면을 여기 요약하려 들면 그 화면이 있을 이유가 없어진다.
 function updateBestBox(){
  if(!bestScoreBox) return;
- // 한 번도 안 했으면 감춘다. 0점을 크게 보여 주는 것은 성적표다.
- if(!(myProfile.totalCompletions > 0)){ bestScoreBox.hidden = true; return; }
+ // 완주가 0회여도 감추지 않는다(2026-09-17 요청). 예전에는 "0점을 크게
+ // 보여 주는 것은 성적표다"라는 이유로 통째로 숨겼는데, 그러면 시작한
+ // 사람에게는 이 자리에 원래 무엇이 있는지 알 길이 자체가 없다 —
+ // 있는 자리가 비어 있는 것보다 0 이 적혀 있는 편이 낫다.
  bestScoreBox.hidden = false;
  if(bestScoreVal) bestScoreVal.textContent = myProfile.bestScoreEver || 0;
  const metaEl = document.getElementById('best-score-meta');
