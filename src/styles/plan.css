@@ -25,6 +25,8 @@
     calc(var(--s-5) + env(safe-area-inset-left));
   background: var(--bg);
   overflow-y: auto;
+  /* .screen 과 같은 규칙 — 끝에서 바깥으로 넘기지 않는다 */
+  overscroll-behavior: contain;
   opacity: 1;
   transition: opacity var(--dur) var(--ease-out);
 }

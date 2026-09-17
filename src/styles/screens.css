@@ -557,6 +557,7 @@
 #video-lightbox {
   justify-content: flex-start;
   overflow-y: auto;
+  overscroll-behavior: contain;
   gap: var(--s-3);
   padding-top: calc(var(--s-4) + var(--tap) + env(safe-area-inset-top));
   padding-bottom: calc(var(--s-6) + env(safe-area-inset-bottom));

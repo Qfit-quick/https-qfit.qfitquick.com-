@@ -45,6 +45,7 @@
 #challenge-search-results {
   flex: none; display: flex; flex-direction: column; gap: var(--s-2);
   margin-bottom: var(--s-3); max-height: 320px; overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .challenge-search-empty { font-size: var(--t-xs); color: var(--challenge-text-dim); padding: var(--s-3); text-align: center; }
 .challenge-search-result {
