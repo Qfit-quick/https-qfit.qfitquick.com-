@@ -147,20 +147,19 @@ button {
 }
 
 /* ── 스크롤바 ─────────────────────────────────────────────
-   윈도우 기본은 폭 17px 에 흰 트랙이라 좁은 화면에서 혼자 밝다.
+   막대를 감춘다. 스크롤 자체는 그대로다 — 손가락·휠·키보드·스크롤바
+   드래그를 뺀 모든 길이 살아 있고, 막대가 차지하던 폭(윈도우 기본 17px)이
+   내용으로 돌아간다. 가로로 넘기는 줄들(칩 줄·탭 줄)이 이미 각자
+   같은 방법으로 감추고 있던 것을 전역으로 올린 것이다.
+
+   대가: 지금 어디쯤인지 알려 주던 표시가 없어진다. 목록이 더 있다는 것은
+   잘리는 내용으로만 읽히므로, 아래가 딱 떨어지게 끝나는 화면을 만들지 말 것.
+
    표준 속성과 의사요소를 같이 걸면 크롬이 의사요소를 통째로 무시하므로
    파이어폭스만 @supports 로 갈라 준다. */
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: var(--line);
-  border-radius: var(--r-full);
-  /* 폭을 줄이면 잡는 면적까지 줄어든다. 이 방법은 10px 을 유지한 채 여백만 만든다. */
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
+::-webkit-scrollbar { display: none; }
 @supports not selector(::-webkit-scrollbar) {
-  * { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+  * { scrollbar-width: none; }
 }
 
 /* ── 움직임을 줄여 달라는 설정 ──────────────────────────
