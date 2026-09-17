@@ -74,7 +74,7 @@ export const STATIC_UI = {
  chatbotBtn: {ko:'챗봇', en:'Chatbot', zh:'聊天机器人'},
  chatbotTitle: {ko:'챗봇', en:'Chatbot', zh:'聊天机器人'},
  chatbotPlaceholder: {ko:'궁금한 걸 물어보세요', en:'Ask me something', zh:'想问点什么？'},
- chatbotGreeting: {ko:'안녕하세요! 부위별 대처법, 회복 습관, 앱 사용법을 물어보세요.', en:"Hi! Ask me about injury care by body part, recovery habits, or how the app works.", zh:'你好！可以问我部位处理方法、恢复习惯或使用方法。'},
+ chatbotGreeting: {ko:'안녕하세요! 부위별 대처법, 회복 습관, 운동 방법, 업적, 프로그램, 앱 사용법을 물어보세요.', en:"Hi! Ask me about injury care by body part, recovery habits, exercises, achievements, programs, or how the app works.", zh:'你好！可以问我部位处理方法、恢复习惯、运动方法、成就、训练计划或使用方法。'},
  chatbotFallback: {ko:'무슨 말인지 잘 모르겠어요. 아래 중에 골라보시겠어요?', en:"I'm not sure I understood. Want to pick one of these?", zh:'我不太明白，要不要选一下下面的选项？'},
  chatbotDetailLink: {ko:'%s 자세히 보기 →', en:'See more about %s →', zh:'查看更多关于%s →'},
  settingsBtn: {ko:'설정', en:'Settings', zh:'设置'},

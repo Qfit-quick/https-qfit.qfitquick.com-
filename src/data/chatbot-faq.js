@@ -49,7 +49,24 @@ export const CHATBOT_FAQ = [
     keywords: ['안녕', 'hi', 'hello', '하이'],
     answer: { ko: '안녕하세요! 운동·회복·앱 사용법 중 궁금한 걸 물어보세요.', en: 'Hi! Ask me anything about workouts, recovery, or how the app works.', zh:'你好！可以问我训练、恢复或使用方法方面的问题。' },
   },
+  {
+    keywords: ['코치', 'coach'],
+    answer: { ko: '성격이 다른 코치 5명 중 하나를 골라 운동 중 응원 말을 들을 수 있어요. 설정에서 바꿀 수 있어요.', en: 'Pick one of 5 coaches with different personalities to cheer you on during workouts — change it anytime in Settings.', zh:'可以从5位性格不同的教练中选一位，训练时听他的加油语，设置里随时可换。' },
+  },
 ];
+
+// 2026-09-17 요청("큐핏에 해당하는 내용은 뭐든 검색하면 자연스럽게
+// 안내") — 업적은 achievements.js 의 check() 가 함수라 글로 옮겨 적어야
+// 한다. id 로 achievements.js 와 잇는다(같은 이유로 두 곳에 안 두는
+// 원칙과 다르게, 이건 애초에 글로 된 원본이 없어서 여기서 새로 쓴다).
+export const ACHIEVEMENT_HINTS = {
+  first: { ko: '운동을 한 번이라도 완주하면 얻어요.', en: 'Finish just one workout to earn it.', zh:'完成一次训练即可获得。' },
+  streak3: { ko: '3일 연속으로 운동하면 얻어요.', en: 'Work out 3 days in a row to earn it.', zh:'连续训练3天即可获得。' },
+  time10: { ko: '운동 시간을 합쳐서 10분을 채우면 얻어요.', en: 'Earn it once your total workout time reaches 10 minutes.', zh:'累计训练时长达到10分钟即可获得。' },
+  total100: { ko: '운동을 100번 완주하면 얻어요.', en: 'Complete 100 workout sessions to earn it.', zh:'累计完成100次训练即可获得。' },
+  cal1000: { ko: '태운 칼로리를 합쳐서 1000kcal를 채우면 얻어요.', en: 'Burn a cumulative 1000 kcal to earn it.', zh:'累计消耗1000千卡即可获得。' },
+  comeback: { ko: '며칠 쉬었다가 다시 돌아오면 얻어요.', en: 'Come back after taking a break to earn it.', zh:'休息几天后回归训练即可获得。' },
+};
 
 /** 문장 안에 키워드가 있나. 공백을 지우고 소문자로 맞춰 비교한다 —
  *  "몇 분" 과 "몇분" 을 같은 것으로 본다. */
