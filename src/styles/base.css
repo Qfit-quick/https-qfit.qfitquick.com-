@@ -27,7 +27,12 @@ body {
   position: fixed;
   inset: 0;
   width: 100%;
-  min-height: 100dvh;
+  /* min-height 를 두지 않는다. inset:0 이 이미 화면에 정확히 못박아 놓은
+     상자인데 min-height:100dvh 를 얹으면 그 값이 실제 화면보다 조금이라도
+     크게 나오는 순간(홈 화면 설치 상태에서 실제로 그렇다) body 만 그만큼
+     길어지고, overflow:hidden 이라 넘친 만큼이 통째로 잘린다 — 잘리는 것이
+     하필 #app 맨 아래에 앉은 탭바다. #app 을 100dvh 에서 100% 로 바꾼 것과
+     같은 이유이고(아래 #app 주석), body 에만 남아 있던 것을 마저 지운다. */
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
@@ -106,10 +111,14 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
+  /* 아래 여백에 safe-area-inset-bottom 을 더하지 않는다. 탭바가 그 자리를
+     이미 덮고 있어서(components.css 의 .tabbar) 여기서 또 비우면 폰에서만
+     마지막 줄과 탭바 사이가 인디케이터 높이만큼 더 벌어진다 —
+     기기마다 화면 아래 여백이 달라 보이던 것이 이것이다. */
   padding:
     calc(var(--s-6) + env(safe-area-inset-top))
     calc(var(--s-5) + env(safe-area-inset-right))
-    calc(var(--s-8) + var(--tabbar-h) + env(safe-area-inset-bottom))
+    calc(var(--s-8) + var(--tabbar-h))
     calc(var(--s-5) + env(safe-area-inset-left));
   overflow-y: auto;
   overflow-x: hidden;

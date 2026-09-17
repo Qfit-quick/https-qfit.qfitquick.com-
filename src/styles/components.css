@@ -683,7 +683,13 @@
   display: flex;
   background: var(--bg);
   border-top: 1px solid var(--line);
-  padding-bottom: env(safe-area-inset-bottom);
+  /* 아래를 비우지 않는다(2026-09-17). 예전에는 env(safe-area-inset-bottom) 을
+     탭 자체 여백 위에 그대로 더했는데, 데스크톱에서는 그 값이 0 이라 딱
+     붙어 보이고 홈 화면에 설치한 폰에서만 34~48px 짜리 빈 띠가 생겨
+     탭바 윗선이 화면 바닥에서 그만큼 떠 보였다("아래 배너가 떠 있다").
+     띠 색이 바탕과 같아서 '바가 두꺼운 것'이 아니라 '바가 뜬 것'으로 읽힌다.
+     대신 탭 아래쪽은 홈 인디케이터·제스처 영역과 겹친다 — 바닥에 붙이는 쪽을
+     택한 결정이다. 되돌리려면 이 한 줄을 살리면 된다. */
   transition: transform var(--dur) var(--ease-out), opacity var(--dur) linear;
 }
 /* 운동 중에는 감춘다. 나가는 길은 일시정지뿐이어야 한다. */
@@ -1179,9 +1185,10 @@ button.card:active { background: var(--surface-2); }
    다음 동작 줄이 비쳐 보인다(2026-09-15 발견 — "시작 버튼 아래에 운동이
    보인다"). */
 body.immersive .screen:has(> .screen-foot) { padding-bottom: 0; }
-/* 탭바가 있는 화면에서는 그만큼 더 비운다 — 안 그러면 주 버튼이 탭바에 깔린다. */
+/* 탭바가 있는 화면에서는 그만큼 더 비운다 — 안 그러면 주 버튼이 탭바에 깔린다.
+   안전영역은 더하지 않는다: 탭바가 바닥에 붙은 뒤로 그 자리는 탭바 몫이다. */
 body:not(.immersive) .screen-foot {
-  padding-bottom: calc(var(--s-3) + var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--s-3) + var(--tabbar-h));
 }
 
 /* ── 토스트 ────────────────────────────────────────────
@@ -1190,7 +1197,7 @@ body:not(.immersive) .screen-foot {
 .toast {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--s-8) + var(--tabbar-h) + env(safe-area-inset-bottom));
+  bottom: calc(var(--s-8) + var(--tabbar-h));
   z-index: 60;
   max-width: calc(100% - var(--s-10));
   padding: var(--s-3) var(--s-5);
@@ -1211,7 +1218,7 @@ body.immersive .toast { bottom: calc(var(--s-8) + env(safe-area-inset-bottom)); 
 /* 하단 바가 있는 화면에서는 그 위로 올라간다 — 안 그러면 주 버튼을 덮는데,
    하필 그 버튼이 '이제 뭘 해야 하는지' 를 말하고 있는 자리다. */
 body:has(.screen.active > .screen-foot) .toast {
-  bottom: calc(var(--s-10) + var(--tap) + var(--tabbar-h) + env(safe-area-inset-bottom));
+  bottom: calc(var(--s-10) + var(--tap) + var(--tabbar-h));
 }
 
 /* 머리 오른쪽 한 자리. 제목과 무게가 같아지면 안 되므로 보조색 · 13px. */
