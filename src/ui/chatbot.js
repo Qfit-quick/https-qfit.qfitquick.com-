@@ -49,6 +49,21 @@ function scoreAnyLang(text, dict) {
   return Math.max(0, ...['ko', 'en', 'zh'].map((l) => (dict && dict[l]) ? scoreMatch(text, dict[l]) : 0));
 }
 
+// 프로그램 이름에는 "3주"/"3-Week"/"3周" 같은 기간이 붙어 있고, 위치도
+// 언어·프로그램마다 다르다(앞: "3-Week Fat Loss", 뒤: "Hyrox 3-Week") —
+// matchesKeyword 는 라벨 전체가 사용자가 입력한 문장 안에 그대로 들어있어야
+// 맞는데, 실제로 "하이록스"라고만 치지 "하이록스 3주"라고 기간까지 쳐서
+// 묻는 사람은 없다. 매칭용으로만 기간 표시를 지워 핵심 이름만 남긴다
+// (화면에 보여줄 땐 원래 이름 그대로 쓴다 — programReplyHtml 참고).
+function stripProgramDuration(str) {
+  return String(str || '').replace(/\d+\s*-?\s*(week|주|周)/gi, '');
+}
+
+function scoreProgramName(text, nameDict) {
+  const stripped = { ko: stripProgramDuration(nameDict.ko), en: stripProgramDuration(nameDict.en), zh: stripProgramDuration(nameDict.zh) };
+  return scoreAnyLang(text, stripped);
+}
+
 function collectCandidates(text) {
   const list = [];
   const push = (type, score, data) => { if (score > 0) list.push({ type, score, data }); };
@@ -61,7 +76,7 @@ function collectCandidates(text) {
   });
   EXERCISES.forEach((ex) => push('exercise', scoreAnyLang(text, ex.label), ex));
   ACHIEVEMENTS.forEach((a) => push('achievement', scoreAnyLang(text, a.label), a));
-  PROGRAMS.forEach((p) => push('program', Math.max(scoreAnyLang(text, p.name), scoreAnyLang(text, p.tagline)), p));
+  PROGRAMS.forEach((p) => push('program', Math.max(scoreProgramName(text, p.name), scoreAnyLang(text, p.tagline)), p));
 
   list.sort((a, b) => b.score - a.score);
   return list;
