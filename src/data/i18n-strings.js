@@ -34,6 +34,7 @@ export const STATIC_UI = {
  routineNamePh: {ko:'루틴 이름 (예: 아침 전신)', en:'Routine name (e.g. Morning Full Body)', zh:'方案名称（例：晨练全身）'},
  saveRoutineBtn: {ko:'저장', en:'Save', zh:'保存'},
  accountBtn: {ko:'로그인', en:'Log In', zh:'登录'},
+ accountBtnLoggedIn: {ko:'로그아웃', en:'Log Out', zh:'登出'},
  nicknamePh: {ko:'닉네임 (선택)', en:'Nickname (optional)', zh:'昵称（选填）'},
  backBtn: {ko:'이전', en:'Back', zh:'返回'},
  startWod: {ko:'START Q', en:'START Q', zh:'START Q'},

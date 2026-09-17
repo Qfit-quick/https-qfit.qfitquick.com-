@@ -116,6 +116,10 @@ function setLang(lang){
  try{ renderPetCard(); }catch(e){ console.error('pet card lang repaint failed:', e); }
  if(typeof updateBestBox === 'function') updateBestBox();
  if(typeof renderLiveStats === 'function') renderLiveStats();
+ // 위 applyStaticTranslations() 가 홈의 "로그인" 버튼을 사전 기본값으로
+ // 덮어써서, 로그인한 채로 언어를 바꾸면 버튼이 "로그아웃"에서 다시
+ // "로그인"으로 되돌아가 있었다 — 로그인 상태를 아는 이 함수로 바로잡는다.
+ try{ updateAccountUI(); }catch(e){ console.error('account UI lang repaint failed:', e); }
  const lb = document.getElementById('lang-btn');
  if(lb) lb.textContent = LANG_LABEL[nextLang()];
  document.dispatchEvent(new CustomEvent('qfit:lang', { detail: { lang: LANG } }));
@@ -1390,6 +1394,11 @@ function updateAccountUI(){
  const signupForm = document.getElementById('account-signup-form');
  const tabs = document.querySelector('.auth-tabs');
  const backBtn = document.getElementById('account-back-btn');
+ // 홈 화면 위쪽의 "로그인" 글자 버튼 — 로그인·로그아웃 직후 이 함수를
+ // 부르는데도 정작 이 버튼은 안 바뀌어서, 로그인해도 화면이 계속
+ // "로그인" 이라고 말하고 있었다(2026-09-17 발견). 계정 화면 **안**의
+ // 것만 바꾸고 화면 밖의 이 버튼은 빠뜨렸던 것.
+ if(openAccountBtn) openAccountBtn.textContent = currentUserId ? t(STATIC_UI.accountBtnLoggedIn) : t(STATIC_UI.accountBtn);
  if(!loginForm) return;
  if(currentUserId){
  loginForm.style.display = 'none';
