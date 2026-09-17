@@ -441,6 +441,7 @@ const langBtn = document.getElementById('lang-btn');
 const recordsBackBtn = document.getElementById('records-back-btn');
 const recoveryScreen = document.getElementById('recovery-screen');
 const recoveryBackBtn = document.getElementById('recovery-back-btn');
+const chatbotScreen = document.getElementById('chatbot-screen');
 const videoGalleryScreen = document.getElementById('video-gallery-screen');
 const moreScreen = document.getElementById('more-screen');
 // 새로 붙은 세 화면. showScreen 의 목록에 같이 들어간다 —
@@ -512,7 +513,7 @@ const bestScoreBox = document.getElementById('best-score-box');
 const bestScoreVal = document.getElementById('best-score-val');
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,heartgameScreen,challengeScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,heartgameScreen,challengeScreen,chatbotScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  if(el === moreScreen){
  try{
