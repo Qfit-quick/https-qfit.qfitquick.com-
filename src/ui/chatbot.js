@@ -64,19 +64,23 @@ function scoreProgramName(text, nameDict) {
   return scoreAnyLang(text, stripped);
 }
 
+// 점수가 같으면(예: "다이어트 3주 프로그램"이 다이어트 프로그램 이름과
+// FAQ의 '프로그램' 키워드에 똑같이 맞을 때) sort 는 안정 정렬이라 먼저
+// push 한 쪽이 이긴다 — 그래서 구체적인 답(운동·업적·프로그램)을 뭉뚱그린
+// 사용법 FAQ보다 먼저 넣는다. 콕 집어 물었으면 콕 집은 답을 우선한다.
 function collectCandidates(text) {
   const list = [];
   const push = (type, score, data) => { if (score > 0) list.push({ type, score, data }); };
 
   INJURY_GUIDES.forEach((g) => push('injury', scoreAnyLang(text, g.part), g));
   RECOVERY_CARDS.forEach((c) => push('recovery', scoreAnyLang(text, c.tag), c));
+  EXERCISES.forEach((ex) => push('exercise', scoreAnyLang(text, ex.label), ex));
+  ACHIEVEMENTS.forEach((a) => push('achievement', scoreAnyLang(text, a.label), a));
+  PROGRAMS.forEach((p) => push('program', Math.max(scoreProgramName(text, p.name), scoreAnyLang(text, p.tagline)), p));
   CHATBOT_FAQ.forEach((f) => {
     const score = Math.max(0, ...f.keywords.map((k) => scoreMatch(text, k)));
     push('faq', score, f);
   });
-  EXERCISES.forEach((ex) => push('exercise', scoreAnyLang(text, ex.label), ex));
-  ACHIEVEMENTS.forEach((a) => push('achievement', scoreAnyLang(text, a.label), a));
-  PROGRAMS.forEach((p) => push('program', Math.max(scoreProgramName(text, p.name), scoreAnyLang(text, p.tagline)), p));
 
   list.sort((a, b) => b.score - a.score);
   return list;
