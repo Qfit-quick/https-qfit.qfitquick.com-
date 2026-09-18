@@ -35,6 +35,7 @@ import { ACHIEVEMENTS } from '../data/achievements.js';
 import { PROGRAMS } from '../data/programs.js';
 import { FOODS, EATING_OUT } from '../data/foods.js';
 import { MUSCLE_GROUPS } from '../data/muscle-groups.js';
+import { COACHES } from '../data/coaches.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -104,10 +105,16 @@ function collectCandidates(text) {
   RECOVERY_CARDS.forEach((c) => push('recovery', scoreAnyLang(text, c.tag), c));
   EXERCISES.forEach((ex) => push('exercise', scoreAnyLang(text, ex.label), ex));
   ACHIEVEMENTS.forEach((a) => push('achievement', scoreAnyLang(text, a.label), a));
-  PROGRAMS.forEach((p) => push('program', Math.max(scoreProgramName(text, p.name), scoreAnyLang(text, p.tagline)), p));
+  COACHES.forEach((c) => push('coach', scoreAnyLang(text, c.name), c));
   FOODS.forEach((f) => push('food', scoreFoodName(text, f.label), f));
   EATING_OUT.forEach((f) => push('eatout', scoreFoodName(text, f.label), f));
+  // 부위 묶음("하체" 등)을 프로그램보다 먼저 넣는다 — 프로그램 이름은
+  // 기간을 지우고 매칭하는데("하체 3주" → "하체"), 그러면 "하체 운동 뭐
+  // 있어?" 같은 순수 부위 질문이 부위 목록이 아니라 어쩌다 이름이 겹친
+  // 프로그램으로 답해지는 문제가 있었다(2026-09-18 발견) — 짧고 흔한
+  // 부위 이름 하나로만 묻는다면 프로그램보다 부위 쪽 뜻일 확률이 높다.
   MUSCLE_GROUPS.forEach((g) => push('muscle', scoreAnyLang(text, g.label), g));
+  PROGRAMS.forEach((p) => push('program', Math.max(scoreProgramName(text, p.name), scoreAnyLang(text, p.tagline)), p));
   CHATBOT_FAQ.forEach((f) => {
     const score = Math.max(0, ...f.keywords.map((k) => scoreMatch(text, k)));
     push('faq', score, f);
@@ -170,6 +177,15 @@ function programReplyHtml(p) {
     esc(t(S.chatbotDetailLink).replace('%s', t(p.name))) + '</button>';
 }
 
+// 코치는 이름 하나로만 물으면(예: "도발 코치") 성격을 바로 보여주는 게
+// 프로그램 소개보다 이해가 빠르다 — 응원 대사 중 짧은 한 줄(push)을
+// 그대로 인용한다. push 는 배열이 아니라 문자열 하나뿐이라 pickVariant
+// 같은 무작위 선택이 필요 없다.
+function coachReplyHtml(coach) {
+  return `<p><b>${esc(t(coach.name))}</b></p>` +
+    (coach.push ? `<p>"${esc(t(coach.push))}"</p>` : '');
+}
+
 // 재료 표(FOODS)는 100g 기준 값만 갖고 있어서 그대로 보여주면 "그래서
 // 내가 먹는 양은 몇 kcal 인데?"가 안 풀린다 — serveG(1인분 그램수)로
 // 환산한 값을 같이 보여준다.
@@ -179,7 +195,7 @@ function foodReplyHtml(food) {
   const macros = `${per100.kcal ?? '?'}kcal · P${per100.p ?? '?'} · C${per100.c ?? '?'} · F${per100.f ?? '?'}`;
   return `<p><b>${esc(t(food.label))}</b></p>` +
     `<p>${esc(t(S.chatbotFoodPer100))} ${esc(macros)}</p>` +
-    (food.serve && serveKcal != null ? `<p>${esc(t(food.serve))} ≈ ${esc(t(S.chatbotAboutKcal).replace('%s', String(serveKcal)))}</p>` : '');
+    (food.serve && serveKcal != null ? `<p>${esc(t(food.serve))}: ${esc(t(S.chatbotAboutKcal).replace('%s', String(serveKcal)))}</p>` : '');
 }
 
 // EATING_OUT 은 1인분 기준 kcal 을 통째로 들고 있고(재료처럼 100g 환산이
@@ -204,6 +220,7 @@ function replyHtmlFor(candidate) {
     case 'recovery': return recoveryReplyHtml(candidate.data);
     case 'exercise': return exerciseReplyHtml(candidate.data);
     case 'achievement': return achievementReplyHtml(candidate.data);
+    case 'coach': return coachReplyHtml(candidate.data);
     case 'program': return programReplyHtml(candidate.data);
     case 'food': return foodReplyHtml(candidate.data);
     case 'eatout': return eatoutReplyHtml(candidate.data);
@@ -219,6 +236,7 @@ function suggestionsFor(candidate) {
     case 'recovery': return RECOVERY_CARDS.map((c) => t(c.tag));
     case 'exercise': return EXERCISES.map((ex) => t(ex.label)).filter((l) => l !== t(candidate.data.label)).slice(0, 6);
     case 'achievement': return ACHIEVEMENTS.map((a) => t(a.label));
+    case 'coach': return COACHES.map((c) => t(c.name));
     case 'program': return PROGRAMS.map((p) => t(p.name));
     case 'food': return FOODS.map((f) => t(f.label)).filter((l) => l !== t(candidate.data.label)).slice(0, 6);
     case 'eatout': return EATING_OUT.map((f) => t(f.label)).filter((l) => l !== t(candidate.data.label)).slice(0, 6);
