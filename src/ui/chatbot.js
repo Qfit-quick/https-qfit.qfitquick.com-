@@ -34,6 +34,13 @@
 // 여러 곳에서 동시에 맞을 수 있어(예: "스쿼트"가 운동 이름이면서 회복
 // 태그이기도 할 수 있음) 첫 번째로 찾은 것을 바로 답하지 않고, 매칭된
 // 키워드 길이가 가장 긴(=가장 구체적인) 후보를 고른다(scoreMatch).
+//
+// 2026-09-18 세 번째 확장("도전 탭 세부까지 원하면?" → "ㅇㅇ") — 도전
+// (챌린지 트래커) 7개 트랙을 이름으로 찾을 수 있게 했다. 트랙 안의
+// 주차별 세부 운동까지는 안 옮긴다(합치면 100개가 넘어 challengeTracks.js
+// 를 통째로 베끼는 셈이 된다) — 개요만 보여주고 나머지는 도전 탭 안에서
+// 보게 한다. 이 트랙 이름들은 challengeTracks.js 자체가 한국어 전용으로
+// 정해 둔 데이터라(전문 용어 오역 위험) 여기서도 한국어로만 찾는다.
 
 import { RECOVERY_CARDS, INJURY_GUIDES } from '../data/recovery.js';
 import { CHATBOT_FAQ, ACHIEVEMENT_HINTS } from '../data/chatbot-faq.js';
@@ -44,6 +51,7 @@ import { PROGRAMS } from '../data/programs.js';
 import { FOODS, EATING_OUT } from '../data/foods.js';
 import { MUSCLE_GROUPS } from '../data/muscle-groups.js';
 import { COACHES } from '../data/coaches.js';
+import { CHALLENGE_TRACKS, CHALLENGE_TRACK_ORDER } from '../data/challengeTracks.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -173,6 +181,17 @@ function collectCandidates(text) {
   // 부위 이름 하나로만 묻는다면 프로그램보다 부위 쪽 뜻일 확률이 높다.
   MUSCLE_GROUPS.forEach((g) => push('muscle', scoreAnyLang(text, g.label), g));
   PROGRAMS.forEach((p) => push('program', Math.max(scoreProgramName(text, p.name), scoreAnyLang(text, p.tagline)), p));
+  // 도전(챌린지 트래커) 7개 트랙 — 이름·별칭 둘 다 한국어 전용이다
+  // (challengeTracks.js 머리 설명: 칼리스테닉스 전문 용어 104개+@를
+  // 영어·중국어로 오역 없이 옮기려면 별도 검수가 필요해서, 지금은
+  // 한국어만 정확하게 유지하기로 한 결정을 그대로 따른다 — scoreAnyLang
+  // 이 아니라 scoreMatch 로 한국어만 본다). name(정식 이름)과 short(줄여
+  // 부르는 이름, 예: 핸드스탠드의 short 는 '물구나무')을 둘 다 본다.
+  CHALLENGE_TRACK_ORDER.forEach((key) => {
+    const track = CHALLENGE_TRACKS[key];
+    if (!track) return;
+    push('challenge', Math.max(scoreMatch(text, track.name), scoreMatch(text, track.short)), { key, track });
+  });
   CHATBOT_FAQ.forEach((f) => {
     const score = Math.max(0, ...f.keywords.map((k) => scoreMatch(text, k)));
     push('faq', score, f);
@@ -272,6 +291,19 @@ function muscleReplyHtml(group) {
   return `<p><b>${esc(t(group.label))}</b></p><p>${esc(names.join(', '))}</p>`;
 }
 
+// 트랙 전체(예: 턱걸이 12주 4단계) 세부를 다 넣지는 않는다 — 한 단계에
+// 운동이 4~5개씩, 4단계, 트랙 7개면 도합 100개가 넘어서 여기 다 옮기면
+// 이 파일 자체가 challengeTracks.js 의 두 번째 사본이 된다(머리 설명의
+// "같은 내용 두 곳" 원칙 위반). 개요(총 주차·단계 수·1단계 목표)만 보여
+// 주고, 나머지는 실제 화면(도전 탭)에서 보게 한다.
+function challengeReplyHtml({ key, track }) {
+  const firstPhase = track.phases && track.phases[0];
+  return `<p><b>${esc(track.name)}</b> (${track.totalWeeks}주 · ${track.phases.length}단계)</p>` +
+    (firstPhase ? `<p>1단계 — ${esc(firstPhase.title)}: ${esc(firstPhase.goal)}</p>` : '') +
+    `<button type="button" class="link-btn chatbot-detail-link" data-challenge="${key}">` +
+    esc(t(S.chatbotDetailLink).replace('%s', track.name)) + '</button>';
+}
+
 function replyHtmlFor(candidate) {
   switch (candidate.type) {
     case 'injury': return injuryReplyHtml(candidate.data);
@@ -283,6 +315,7 @@ function replyHtmlFor(candidate) {
     case 'food': return foodReplyHtml(candidate.data);
     case 'eatout': return eatoutReplyHtml(candidate.data);
     case 'muscle': return muscleReplyHtml(candidate.data);
+    case 'challenge': return challengeReplyHtml(candidate.data);
     case 'faq': return `<p>${esc(t(candidate.data.answer))}</p>`;
     default: return '';
   }
@@ -299,6 +332,7 @@ function suggestionsFor(candidate) {
     case 'food': return FOODS.map((f) => t(f.label)).filter((l) => l !== t(candidate.data.label)).slice(0, 6);
     case 'eatout': return EATING_OUT.map((f) => t(f.label)).filter((l) => l !== t(candidate.data.label)).slice(0, 6);
     case 'muscle': return MUSCLE_GROUPS.map((g) => t(g.label));
+    case 'challenge': return CHALLENGE_TRACK_ORDER.map((k) => CHALLENGE_TRACKS[k].short);
     default: return defaultSuggestions();
   }
 }
@@ -392,6 +426,20 @@ export function initChatbot({ translate, STATIC_UI, onShowScreen } = {}) {
       if (link.dataset.exercise) { goToExerciseVideo(link.dataset.exercise); return; }
 
       if (link.dataset.program) { goScreen('programs-screen'); return; }
+
+      if (link.dataset.challenge) {
+        goScreen('challenge-screen');
+        const track = CHALLENGE_TRACKS[link.dataset.challenge];
+        // 도전 탭 자체는 부팅 때 이미 그려져 있다(challengeTracker.js 가
+        // initChallengeTracker() 끝에서 renderTrack() 을 바로 부른다) —
+        // 그래서 운동영상처럼 "처음 한 번 그리기"를 따로 기다릴 필요
+        // 없이 바로 트랙 탭 버튼을 찾아 누르면 된다. 버튼 글자가
+        // "{short} ({주수}주)" 형태라 short 만 부분일치로 찾는다.
+        const tabBtn = track && [...document.querySelectorAll('.challenge-tab-btn')]
+          .find((b) => b.textContent.includes(track.short));
+        if (tabBtn) tabBtn.click();
+        return;
+      }
     });
 
     el('chatbot-back-btn')?.addEventListener('click', () => goScreen('more-screen'));
