@@ -7,6 +7,9 @@
 index.html          -text
 sw.js               -text
 sw-push.js          -text
+# 그 원본도 같이 못 박는다. 여기를 빼면 윈도우에서 원본이 CRLF 로 풀리고,
+# 빌드가 그걸 그대로 루트에 복사하면서 산출물이 매번 '바뀐 것' 으로 잡힌다.
+public/sw-push.js   -text
 registerSW.js       -text
 workbox-*.js        -text
 manifest.webmanifest -text
