@@ -1179,15 +1179,15 @@ button.card:active { background: var(--surface-2); }
   border-top: 1px solid var(--line);
   background: var(--bg);
 }
-/* 이 바가 있는 화면은 아래 여백을 바에 맡긴다 — 둘 다 비우면 두 배가 된다. */
-.screen:has(> .screen-foot) { padding-bottom: 0; }
+/* 이 바가 있는 화면이 아래 여백을 두 번 잡지 않게 하는 일은 base.css 의
+   .screen:has(> .screen-foot)::after 가 맡는다 — .screen 의 아래 여백이
+   padding 에서 ::after 칸으로 옮겨졌기 때문이다(그 주석에 이유가 있다). */
 /* 탭바를 감춘 화면(base.css 의 body.immersive .screen)은 이 여백을 자기
    몫(var(--s-6))으로 따로 채워 둔다 — 그 규칙이 body 태그까지 걸려 있어
    구체성이 위 규칙보다 높으므로, 시작 버튼이 있는 몰입 화면(WOD 미리보기 등)
    에서는 여기서도 같이 지워야 한다. 안 지우면 버튼 바로 아래 24px 틈으로
    다음 동작 줄이 비쳐 보인다(2026-09-15 발견 — "시작 버튼 아래에 운동이
    보인다"). */
-body.immersive .screen:has(> .screen-foot) { padding-bottom: 0; }
 /* 탭바가 있는 화면에서는 그만큼 더 비운다 — 안 그러면 주 버튼이 탭바에 깔린다.
    안전영역은 더하지 않는다: 탭바가 바닥에 붙은 뒤로 그 자리는 탭바 몫이다. */
 body:not(.immersive) .screen-foot {

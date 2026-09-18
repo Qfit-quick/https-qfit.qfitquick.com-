@@ -129,7 +129,7 @@ button {
   padding:
     calc(var(--s-6) + env(safe-area-inset-top))
     calc(var(--s-5) + env(safe-area-inset-right))
-    calc(var(--s-8) + var(--tabbar-h))
+    0
     calc(var(--s-5) + env(safe-area-inset-left));
   overflow-y: auto;
   overflow-x: hidden;
@@ -147,6 +147,30 @@ button {
   pointer-events: auto;
   transform: none;
 }
+
+/* 아래 여백을 padding 이 아니라 '빈 칸' 으로 만든다(2026-09-18).
+ *
+ * 여기는 세로 flex 상자이면서 스크롤 상자다(display:flex 와 overflow-y:auto).
+ * 사파리는 그런 상자의 padding-bottom 을 **스크롤 가능 범위에 넣지 않는다**.
+ * 끝까지 내려도 마지막 아이의 끝에서 멈추고, 그 아래 비워 둔 자리는 없는
+ * 것이 된다 — 그런데 탭바는 그 자리를 실제로 덮고 있으므로, 맨 끝 요소가
+ * 탭바 밑에 깔린 채 꺼낼 방법이 없어진다. 더보기 맨 아래 '최고 기록' 카드가
+ * 그 자리였다("최고기록은 완전히 안 보여").
+ *
+ * 크롬에서는 padding 이 들어가므로 데스크톱에서는 멀쩡해 보인다 — 그래서
+ * 폰에서만 나는 증상으로 읽혔다.
+ *
+ * ::after 는 이 상자의 flex 아이템이 된다. 아이템은 스크롤 범위에 반드시
+ * 들어가므로 어느 엔진에서도 같은 자리가 남는다.
+ */
+.screen::after {
+  content: '';
+  flex: none;
+  height: calc(var(--s-8) + var(--tabbar-h));
+}
+/* 아래 고정 바가 있는 화면은 그 바가 자기 몫을 들고 있다(components.css 의
+   .screen-foot). 여기서 또 비우면 두 배가 된다. */
+.screen:has(> .screen-foot)::after { content: none; }
 
 /* 집중해야 하는 화면은 가운데로 모은다 */
 #countdown-screen,
@@ -185,6 +209,6 @@ button {
 /* 탭바를 감춘 화면에서는 그 자리를 여백으로 잡지 않는다.
    운동 화면은 세로가 이미 빠듯한데(사진·운동명·설명·타이머 링이 한 줄로 쌓인다)
    보이지도 않는 탭바를 위해 54px 을 비워 두고 있었다. */
-body.immersive .screen {
-  padding-bottom: calc(var(--s-6) + env(safe-area-inset-bottom));
+body.immersive .screen::after {
+  height: calc(var(--s-6) + env(safe-area-inset-bottom));
 }
