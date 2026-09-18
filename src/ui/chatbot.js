@@ -22,13 +22,21 @@
 // 지금까지 이 표를 읽는 화면이 없었다)로 "닭가슴살 칼로리" 같은 질문에
 // 답하고, MUSCLE_GROUPS(부위 묶음, src/data/muscle-groups.js)로 "하체
 // 운동 뭐 있어?" 처럼 부위로 묻는 질문에 그 부위 동작 목록을 보여준다.
+// COACHES 도 이름으로 물으면(예: "도발 코치") 그 코치 성격을 보여준다.
+//
+// 같은 날 요청("비슷한 오타를 치더라도 추측해서 정보를 줘야") — scoreMatch
+// 가 정확히 안 맞아도 편집거리(오타 허용)로 한 번 더 본다. 실제 데이터
+// 전부를 놓고 "서로 다른 두 항목이 오타로 헷갈릴 만큼 가깝지 않은지"
+// 확인했다 — 그렇게 걸린 것 중 "와이드푸쉬업"↔"파이크푸쉬업"처럼 진짜
+// 다른 운동끼리 헷갈릴 뻔한 건 문턱을 좁혀 없앴고, "백미밥"↔"현미밥"
+// 처럼 어차피 값이 비슷해 틀려도 크게 문제없는 것만 남겨 뒀다.
 //
 // 여러 곳에서 동시에 맞을 수 있어(예: "스쿼트"가 운동 이름이면서 회복
 // 태그이기도 할 수 있음) 첫 번째로 찾은 것을 바로 답하지 않고, 매칭된
 // 키워드 길이가 가장 긴(=가장 구체적인) 후보를 고른다(scoreMatch).
 
 import { RECOVERY_CARDS, INJURY_GUIDES } from '../data/recovery.js';
-import { CHATBOT_FAQ, ACHIEVEMENT_HINTS, matchesKeyword } from '../data/chatbot-faq.js';
+import { CHATBOT_FAQ, ACHIEVEMENT_HINTS } from '../data/chatbot-faq.js';
 import { EXERCISES } from '../data/exercises.js';
 import { VIDEO_CLIPS } from '../data/video-clips.js';
 import { ACHIEVEMENTS } from '../data/achievements.js';
@@ -49,10 +57,60 @@ function esc(str) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// 매칭 안 되면 0, 되면 키워드 길이(공백 제거) — 길수록 더 구체적인 매칭으로
-// 보고 우선한다. "스쿼트"(3글자)가 "스"(1글자, 어딘가에 있다면)보다 이긴다.
+const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, '');
+
+// 편집거리(레벤슈타인) — 두 문자열을 같게 만들려면 글자를 몇 개나
+// 넣고·빼고·바꿔야 하는지. 오타 허용의 기준값으로 쓴다.
+function editDistance(a, b) {
+  const m = a.length, n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      cur[j] = a[i - 1] === b[j - 1] ? prev[j - 1] : 1 + Math.min(prev[j - 1], prev[j], cur[j - 1]);
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
+// 매칭 안 되면 0, 정확히 맞으면 키워드 길이(공백 제거) — 길수록 더 구체적인
+// 매칭으로 보고 우선한다. "스쿼트"(3글자)가 "스"(1글자, 어딘가에 있다면)
+// 보다 이긴다.
+//
+// 정확히 안 맞아도 바로 포기하지 않는다(2026-09-18 요청: "비슷한 오타를
+// 치더라도 추측해서 정보를 줘야") — 문장 안을 키워드 길이만한 창으로
+// 훑으며 편집거리를 재서, 한두 글자만 다르면("스쿼드"↔"스쿼트") 오타로
+// 보고 매칭시킨다.
+//
+// 2글자 키워드는 오타 허용 대상에서 뺀다("알림"↔"알러지"처럼 글자
+// 하나만 겹쳐도 편집거리 1로 걸려서, 전혀 다른 두 낱말이 오타로
+// 오인된다 — 2글자에서는 1글자 차이가 절반이 달라진 것과 같다). 12자
+// 넘는 것도 뺀다 — 그 정도면 문장이라, 오타 허용을 걸면 관계없는
+// 문장끼리 우연히 비슷해져 엉뚱한 게 걸린다. 오타로 맞은 점수는 항상
+// 정수 아래로 깎아서(-0.5), 실제 정확한 매칭과 점수가 같아져 오타
+// 쪽이 이기는 일이 없게 한다.
 function scoreMatch(text, keyword) {
-  return matchesKeyword(text, keyword) ? String(keyword || '').replace(/\s+/g, '').length : 0;
+  const kw = norm(keyword);
+  if (!kw) return 0;
+  const t = norm(text);
+  if (t.includes(kw)) return kw.length;
+  if (kw.length < 3 || kw.length > 12) return 0;
+  const maxDist = kw.length <= 6 ? 1 : kw.length <= 10 ? 2 : 3;
+  const minLen = kw.length <= 3 ? kw.length : kw.length - 1;
+  const maxLen = kw.length + 1;
+  const scanLen = Math.min(t.length, 40);
+  let best = maxDist + 1;
+  for (let start = 0; start < scanLen; start++) {
+    for (let len = minLen; len <= maxLen; len++) {
+      if (start + len > t.length) break;
+      const dist = editDistance(t.slice(start, start + len), kw);
+      if (dist < best) best = dist;
+    }
+  }
+  return best <= maxDist ? Math.max(1, kw.length - best) - 0.5 : 0;
 }
 
 // 세 언어 중 가장 잘 맞는 점수 하나만 취한다 — 화면 언어와 다르게 물어봐도
