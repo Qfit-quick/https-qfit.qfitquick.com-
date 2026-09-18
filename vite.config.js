@@ -7,9 +7,17 @@ const ROOT = path.resolve(import.meta.dirname);
 // 설정 화면 맨 아래에 찍히는 판 번호. package.json 한 곳에서만 정한다 —
 // 코드에 손으로 적으면 배포마다 고쳐야 하고, 한 번 잊으면 거짓말을 시작한다.
 const PKG_VERSION = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
+// 빌드 시각. 판 번호(0.1.0)는 처음 만든 뒤로 한 번도 안 올렸고 앞으로도
+// 올릴 일이 드물어서, 그것만으로는 "지금 보고 있는 게 언제 것이냐" 를
+// 못 가린다 — 홈 화면에 설치한 앱이 옛 판에 묶여 있어도 번호는 같다.
+// 날짜를 같이 찍어 두면 설정 화면 한 줄만 보고 판별할 수 있다.
+const BUILD_TIME = new Date().toISOString().slice(0, 16).replace('T', ' ');
 
 export default defineConfig({
-  define: { __APP_VERSION__: JSON.stringify(PKG_VERSION) },
+  define: {
+    __APP_VERSION__: JSON.stringify(PKG_VERSION),
+    __BUILD_TIME__: JSON.stringify(BUILD_TIME),
+  },
   plugins: [
     // 서비스 워커를 빌드가 만든다.
     //

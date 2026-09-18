@@ -4493,7 +4493,11 @@ try{
  const verEl = document.getElementById('settings-version');
  // package.json 의 version 을 vite 가 심는다(vite.config.js 의 define).
  // 손으로 적으면 배포마다 고쳐야 하고, 한 번 잊으면 그때부터 거짓말을 한다.
- if(verEl) verEl.textContent = 'Q-fit ' + __APP_VERSION__;
+ //
+ // 빌드 시각을 같이 찍는다. 판 번호는 0.1.0 에서 한 번도 안 올렸으므로
+ // 그것만으로는 홈 화면 앱이 옛 판에 묶여 있는지를 못 가린다 — 사파리와
+ // 홈 화면 앱의 이 줄을 나란히 보면 한눈에 나온다.
+ if(verEl) verEl.textContent = 'Q-fit ' + __APP_VERSION__ + ' · ' + __BUILD_TIME__;
 
  const remToggle = document.getElementById('reminder-toggle');
  const remNote = document.getElementById('reminder-note');

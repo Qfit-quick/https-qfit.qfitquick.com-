@@ -3,7 +3,17 @@
 <head>
 <meta name="google" content="notranslate">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<!-- viewport-fit=cover 를 쓰지 않는다(2026-09-18).
+     cover 는 "안전영역까지 내가 직접 채우겠다"는 선언이다. 그 순간부터 위아래
+     끝은 CSS 가 env(safe-area-inset-*) 로 직접 비워 줘야 하는데, 그 값이
+     사파리 탭과 홈 화면 앱에서 다르게 나온다 — 탭은 위아래를 브라우저 막대가
+     이미 덮고 있어 0 에 가깝고, 홈 화면 앱은 노치 59px·홈 인디케이터 34px 이
+     그대로 들어온다. 같은 CSS 가 두 곳에서 다른 자리에 그려지는 이유가
+     이것이었다("사파리는 멀쩡한데 앱만 위아래가 어긋난다").
+     cover 를 빼면 iOS 가 안전영역 안쪽만 뷰포트로 준다 — 사파리 탭이 받는
+     것과 같은 상자다. 그 결과 env(...) 는 어디서나 0 이 되고, 코드 곳곳의
+     calc(기본값 + env(...)) 가 전부 기본값 하나로 수렴한다. 두 곳이 같아진다. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <title data-i18n="appTitle">Q-fit — 게임을 켰더니 운동이 끝나있다</title>
 
 <meta name="description" content="1분이면 끝나는 운동. 카메라도 판정도 없이, 켜면 바로 시작합니다.">
@@ -26,7 +36,11 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#edb83d">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- black-translucent 를 쓰지 않는다(2026-09-18). 이것도 같은 선언이다 —
+     "상태표시줄 밑으로 내용을 깔겠다". 위 viewport-fit 과 짝이라 하나만
+     빼면 위쪽만 규격이 어긋난다. default 는 상태표시줄 자리를 iOS 가 맡고
+     웹 화면은 그 아래에서 시작한다. 사파리 탭과 같은 모양이다. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Q-fit">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" href="icons/icon-192.png">
@@ -36,7 +50,7 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-B6kqWMUx.js"></script>
+  <script type="module" crossorigin src="./assets/index-CTYET4i8.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-BOdg6wmP.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>

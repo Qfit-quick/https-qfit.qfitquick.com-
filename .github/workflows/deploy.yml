@@ -73,13 +73,13 @@ jobs:
 
       - name: 산출물이 달라졌으면 되커밋
         run: |
-          if git diff --quiet -- index.html sw.js registerSW.js manifest.webmanifest assets icons media 'workbox-*.js'; then
+          if git diff --quiet -- index.html sw.js sw-push.js registerSW.js manifest.webmanifest assets icons media 'workbox-*.js'; then
             echo "배포본이 이미 소스와 같다 — 커밋할 것 없음"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- index.html sw.js registerSW.js manifest.webmanifest assets icons media 'workbox-*.js'
+          git add -- index.html sw.js sw-push.js registerSW.js manifest.webmanifest assets icons media 'workbox-*.js'
           git commit -m "빌드 산출물을 소스에 맞춤 [skip ci]"
           git push
           echo "배포본을 갱신했다."

@@ -6,6 +6,7 @@
 # 어긋나 있었다. 산출물은 빌드가 뱉은 LF 그대로 둬야 배포본과 같아진다.
 index.html          -text
 sw.js               -text
+sw-push.js          -text
 registerSW.js       -text
 workbox-*.js        -text
 manifest.webmanifest -text

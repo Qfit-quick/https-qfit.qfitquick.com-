@@ -33,6 +33,7 @@ import { initChallengeTracker } from './ui/challengeTracker.js';
 import { initChatbot } from './ui/chatbot.js';
 import { ICON } from './ui/icons.js';
 import { STATIC_UI } from './data/i18n-strings.js';
+import { initUpdate } from './pwa/update.js';
 
 // 계획과 기록지를 먼저 붙인다. 둘이 홈의 '오늘 두 칸' 카드와 계획 화면의
 // 안쪽을 만들어 넣으므로, 아이콘 칠하기(paintIcons)와 머리 만들기보다
@@ -80,3 +81,7 @@ hideSplash();
 
 // 서비스 워커 등록은 vite-plugin-pwa 가 넣는다(injectRegister: 'auto').
 // 여기서 또 등록하면 두 벌이 서로를 덮어쓴다.
+//
+// 다만 '등록' 과 '갱신' 은 다른 일이다. 등록만으로는 홈 화면에 설치한 앱이
+// 옛 판에 묶인 채 몇 주가 간다 — 그 사정은 pwa/update.js 맨 위에 적어 두었다.
+initUpdate();
