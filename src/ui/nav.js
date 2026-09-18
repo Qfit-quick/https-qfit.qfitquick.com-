@@ -130,6 +130,26 @@ export function initNav({ translate, STATIC_UI } = {}) {
   // 박아 둬서 언어를 바꿔도 탭바만 한국어로 남아 있었다(2026-09-15 확인).
   document.addEventListener('qfit:lang', () => paintLabels());
 
+  // 탭바가 실제로 몇 px 인지 재서 --tabbar-h 에 되먹인다.
+  //
+  // 이 값은 화면들이 "내 아래쪽 몇 px 은 탭바가 덮으니 비워 두자" 로 쓰는
+  // 숫자다(.screen 의 padding-bottom). 토큰에 54px 이라고 손으로 적혀
+  // 있었는데 실제로는 62px 이었다 — 탭 자체 여백과 윗선이 더해진 것을
+  // 안 센 값이다. 8px 이 모자라면 목록 맨 끝 줄이 탭바에 살짝 가리고,
+  // 그 줄이 바로 화면이 안 넘어가는 것처럼 보이던 자리다.
+  //
+  // 손으로 적은 숫자는 글꼴이나 여백을 손대는 순간 또 어긋난다. 재서 쓰면
+  // 어긋날 수가 없다. ResizeObserver 라 글자 크기가 바뀌어도 따라온다.
+  const bar = document.querySelector('.tabbar');
+  if (bar) {
+    const sync = () => {
+      const h = Math.round(bar.getBoundingClientRect().height);
+      if (h > 0) document.documentElement.style.setProperty('--tabbar-h', h + 'px');
+    };
+    sync();
+    if ('ResizeObserver' in window) new ResizeObserver(sync).observe(bar);
+  }
+
   document.addEventListener('screenchange', (e) => {
     const id = e.detail.id;
     // 시트에서 무언가를 골라 화면이 넘어간 경우. 안 닫으면 시트가 뜬 채로
