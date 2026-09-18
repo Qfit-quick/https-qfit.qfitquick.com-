@@ -2,16 +2,40 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 
 const ROOT = path.resolve(import.meta.dirname);
 // 설정 화면 맨 아래에 찍히는 판 번호. package.json 한 곳에서만 정한다 —
 // 코드에 손으로 적으면 배포마다 고쳐야 하고, 한 번 잊으면 거짓말을 시작한다.
 const PKG_VERSION = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
-// 빌드 시각. 판 번호(0.1.0)는 처음 만든 뒤로 한 번도 안 올렸고 앞으로도
-// 올릴 일이 드물어서, 그것만으로는 "지금 보고 있는 게 언제 것이냐" 를
-// 못 가린다 — 홈 화면에 설치한 앱이 옛 판에 묶여 있어도 번호는 같다.
-// 날짜를 같이 찍어 두면 설정 화면 한 줄만 보고 판별할 수 있다.
-const BUILD_TIME = new Date().toISOString().slice(0, 16).replace('T', ' ');
+// 판 표시에 같이 찍을 날짜. 판 번호(0.1.0)는 처음 만든 뒤로 한 번도 안
+// 올렸고 앞으로도 올릴 일이 드물어서, 그것만으로는 "지금 보고 있는 게 언제
+// 것이냐" 를 못 가린다 — 홈 화면에 설치한 앱이 옛 판에 묶여 있어도 번호는
+// 같다. 날짜가 있으면 설정 화면 한 줄만 보고 판별할 수 있다.
+//
+// ⚠ new Date() 를 쓰면 안 된다. 산출물이 저장소에 커밋되고 워크플로가
+// 'push 마다 다시 빌드해서 달라졌으면 되커밋' 하는 구조라(deploy.yml),
+// 빌드할 때마다 바뀌는 값을 심으면 **고친 게 없어도 매번 산출물이 달라진다**
+// — 되커밋이 끝없이 붙고, 자산 파일 해시가 매번 바뀌어 사용자가 468KB 를
+// 다시 받는다. 그래서 커밋 시각을 쓴다. 같은 커밋을 다시 빌드하면 결과가
+// 바이트까지 같다.
+function commitTime() {
+  try {
+    // --date=format: 을 쓰지 않는다 — 그 서식 문자열에 공백이 있어서
+    // 셸을 거치며 인자가 쪼개진다(윈도우에서 실제로 'unknown' 이 나왔다).
+    // %cI 는 공백이 없는 ISO 형식이라 안전하고, 자르는 일은 여기서 한다.
+    const iso = execSync('git log -1 --format=%cI', {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    return iso.slice(0, 16).replace('T', ' ');
+  } catch {
+    // git 이 없는 곳(내려받은 압축본 등)에서도 빌드는 되어야 한다.
+    return 'unknown';
+  }
+}
+const BUILD_TIME = commitTime();
 
 export default defineConfig({
   define: {
