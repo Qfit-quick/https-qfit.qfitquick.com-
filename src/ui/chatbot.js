@@ -14,6 +14,15 @@
 // 서로 어긋난다. 업적만 예외: achievements.js 의 설명은 함수(check)라 글로
 // 옮길 수 없어서 chatbot-faq.js 에 ACHIEVEMENT_HINTS 로 새로 썼다.
 //
+// 2026-09-18 재확장("챗봇도 아직 부족한 것 같아") — 더보기·설정 화면
+// 안의 기능(소리·진동·테마·글자크기·내보내기·데이터삭제·프리미엄·설치·
+// 루틴·계획·도전·신체정보·초대·준비운동·기본세트)이 하나도 안 걸리고
+// 있어서 chatbot-faq.js 에 16개를 더 적었다. 그리고 원래 있었지만 안 쓰던
+// 데이터 두 개를 새로 붙였다 — FOODS/EATING_OUT(식단표, src/data/foods.js,
+// 지금까지 이 표를 읽는 화면이 없었다)로 "닭가슴살 칼로리" 같은 질문에
+// 답하고, MUSCLE_GROUPS(부위 묶음, src/data/muscle-groups.js)로 "하체
+// 운동 뭐 있어?" 처럼 부위로 묻는 질문에 그 부위 동작 목록을 보여준다.
+//
 // 여러 곳에서 동시에 맞을 수 있어(예: "스쿼트"가 운동 이름이면서 회복
 // 태그이기도 할 수 있음) 첫 번째로 찾은 것을 바로 답하지 않고, 매칭된
 // 키워드 길이가 가장 긴(=가장 구체적인) 후보를 고른다(scoreMatch).
@@ -24,6 +33,8 @@ import { EXERCISES } from '../data/exercises.js';
 import { VIDEO_CLIPS } from '../data/video-clips.js';
 import { ACHIEVEMENTS } from '../data/achievements.js';
 import { PROGRAMS } from '../data/programs.js';
+import { FOODS, EATING_OUT } from '../data/foods.js';
+import { MUSCLE_GROUPS } from '../data/muscle-groups.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -64,6 +75,23 @@ function scoreProgramName(text, nameDict) {
   return scoreAnyLang(text, stripped);
 }
 
+// FOODS/EATING_OUT 라벨 다수가 "(생것)"/"(raw)"/"(生)"처럼 조리 상태를
+// 괄호로 붙여 둔다(재료 원출처를 정확히 옮기려던 결정 — foods.js 머리
+// 설명 참고). 그런데 실제로 "닭가슴살 칼로리"라고 묻지 "닭가슴살(생것)
+// 칼로리"라고 괄호까지 쳐서 묻는 사람은 없다 — 매칭용으로만 괄호 안을
+// 지운다. "김밥 1줄"처럼 괄호가 아닌 수량 표기가 붙은 것들은 이 방식으로
+// 못 잡는다 — 전부 손으로 고치기엔 표가 커서, 그 정도 사각지대는 남겨
+// 둔다(못 찾으면 다른 후보로 넘어가거나 "모르겠다"로 빠질 뿐, 틀린 답을
+// 주지는 않는다).
+function stripQualifier(str) {
+  return String(str || '').replace(/[([（][^)）\]]*[)）\]]/g, '');
+}
+
+function scoreFoodName(text, labelDict) {
+  const stripped = { ko: stripQualifier(labelDict.ko), en: stripQualifier(labelDict.en), zh: stripQualifier(labelDict.zh) };
+  return scoreAnyLang(text, stripped);
+}
+
 // 점수가 같으면(예: "다이어트 3주 프로그램"이 다이어트 프로그램 이름과
 // FAQ의 '프로그램' 키워드에 똑같이 맞을 때) sort 는 안정 정렬이라 먼저
 // push 한 쪽이 이긴다 — 그래서 구체적인 답(운동·업적·프로그램)을 뭉뚱그린
@@ -77,6 +105,9 @@ function collectCandidates(text) {
   EXERCISES.forEach((ex) => push('exercise', scoreAnyLang(text, ex.label), ex));
   ACHIEVEMENTS.forEach((a) => push('achievement', scoreAnyLang(text, a.label), a));
   PROGRAMS.forEach((p) => push('program', Math.max(scoreProgramName(text, p.name), scoreAnyLang(text, p.tagline)), p));
+  FOODS.forEach((f) => push('food', scoreFoodName(text, f.label), f));
+  EATING_OUT.forEach((f) => push('eatout', scoreFoodName(text, f.label), f));
+  MUSCLE_GROUPS.forEach((g) => push('muscle', scoreAnyLang(text, g.label), g));
   CHATBOT_FAQ.forEach((f) => {
     const score = Math.max(0, ...f.keywords.map((k) => scoreMatch(text, k)));
     push('faq', score, f);
@@ -94,9 +125,11 @@ function collectCandidates(text) {
 // 있으므로 여기 넣지 않는다.
 function defaultSuggestions() {
   return [
-    ...INJURY_GUIDES.slice(0, 3).map((g) => t(g.part)),
+    ...INJURY_GUIDES.slice(0, 2).map((g) => t(g.part)),
     ...EXERCISES.slice(0, 2).map((ex) => t(ex.label)),
     ...(PROGRAMS[0] ? [t(PROGRAMS[0].name)] : []),
+    ...(FOODS[0] ? [t(FOODS[0].label)] : []),
+    ...(MUSCLE_GROUPS[0] ? [t(MUSCLE_GROUPS[0].label)] : []),
   ].filter(Boolean);
 }
 
@@ -137,6 +170,34 @@ function programReplyHtml(p) {
     esc(t(S.chatbotDetailLink).replace('%s', t(p.name))) + '</button>';
 }
 
+// 재료 표(FOODS)는 100g 기준 값만 갖고 있어서 그대로 보여주면 "그래서
+// 내가 먹는 양은 몇 kcal 인데?"가 안 풀린다 — serveG(1인분 그램수)로
+// 환산한 값을 같이 보여준다.
+function foodReplyHtml(food) {
+  const per100 = food.per100 || {};
+  const serveKcal = food.serveG ? Math.round((per100.kcal || 0) * food.serveG / 100) : null;
+  const macros = `${per100.kcal ?? '?'}kcal · P${per100.p ?? '?'} · C${per100.c ?? '?'} · F${per100.f ?? '?'}`;
+  return `<p><b>${esc(t(food.label))}</b></p>` +
+    `<p>${esc(t(S.chatbotFoodPer100))} ${esc(macros)}</p>` +
+    (food.serve && serveKcal != null ? `<p>${esc(t(food.serve))} ≈ ${esc(t(S.chatbotAboutKcal).replace('%s', String(serveKcal)))}</p>` : '');
+}
+
+// EATING_OUT 은 1인분 기준 kcal 을 통째로 들고 있고(재료처럼 100g 환산이
+// 필요 없다), 대신 실천 팁(tip)이 핵심이라 그걸 같이 보여준다.
+function eatoutReplyHtml(item) {
+  return `<p><b>${esc(t(item.label))}</b> — ${esc(t(S.chatbotAboutKcal).replace('%s', String(item.kcal)))}</p>` +
+    (item.tip ? `<p>${esc(t(item.tip))}</p>` : '');
+}
+
+function muscleReplyHtml(group) {
+  const names = group.keys
+    .map((k) => EXERCISES.find((ex) => ex.key === k))
+    .filter(Boolean)
+    .slice(0, 5)
+    .map((ex) => t(ex.label));
+  return `<p><b>${esc(t(group.label))}</b></p><p>${esc(names.join(', '))}</p>`;
+}
+
 function replyHtmlFor(candidate) {
   switch (candidate.type) {
     case 'injury': return injuryReplyHtml(candidate.data);
@@ -144,6 +205,9 @@ function replyHtmlFor(candidate) {
     case 'exercise': return exerciseReplyHtml(candidate.data);
     case 'achievement': return achievementReplyHtml(candidate.data);
     case 'program': return programReplyHtml(candidate.data);
+    case 'food': return foodReplyHtml(candidate.data);
+    case 'eatout': return eatoutReplyHtml(candidate.data);
+    case 'muscle': return muscleReplyHtml(candidate.data);
     case 'faq': return `<p>${esc(t(candidate.data.answer))}</p>`;
     default: return '';
   }
@@ -156,6 +220,9 @@ function suggestionsFor(candidate) {
     case 'exercise': return EXERCISES.map((ex) => t(ex.label)).filter((l) => l !== t(candidate.data.label)).slice(0, 6);
     case 'achievement': return ACHIEVEMENTS.map((a) => t(a.label));
     case 'program': return PROGRAMS.map((p) => t(p.name));
+    case 'food': return FOODS.map((f) => t(f.label)).filter((l) => l !== t(candidate.data.label)).slice(0, 6);
+    case 'eatout': return EATING_OUT.map((f) => t(f.label)).filter((l) => l !== t(candidate.data.label)).slice(0, 6);
+    case 'muscle': return MUSCLE_GROUPS.map((g) => t(g.label));
     default: return defaultSuggestions();
   }
 }

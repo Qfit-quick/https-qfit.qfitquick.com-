@@ -53,6 +53,74 @@ export const CHATBOT_FAQ = [
     keywords: ['코치', 'coach'],
     answer: { ko: '성격이 다른 코치 5명 중 하나를 골라 운동 중 응원 말을 들을 수 있어요. 설정에서 바꿀 수 있어요.', en: 'Pick one of 5 coaches with different personalities to cheer you on during workouts — change it anytime in Settings.', zh:'可以从5位性格不同的教练中选一位，训练时听他的加油语，设置里随时可换。' },
   },
+
+  // 2026-09-18 확장("챗봇이 아직 부족한 것 같아") — 더보기·설정 안의
+  // 기능들이 하나도 안 걸리고 있었다. app/index.html 의 settings-screen ·
+  // plan-screen · challenge-screen 을 다시 훑어서 실제 있는 기능만 적었다.
+  {
+    keywords: ['배경음악', '효과음', 'bgm', 'sfx', '소리설정'],
+    answer: { ko: '설정 > 소리·진동에서 배경음악과 효과음을 각각 켜고 끌 수 있어요.', en: 'In Settings > Sound & Vibration, you can turn background music and sound effects on or off separately.', zh:'在设置>声音与振动里，可以分别开关背景音乐和音效。' },
+  },
+  {
+    keywords: ['진동', 'vibration', 'vibrate'],
+    answer: { ko: '설정 > 소리·진동에서 진동을 켜면 소리를 꺼도 박자를 느낄 수 있어요.', en: 'Turn on vibration in Settings so you can still feel the rhythm even with sound off.', zh:'在设置里开启振动，静音时也能感受到节奏。' },
+  },
+  {
+    keywords: ['코치목소리', '코치보이스', '낮은톤', '높은톤'],
+    answer: { ko: '설정 > 소리·진동에서 코치 목소리를 낮은 톤/높은 톤 중 고를 수 있어요.', en: "In Settings, you can pick the coach's voice — a lower or higher tone.", zh:'在设置里可以选择教练的声音——低音或高音。' },
+  },
+  {
+    keywords: ['다크모드', '화면색상', 'darkmode', 'theme'],
+    answer: { ko: '설정 > 표시에서 화면 색상을 조정할 수 있어요. 기본은 기기 설정을 그대로 따라가요.', en: "You can adjust the screen's color theme in Settings > Display — it follows your device setting by default.", zh:'在设置>显示里可以调整配色，默认跟随设备系统设置。' },
+  },
+  {
+    keywords: ['글자크기', 'fontsize'],
+    answer: { ko: '설정 > 표시에서 글자 크기를 조정할 수 있어요.', en: 'You can adjust the text size in Settings > Display.', zh:'在设置>显示里可以调整字体大小。' },
+  },
+  {
+    keywords: ['내보내기', 'csv', 'export'],
+    answer: { ko: '설정 > 계정의 "기록 내보내기"에서 운동 기록을 CSV 파일로 받을 수 있어요.', en: 'Use "Export records" in Settings > Account to download your workout history as a CSV file.', zh:'在设置>账户的"导出记录"里，可以把训练记录下载为CSV文件。' },
+  },
+  {
+    keywords: ['데이터삭제', '전체삭제', 'wipe'],
+    answer: { ko: '설정 > 계정의 "데이터 삭제"에서 모든 기록을 지울 수 있어요. 되돌릴 수 없으니 신중하게 눌러주세요.', en: '"Delete data" in Settings > Account erases all your records — this can\'t be undone.', zh:'设置>账户里的"删除数据"会清除所有记录，无法恢复，请谨慎操作。' },
+  },
+  {
+    keywords: ['프리미엄', 'premium'],
+    answer: { ko: '설정 맨 위 "프리미엄" 줄을 누르면 프리미엄 전용 동작 등을 미리 볼 수 있어요.', en: 'Tap the "Premium" row at the top of Settings to preview premium-only exercises and features.', zh:'点击设置最上方的"高级会员"一栏，可以预览高级专属动作等内容。' },
+  },
+  {
+    keywords: ['홈화면추가', '앱설치', 'install'],
+    answer: { ko: '설정에서 "홈 화면에 추가"를 누르면 앱처럼 더 빠르게 열 수 있어요. 이미 설치되어 있으면 이 줄은 안 보여요.', en: 'Tap "Add to Home Screen" in Settings to open Q-fit like a real app — this row is hidden once it\'s already installed.', zh:'在设置里点"添加到主屏幕"，就能像真正的App一样快速打开。已安装的话这一栏不会显示。' },
+  },
+  {
+    keywords: ['루틴', '저장한루틴'],
+    answer: { ko: '완주한 운동 조합을 "내 루틴"으로 저장해 두면, 더보기 > 내 루틴에서 그대로 다시 시작할 수 있어요.', en: 'Save a completed combo as one of "My Routines" — restart it anytime from More > My Routines.', zh:'把完成过的动作组合保存为"我的常规"，之后可以在更多>我的常规里直接重新开始。' },
+  },
+  {
+    keywords: ['목표화면', '내계획', '주간운동', '식단짜기', '내숫자'],
+    answer: { ko: '신체정보를 넣으면 "목표" 탭에서 오늘 계획 · 주간 운동 · 식단 · 내 숫자(필요 열량 등)를 볼 수 있어요.', en: 'Once you enter your body info, the "Goals" tab shows today\'s plan, a weekly workout plan, a diet plan, and your numbers (like daily calorie needs).', zh:'填写身体信息后，"目标"标签会显示今日计划、每周训练、饮食计划和你的各项数值(如每日所需热量)。' },
+  },
+  {
+    keywords: ['도전', '챌린지', 'challenge'],
+    answer: { ko: '"도전" 탭에서 턱걸이 · 플란체 · 핸드스탠드 · 머슬업 · 프론트레버 · 딥스 · 사이드스플릿, 7개 장기 챌린지의 진행 상황을 주차별로 기록할 수 있어요.', en: 'The "Challenge" tab tracks weekly progress on 7 long-term skill goals: pull-up, planche, handstand, muscle-up, front lever, dips, and side split.', zh:'"挑战"标签可以按周记录7项长期目标的进度：引体向上、俯卧撑支撑(Planche)、倒立、双力臂、前水平、双杠臂屈伸、横叉。' },
+  },
+  {
+    keywords: ['신체정보', '키체중'],
+    answer: { ko: '더보기 > 신체정보에서 키 · 체중 · 나이를 넣으면 칼로리 계산과 "목표" 탭 계획이 더 정확해져요.', en: 'Enter your height, weight, and age under More > Body Info to make calorie estimates and the Goals plan more accurate.', zh:'在更多>身体信息里填写身高、体重、年龄，卡路里估算和"目标"计划会更准确。' },
+  },
+  {
+    keywords: ['친구초대', '초대', 'invite'],
+    answer: { ko: '로그인한 뒤 더보기에서 친구를 초대하면, 친구가 내 링크로 가입해 3분 운동을 끝냈을 때 나와 친구 모두 한정판 뱃지를 받아요.', en: "After logging in, invite a friend from the More screen — once they sign up with your link and finish a 3-minute workout, you both get a limited badge.", zh:'登录后可以在"更多"里邀请好友，好友用你的链接注册并完成一次3分钟训练后，双方都会获得限定徽章。' },
+  },
+  {
+    keywords: ['준비운동', '워밍업', 'warmup'],
+    answer: { ko: '설정 > 운동에서 "준비운동 먼저 하기"를 켜면 시작할 때마다 약 1분 준비운동이 먼저 나와요. 부상 위험을 줄여줘요.', en: 'Turn on "Warm up first" in Settings > Workout to get a ~1-minute warm-up before every session — it cuts injury risk.', zh:'在设置>训练里开启"先热身"，每次开始前都会先做约1分钟热身，能降低受伤风险。' },
+  },
+  {
+    keywords: ['기본세트', '세트수'],
+    answer: { ko: '설정 > 운동에서 기본 세트 수를 정해두면, 시작 화면에서 세트 수가 미리 채워져 있어요.', en: 'Set your default number of sets in Settings > Workout so the start screen is pre-filled with it.', zh:'在设置>训练里设定默认组数，开始页面就会自动帮你填好。' },
+  },
 ];
 
 // 2026-09-17 요청("큐핏에 해당하는 내용은 뭐든 검색하면 자연스럽게
