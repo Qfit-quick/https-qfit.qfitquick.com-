@@ -1,0 +1,15 @@
+-- 4일 리마인더 발송(.github/workflows/push-reminders.yml)이 매일
+-- "permission denied for table devices" 로 실패하던 것을 고친다.
+--
+-- 원인: 2026-09-devices-presence-push.sql 은 anon/authenticated 에게
+-- SECURITY DEFINER 함수(heartbeat 등) 실행 권한만 주고, devices 테이블
+-- 자체에 대한 권한은 아무 역할에도 준 적이 없다. 클라이언트(앱)는 항상
+-- 그 함수들을 통해서만 접근하니 문제가 없었는데, send-reminders Edge
+-- Function(supabase/functions/send-reminders/index.ts)은 함수를 거치지
+-- 않고 devices 테이블을 직접 select/update 한다 — RLS 는 service_role
+-- 이 우회하지만, 테이블 자체의 GRANT 가 없으면 그 전에 막힌다.
+--
+-- 실행 방법: 기존 파일과 마찬가지로 Supabase 대시보드 → SQL Editor 에
+-- 붙여넣고 실행. service_role 에게만 주므로 anon/authenticated 로는
+-- 여전히 테이블에 직접 접근할 수 없다(RLS 정책 없음 그대로 유지).
+grant select, update on public.devices to service_role;
