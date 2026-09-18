@@ -92,8 +92,16 @@ function optionButton(opt, onPick, urlFn) {
   return b;
 }
 
+// 직전에 봤던 명언 id — 순수 난수라 바로 다음 번에도 같은 문장이 다시
+// 뽑힐 수 있는데, 특히 결(tone)마다 문장 수가 다르다 보니(gentle 은 16개뿐)
+// 자주 겹쳐 보인다는 피드백(2026-09-18)이 있었다. "매번 다르게"라는 원래
+// 요청의 취지를 지키면서 "방금 그거 또"만 없애려고, 직전 id 만 후보에서
+// 뺀다 — 그 이상(최근 5개 등) 기억하지는 않는다, 결 하나가 16개뿐이라
+// 너무 많이 빼면 사실상 못 나오는 문장이 생긴다.
+const LAST_QUOTE_KEY = 'qfit_last_quote_id';
+
 /**
- * 결(tone) 안에서 명언 하나를 무작위로 뽑는다.
+ * 결(tone) 안에서 명언 하나를 무작위로 뽑는다. 직전에 본 것과는 다르게.
  *
  * 앱을 열 때마다 다른 문장을 보고 싶다는 요청(2026-09-15)이라 순수 난수를
  * 쓴다. 부를 때마다 다른 값이 나오므로, 이 앱 열기 안에서 명언을 두 번
@@ -102,7 +110,12 @@ function optionButton(opt, onPick, urlFn) {
  */
 function randomQuote(tone) {
   const pool = QUOTES_BY_TONE[tone] || QUOTES;
-  return pool[Math.floor(Math.random() * pool.length)];
+  let lastId = null;
+  try { lastId = localStorage.getItem(LAST_QUOTE_KEY); } catch (e) { /* 시크릿 모드 등 — 그냥 매번 새로 뽑은 셈 친다 */ }
+  const candidates = pool.length > 1 ? pool.filter((q) => q.id !== lastId) : pool;
+  const picked = candidates[Math.floor(Math.random() * candidates.length)];
+  try { localStorage.setItem(LAST_QUOTE_KEY, picked.id); } catch (e) { /* 위와 같음 */ }
+  return picked;
 }
 
 /** 이미 뽑힌 명언 객체를 화면에 그린다(뽑는 것과 그리는 것을 나눠서,
