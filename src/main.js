@@ -28,6 +28,8 @@ import { initGate } from './ui/gate.js';
 import { initPlan, renderPlanScreen } from './ui/plan.js';
 import { initLog, renderLogScreen, renderTodayCard } from './ui/log.js';
 import { initPrograms, renderProgramsScreen } from './ui/programs.js';
+import { initAmrap, startAmrap } from './ui/amrap.js';
+import { initCircuit, startCircuit } from './ui/circuit.js';
 import { initHeartGame } from './ui/heartgame.js';
 import { initChallengeTracker } from './ui/challengeTracker.js';
 import { initChatbot } from './ui/chatbot.js';
@@ -47,7 +49,11 @@ initPlan({
 initLog({ translate: t, STATIC_UI, onShowScreen: showScreenById });
 // 프로그램의 '시작하기' 도 계획 화면과 같은 문(startRoutine)을 쓴다 —
 // 둘 다 '동작을 미리 정해 두고 설정 화면으로 보낸다' 는 같은 일이다.
-initPrograms({ translate: t, STATIC_UI, onStartDay: startRoutine });
+// 다만 Cindy(amrap)·QCE(circuit) 처럼 고정 서킷인 프로그램은 그 문으로
+// 못 들어간다 — startAmrap/startCircuit 이 따로 맡는다.
+initAmrap({ translate: t, STATIC_UI, onShowScreen: showScreenById });
+initCircuit({ translate: t, STATIC_UI, onShowScreen: showScreenById });
+initPrograms({ translate: t, STATIC_UI, onStartDay: startRoutine, onStartAmrap: startAmrap, onStartCircuit: startCircuit, onShowScreen: showScreenById });
 renderProgramsScreen();
 initHeartGame({ translate: t, STATIC_UI });
 initChallengeTracker({ translate: t, STATIC_UI });

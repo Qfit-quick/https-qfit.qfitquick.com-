@@ -1020,3 +1020,30 @@
 .program-search-wrap { margin-bottom: var(--s-3); }
 .program-search-empty { padding: var(--s-4) 0; text-align: center; }
 .program-history-note { font-size: var(--t-xs); }
+
+/* ── Cindy AMRAP(2026-09-19) ────────────────────────────────────
+   game-screen 처럼 몰입형이지만 그 화면의 미션·보스·콤보 장치는 하나도
+   안 쓴다 — 여기는 라운드 수 + 남은 시간 + 지금 동작뿐이다. */
+.amrap-head { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); }
+.amrap-head .hd-title { font-size: var(--t-lg); font-weight: 800; }
+.amrap-stats { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--s-4); }
+.amrap-stat { display: flex; flex-direction: column; gap: var(--s-1); }
+.amrap-round-num { font-size: var(--t-display); font-weight: 700; letter-spacing: -0.03em; }
+.amrap-clock { font-variant-numeric: tabular-nums; }
+.amrap-move-shot {
+  width: min(60vw, 220px);
+  aspect-ratio: 1;
+  margin: 0 auto var(--s-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mint);
+}
+.amrap-move-shot svg { width: 100%; height: 100%; }
+.amrap-move-shot video { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius, 16px); }
+.amrap-move-name { text-align: center; font-size: var(--t-lg); font-weight: 800; margin: 0; }
+.amrap-move-reps { text-align: center; font-size: var(--t-display); font-weight: 700; margin: 0 0 var(--s-3); }
+.amrap-sub-btn, .amrap-next-btn { width: 100%; margin-bottom: var(--s-3); }
+.amrap-foot { display: flex; gap: var(--s-2); }
+.amrap-foot button { flex: 1; }
+.amrap-done { align-items: center; text-align: center; gap: var(--s-2); }

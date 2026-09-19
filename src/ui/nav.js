@@ -9,6 +9,8 @@
 // 아바타가 비어 있는, 껍데기만 있는 화면이 뜬다.
 import { ICON } from './icons.js';
 import { showScreenById, isWorkoutRunning } from '../app.js';
+import { isAmrapRunning, isAmrapPaused, pauseAmrap } from './amrap.js';
+import { isCircuitRunning, isCircuitPaused, pauseCircuit } from './circuit.js';
 import { closeSheet, isSheetOpen } from './sheet.js';
 
 let t = (o) => (o && o.ko) || '';
@@ -46,6 +48,8 @@ const IMMERSIVE = new Set([
   'game-screen', 'result-screen',
   // 큐피드 하트 슈팅(2026-09-12) — 이 화면도 탭에 집중해야 하니 탭바를 감춘다.
   'heartgame-screen',
+  // 'Cindy' AMRAP·'QCE' 서킷(2026-09-19) — 타이머가 도는 화면이라 마찬가지로 감춘다.
+  'amrap-screen', 'circuit-screen',
 ]);
 
 // 탭이 아닌 화면에 있을 때 어느 탭을 켜 둘지. 없으면 아무것도 안 켠다.
@@ -66,6 +70,12 @@ const BELONGS_TO = {
   'ai-quiz-screen': 'start-screen',
   // 큐피드 하트 슈팅은 더보기 줄에서 연다.
   'heartgame-screen': 'more-screen',
+  // Cindy AMRAP·QCE 서킷은 프로그램 탭에서 시작한다.
+  'amrap-screen': 'programs-screen',
+  'circuit-screen': 'programs-screen',
+  // QCE 경기 규칙도 프로그램 탭에서 연다. 운동 중 화면이 아니라
+  // IMMERSIVE 에는 안 넣는다 — 탭바가 그대로 보여야 자연스럽다.
+  'qce-rulebook-screen': 'programs-screen',
 };
 
 let bar = null;
@@ -189,6 +199,22 @@ export function initNav({ translate, STATIC_UI } = {}) {
     if (current === 'game-screen' && isWorkoutRunning()) {
       history.pushState({ s: 'game-screen' }, '', '#game-screen');
       document.getElementById('pause-btn')?.click();
+      return;
+    }
+
+    // Cindy AMRAP 도 같은 이유로 나가는 대신 멈춘다 — 그냥 나가면 타이머가
+    // 계속 돌아서, 돌아왔을 때 몇 라운드가 그냥 지나가 있다.
+    if (current === 'amrap-screen' && isAmrapRunning() && !isAmrapPaused()) {
+      history.pushState({ s: 'amrap-screen' }, '', '#amrap-screen');
+      pauseAmrap();
+      return;
+    }
+
+    // QCE 서킷도 같은 이유로 멈춘다 — 완주 기록을 재는 스톱워치라 나가면
+    // 그동안 계속 흘러서 기록이 부풀어 있다.
+    if (current === 'circuit-screen' && isCircuitRunning() && !isCircuitPaused()) {
+      history.pushState({ s: 'circuit-screen' }, '', '#circuit-screen');
+      pauseCircuit();
       return;
     }
 

@@ -35,6 +35,49 @@ export const GLUTE_KEYS = ['HIPBRIDGE', 'SQUAT', 'LUNGE', 'COSSACKSQUAT'];
 // 스쿼트·런지도 섞여 있지만, 이건 매트 위에서 안 일어나도 되는 것만 남긴다.
 export const HOT_NIGHT_KEYS = ['HIPBRIDGE', 'LEGRAISE', 'DEADBUG', 'VUP', 'CRUNCH'];
 
+// '스파이더맨 Cindy' 1주(2026-09-19) — 크로스핏 벤치마크 WOD 'Cindy'를
+// 그대로 옮겼다: 20분 AMRAP(정해진 시간 안에 최대한 많이 반복)로 풀업
+// 5·푸쉬업 10·스쿼트 15 를 한 바퀴로 계속 돈다. 위 프로그램들처럼 요일마다
+// 다른 초점을 골라 pool 에서 동작을 뽑는 게 아니라 매일 똑같은 고정
+// 서킷이라 schedule/focus 로 표현할 수 없다 — programDayPlan() 은 이
+// 프로그램을 보지 않고, ui/amrap.js 가 amrap 필드를 직접 읽어 돈다.
+//
+// PULLUP 은 EXERCISES(exercises.js, 기구 없는 맨몸운동 24종)에 없다 —
+// 철봉이 있어야 하는 유일한 동작이라 이 앱의 '기구 없이' 전제와 안 맞고,
+// EXERCISES 에 넣으면 다른 모든 프로그램·계획의 무작위 로테이션에도
+// 섞여 나간다. 그래서 이 배열 안에서만 쓰는 가벼운 항목이고, 영상 대신
+// challengeIcons.js 의 픽토그램을 쓴다(ui/amrap.js). sub 는 철봉이
+// 없을 때 대신할 동작 — 이미 있는 BURPEE 를 그대로 쓴다.
+export const CINDY_MOVES = [
+  { key: 'PULLUP', reps: 5, sub: 'BURPEE',
+    label: { ko: '풀업', en: 'Pull-up', zh: '引体向上' } },
+  { key: 'PUSHUP', reps: 10 },
+  { key: 'SQUAT', reps: 15 },
+];
+
+// QCE(Qfit Championship Event) 실전 서킷(2026-09-19) — 대회 기획 문서
+// "3. 큐핏 대회 프로그램 설계"의 8개 스테이션을 연습용으로 그대로 옮겼다.
+// Cindy(amrap)와 다른 점: 이건 '반복'이 아니라 '한 바퀴'다 — 8개를 순서대로
+// 한 번씩 지나가고 걸린 시간을 잰다(실제 대회의 '완주 기록'과 같은 개념).
+// 그래서 type 을 'circuit' 으로 따로 두고, ui/circuit.js 가 이 필드를 읽어
+// 스테이션을 순서대로 넘기며 스톱워치(0초부터 올라감)를 돈다.
+//
+// 여덟 자리 중 셋(버피/푸쉬업/런지)은 기획 문서가 변형 동작도 같이
+// 적어 뒀지만(예: "푸쉬업/와이드푸쉬업/다이아몬드푸쉬업"), 연습 프로그램은
+// 기본형 하나만 쓴다 — 변형까지 고르게 하면 '연습해 둔 순서'와 '실제
+// 대회 순서'가 사람마다 달라져 버린다. 전부 EXERCISES 에 이미 있는
+// 동작이라 Cindy 의 PULLUP 같은 예외(픽토그램 대체)가 필요 없다.
+export const QCE_STATIONS = [
+  { key: 'RUNINPLACE', mode: 'time', target: 45 },
+  { key: 'BURPEE', mode: 'reps', target: 15 },
+  { key: 'SQUAT', mode: 'reps', target: 20 },
+  { key: 'PUSHUP', mode: 'reps', target: 15 },
+  { key: 'MOUNTAINCLIMBER', mode: 'time', target: 30 },
+  { key: 'PLANK', mode: 'time', target: 40 },
+  { key: 'LUNGE', mode: 'reps', target: 20 },
+  { key: 'CRUNCH', mode: 'reps', target: 20 },
+];
+
 export const PROGRAMS = [
   {
     id: 'hyrox',
@@ -98,6 +141,34 @@ export const PROGRAMS = [
     tagline: { ko: '힙브릿지·스쿼트·런지 등 둔근 위주 동작만 모았어요', en: 'Hip bridges, squats, lunges — glute-focused moves only', zh: '臀桥、深蹲、弓步等以臀部为主的动作' },
     schedule: ['glute', 'rest', 'glute', 'glute', 'rest', 'glute', 'rest'],
     bg: 'glute2.webp',
+  },
+  {
+    id: 'cindy1',
+    weeks: 1,
+    type: 'amrap',
+    name: { ko: '스파이더맨 Cindy 1주', en: 'Spider-Man Cindy 1-Week', zh: '蜘蛛侠 Cindy 1周' },
+    tagline: { ko: '20분 AMRAP · 풀업 5·푸쉬업 10·스쿼트 15를 계속 반복', en: '20-min AMRAP: 5 pull-ups, 10 push-ups, 15 squats on repeat', zh: '20分钟AMRAP：引体5·俯卧撑10·深蹲15循环' },
+    disclaimer: {
+      ko: '철봉이 없으면 화면에서 풀업 대신 버피로 바꿀 수 있습니다.',
+      en: 'No pull-up bar? You can swap in burpees from the workout screen.',
+      zh: '没有单杠？可以在训练画面中换成波比跳。',
+    },
+    amrap: { capMin: 20, moves: CINDY_MOVES },
+    schedule: ['amrap', 'amrap', 'amrap', 'amrap', 'amrap', 'amrap', 'amrap'],
+  },
+  {
+    id: 'qce1',
+    weeks: 1,
+    type: 'circuit',
+    name: { ko: 'QCE 실전 서킷', en: 'QCE Race Circuit', zh: 'QCE 实战循环' },
+    tagline: { ko: '8개 스테이션 한 바퀴 · 완주 기록 재기', en: '8 stations, one lap — time your finish', zh: '8个站点一圈 · 记录完赛时间' },
+    disclaimer: {
+      ko: '실제 QCE 대회 8종목을 연습용으로 그대로 옮겼습니다.',
+      en: 'The same 8 stations as the real QCE competition, for practice.',
+      zh: '与真实QCE比赛的8个项目完全一致，供练习使用。',
+    },
+    circuit: { stations: QCE_STATIONS },
+    schedule: ['circuit', 'circuit', 'circuit', 'circuit', 'circuit', 'circuit', 'circuit'],
   },
   {
     id: 'hotnight',

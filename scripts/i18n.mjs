@@ -69,6 +69,11 @@ const FILLED_BY_JS = new Set([
   'rec-best-streak', 'rec-current-streak', 'rec-week', 'rec-month',
   'rec-total', 'rec-total-time', 'neon-avatar-label', 'warmup-video-error',
   'ex-name', 'ex-cue', 'result-time-val', 'final-sub', 'final-rank',
+  // Cindy AMRAP(src/ui/amrap.js) — 마크업의 한글은 자리만 잡아 둔 예시값이고
+  // 실제 값은 render()/renderDone() 이 매번 새로 채운다.
+  'amrap-move-name', 'amrap-move-reps', 'amrap-done-rounds', 'amrap-done-kcal',
+  // QCE 서킷(src/ui/circuit.js) — 위와 같은 이유.
+  'circuit-move-name', 'circuit-move-target', 'circuit-done-time', 'circuit-done-kcal',
 ]);
 
 for (const m of html.matchAll(/<([a-z][\w-]*)([^>]*)>([^<>{}]*[가-힣][^<>]*)</g)) {

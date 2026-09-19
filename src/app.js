@@ -454,6 +454,16 @@ const planScreen = document.getElementById('plan-screen');
 const bodyScreen = document.getElementById('body-screen');
 const logScreen = document.getElementById('log-screen');
 const programsScreen = document.getElementById('programs-screen');
+// 'Cindy' 처럼 고정 서킷인 프로그램 전용 화면(2026-09-19). 안쪽은
+// src/ui/amrap.js 가 전부 붙인다 — 여기서는 heartgameScreen 과 같은 자리에
+// 놓고 showScreen 의 화면 목록에 끼워 넣는 것만 한다.
+const amrapScreen = document.getElementById('amrap-screen');
+// 'QCE' 처럼 한 바퀴만 도는 고정 서킷 프로그램 전용 화면(2026-09-19).
+// amrapScreen 과 같은 이유로 여기서는 화면 목록에 끼워 넣는 것만 한다 —
+// 안쪽은 src/ui/circuit.js 가 전부 붙인다.
+const circuitScreen = document.getElementById('circuit-screen');
+// QCE 경기 규칙 요약(2026-09-19). 안쪽은 src/ui/programs.js 가 채운다.
+const qceRulebookScreen = document.getElementById('qce-rulebook-screen');
 // 큐피드 하트 슈팅 미니게임(2026-09-12). 안쪽 동작은 src/ui/heartgame.js 가
 // 전부 붙인다 — 여기서는 다른 몰입형 화면(gameScreen 등)과 같은 자리에
 // 놓고 showScreen 의 화면 목록에 끼워 넣는 것만 한다.
@@ -517,7 +527,7 @@ const bestScoreBox = document.getElementById('best-score-box');
 const bestScoreVal = document.getElementById('best-score-val');
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,heartgameScreen,challengeScreen,chatbotScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  if(el === moreScreen){
  try{

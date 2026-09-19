@@ -273,6 +273,44 @@ export const STATIC_UI = {
  programDoneTitle: {ko:'프로그램을 완주했어요! 🎉', en:'Program complete! 🎉', zh:'计划已完成！🎉'},
  programDoneRestart: {ko:'목록으로 돌아가기', en:'Back to program list', zh:'返回计划列表'},
  programQuitConfirm: {ko:'정말 그만둘까요? 지금까지의 진행도가 사라져요.', en:'Quit for real? Your progress on this program will be lost.', zh:'确定要退出吗？这个计划的进度会消失。'},
+
+ // Cindy AMRAP 전용(2026-09-19) — src/ui/amrap.js.
+ amrapRoundLabel: {ko:'라운드', en:'Round', zh:'轮次'},
+ amrapClockLabel: {ko:'남은 시간', en:'Time left', zh:'剩余时间'},
+ amrapRepsLabel: {ko:'%s회', en:'×%s reps', zh:'%s次'},
+ amrapNextBtn: {ko:'다음 동작', en:'Next move', zh:'下一个动作'},
+ amrapSubBtn: {ko:'철봉이 없어요 → 버피로', en:'No bar? Switch to burpees', zh:'没有单杠 → 换成波比跳'},
+ amrapPauseBtn: {ko:'일시정지', en:'Pause', zh:'暂停'},
+ amrapResumeBtn: {ko:'계속하기', en:'Resume', zh:'继续'},
+ amrapQuitBtn: {ko:'종료', en:'Quit', zh:'结束'},
+ amrapQuitConfirm: {ko:'정말 종료할까요? 지금까지의 라운드는 기록되지 않아요.', en:'Quit for real? This session will not be recorded.', zh:'确定要结束吗？本次记录不会保存。'},
+ amrapDoneTitle: {ko:'Cindy 완료! 🎉', en:'Cindy complete! 🎉', zh:'Cindy 完成！🎉'},
+ amrapDoneRounds: {ko:'%s라운드 + %s동작 완료', en:'%s rounds + %s more moves', zh:'完成%s轮 + %s个动作'},
+ amrapDoneKcal: {ko:'약 %skcal 소모', en:'About %s kcal burned', zh:'约消耗%s千卡'},
+ amrapConfirmBtn: {ko:'확인', en:'OK', zh:'确定'},
+
+ // QCE 서킷 전용(2026-09-19) — src/ui/circuit.js. 일시정지·계속하기·종료·
+ // 종료확인·확인·칼로리·반복수 표시는 amrap* 키를 그대로 재사용한다(문구가
+ // 완전히 같다).
+ circuitStationLabel: {ko:'스테이션', en:'Station', zh:'站点'},
+ circuitClockLabel: {ko:'경과 시간', en:'Elapsed time', zh:'用时'},
+ circuitProgressFmt: {ko:'%s/%s', en:'%s/%s', zh:'%s/%s'},
+ circuitTimeTarget: {ko:'%s초', en:'%ss', zh:'%s秒'},
+ circuitNextBtn: {ko:'다음 스테이션', en:'Next station', zh:'下一个站点'},
+ circuitFinishBtn: {ko:'완주!', en:'Finish!', zh:'完赛！'},
+ circuitDoneTitle: {ko:'QCE 완주! 🏁', en:'QCE finished! 🏁', zh:'QCE 完赛！🏁'},
+ circuitDoneTime: {ko:'완주 기록 %s', en:'Finish time %s', zh:'完赛用时 %s'},
+
+ // QCE 경기 규칙 화면 전용(2026-09-19) — src/ui/programs.js 의
+ // renderQceRulebook(). 이 라벨들만 3개 언어다 — 규칙 본문(동작 기준·
+ // 반칙 사유)은 qceRulebook.js 주석대로 한국어 전용으로 남긴다.
+ qceRulebookTitle: {ko:'QCE 경기 규칙', en:'QCE Rulebook', zh:'QCE 竞赛规则'},
+ qceRulesBtn: {ko:'경기 규칙 보기', en:'View rulebook', zh:'查看比赛规则'},
+ qceRulebookIntro: {ko:'같은 동작이라도 판정 기준이 다르면 기록을 비교할 수 없습니다. QCE 8개 스테이션의 동작 기준입니다.', en:'Judging standards keep records comparable across athletes. These are the movement standards for the 8 QCE stations.', zh:'判定标准一致，记录才能互相比较。以下是QCE 8个站点的动作标准。'},
+ qceStartLabel: {ko:'시작 자세', en:'Start position', zh:'起始姿势'},
+ qceValidLabel: {ko:'유효 동작', en:'Valid rep', zh:'有效动作'},
+ qceNoRepLabel: {ko:'No Rep', en:'No Rep', zh:'无效(No Rep)'},
+ qcePenaltyTitle: {ko:'반칙·실격 처리', en:'Penalties & disqualification', zh:'犯规与取消资格'},
  andMore: {ko:' 외 %s개', en:' +%s more', zh:' 等%s个'},
  filterAll: {ko:'전체', en:'All', zh:'全部'},
  kindReps: {ko:'반복', en:'Reps', zh:'重复'},
