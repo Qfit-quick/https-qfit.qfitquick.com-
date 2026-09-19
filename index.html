@@ -50,8 +50,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-sLGSnILA.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CEJk52b-.css">
+  <script type="module" crossorigin src="./assets/index-De6_ic8h.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CfS1ErzR.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -318,6 +318,93 @@
  <div class="eyebrow" data-i18n="programsEyebrow">프로그램</div>
  <h2 class="lb-title" data-i18n="programsTitle">목적별 루틴</h2>
  <div id="programs-body"></div>
+ </div>
+
+ <!-- AMRAP('스파이더맨 Cindy' 등 고정 서킷 프로그램) 전용 화면(2026-09-19).
+      다른 운동은 전부 app.js 의 미션 게임 하나를 같이 쓰지만, 이건 '20분
+      안에 5-10-15를 몇 바퀴 도는지' 라 세트·초 기반 그 엔진에 안 맞는다 —
+      src/ui/amrap.js 가 이 화면만 따로 움직인다. -->
+ <div class="screen" id="amrap-screen">
+ <div class="amrap-head">
+ <button class="hd-back" type="button" id="amrap-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <h2 class="hd-title" id="amrap-title">Cindy</h2>
+ </div>
+ <div id="amrap-run">
+ <div class="amrap-stats">
+ <div class="amrap-stat">
+ <span class="dim" data-i18n="amrapRoundLabel">라운드</span>
+ <b class="amrap-round-num" id="amrap-round">0</b>
+ </div>
+ <div class="amrap-stat">
+ <span class="dim" data-i18n="amrapClockLabel">남은 시간</span>
+ <b class="big amrap-clock" id="amrap-clock">20:00</b>
+ </div>
+ </div>
+ <div class="amrap-move-shot" id="amrap-move-shot"></div>
+ <h3 class="amrap-move-name" id="amrap-move-name">풀업</h3>
+ <p class="amrap-move-reps" id="amrap-move-reps">5회</p>
+ <button type="button" class="sec2 amrap-sub-btn" id="amrap-sub-btn" hidden data-i18n="amrapSubBtn">철봉이 없어요 → 버피로</button>
+ <button type="button" class="primary amrap-next-btn" id="amrap-next-btn" data-i18n="amrapNextBtn">다음 동작</button>
+ <div class="amrap-foot">
+ <button type="button" class="sec2" id="amrap-pause-btn" data-i18n="amrapPauseBtn">일시정지</button>
+ <button type="button" class="sec2 sec2-danger" id="amrap-quit-btn" data-i18n="amrapQuitBtn">종료</button>
+ </div>
+ </div>
+ <div class="card amrap-done" id="amrap-done" hidden>
+ <div class="program-card-name" data-i18n="amrapDoneTitle">Cindy 완료! 🎉</div>
+ <p class="dim" id="amrap-done-rounds">3라운드 + 2동작</p>
+ <p class="dim" id="amrap-done-kcal">약 120kcal 소모</p>
+ <button type="button" class="primary" id="amrap-done-ok-btn" data-i18n="amrapConfirmBtn">확인</button>
+ </div>
+ </div>
+
+ <!-- QCE('실전 서킷' 등 한 바퀴만 도는 고정 서킷 프로그램) 전용 화면
+      (2026-09-19). amrap-screen 과 레이아웃이 같아서 같은 CSS 클래스를
+      그대로 쓴다 — 다른 점은 시계가 내려가지 않고 올라가는 것(완주 기록),
+      그리고 라운드 대신 스테이션 진행도를 보여주는 것뿐이다.
+      src/ui/circuit.js 가 안쪽을 움직인다. -->
+ <div class="screen" id="circuit-screen">
+ <div class="amrap-head">
+ <button class="hd-back" type="button" id="circuit-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <h2 class="hd-title" id="circuit-title">QCE</h2>
+ </div>
+ <div id="circuit-run">
+ <div class="amrap-stats">
+ <div class="amrap-stat">
+ <span class="dim" data-i18n="circuitStationLabel">스테이션</span>
+ <b class="amrap-round-num" id="circuit-progress">1/8</b>
+ </div>
+ <div class="amrap-stat">
+ <span class="dim" data-i18n="circuitClockLabel">경과 시간</span>
+ <b class="big amrap-clock" id="circuit-clock">00:00</b>
+ </div>
+ </div>
+ <div class="amrap-move-shot" id="circuit-move-shot"></div>
+ <h3 class="amrap-move-name" id="circuit-move-name">버피</h3>
+ <p class="amrap-move-reps" id="circuit-move-target">15회</p>
+ <button type="button" class="primary amrap-next-btn" id="circuit-next-btn" data-i18n="circuitNextBtn">다음 스테이션</button>
+ <div class="amrap-foot">
+ <button type="button" class="sec2" id="circuit-pause-btn" data-i18n="amrapPauseBtn">일시정지</button>
+ <button type="button" class="sec2 sec2-danger" id="circuit-quit-btn" data-i18n="amrapQuitBtn">종료</button>
+ </div>
+ </div>
+ <div class="card amrap-done" id="circuit-done" hidden>
+ <div class="program-card-name" data-i18n="circuitDoneTitle">QCE 완주! 🏁</div>
+ <p class="dim" id="circuit-done-time">완주 기록 12:34</p>
+ <p class="dim" id="circuit-done-kcal">약 120kcal 소모</p>
+ <button type="button" class="primary" id="circuit-done-ok-btn" data-i18n="amrapConfirmBtn">확인</button>
+ </div>
+ </div>
+
+ <!-- QCE 경기 규칙 요약(2026-09-19). 프로그램 상세의 '규칙 보기'에서 연다.
+      운동 중 화면이 아니라 탭바를 감출 이유가 없다 — amrap-head 를 그대로
+      재사용해 간단한 뒤로가기 머리만 둔다. 안쪽은 src/ui/programs.js 가 채운다. -->
+ <div class="screen" id="qce-rulebook-screen">
+ <div class="amrap-head">
+ <button class="hd-back" type="button" id="qce-rulebook-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <h2 class="hd-title" data-i18n="qceRulebookTitle">QCE 경기 규칙</h2>
+ </div>
+ <div id="qce-rulebook-body"></div>
  </div>
 
  <!-- PLAN (운동 · 식단).
