@@ -63,6 +63,12 @@
 `env.ASSETS` 로 정적 자산에 접근할 수 있다. 워커 소스(`worker/`)는 사이트
 자산이 아니므로 `.assetsignore` 에도 추가했다.
 
+**기본은 자산 우선이라 이것만으로는 안 된다.** `main`과 `assets`를 같이
+쓰면 클라우드플레어는 요청과 일치하는 정적 파일이 있으면 워커 스크립트를
+아예 안 거치고 바로 서빙한다 — `media/clips/*.mp4`도 파일이라 그대로
+걸린다. 그래서 `assets.run_worker_first: ["/media/clips/*"]`로 이 경로만
+워커를 먼저 태우게 했다. 다른 자산(이미지 등)은 여전히 워커를 안 거친다.
+
 ## 워크플로가 하는 일
 
 `.github/workflows/deploy.yml` — main push 와 수동 실행(`workflow_dispatch`).

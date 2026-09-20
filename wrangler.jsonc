@@ -4,6 +4,10 @@
   "main": "worker/media-range.js",
   "assets": {
     "directory": ".",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // 기본은 자산 우선(asset-first) — 파일이 있으면 워커 스크립트를 아예
+    // 안 거친다. 그러면 media/clips 의 영상도 워커를 안 타서 Range 를
+    // 못 고친다. 이 경로만 워커를 먼저 태운다.
+    "run_worker_first": ["/media/clips/*"]
   }
 }
