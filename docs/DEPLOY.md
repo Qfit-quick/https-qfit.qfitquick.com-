@@ -47,6 +47,22 @@
 배포가 **실패했다**. `.git/objects/pack` 의 팩 파일(53MB)이 워커의 파일당
 25MiB 한도를 넘겼기 때문이다. 소스와 18MB 짜리 zip 도 같이 올라가고 있었다.
 
+## 워커에 `main` 스크립트가 붙은 이유 (2026-09-20)
+
+`assets.directory` 만 있던 순수 정적 자산 서빙은 **Range 요청을 지원하지
+않는다** — `curl -H "Range: bytes=0-100"` 을 보내도 항상 206 이 아니라 200(전체
+파일)이 온다(클라우드플레어 쪽 한계, cloudflare/workers-sdk#3861). 운동 클립
+`<video>` 가 이걸 받으면 `readyState` 가 0에서 못 올라가 **영상이 영원히 안
+뜬다** — 콘솔엔 에러도 안 찍혀서 조용히 실패한다.
+
+그래서 `wrangler.jsonc` 에 `main: worker/media-range.js` 를 추가했다. 이제
+`.mp4`/`.webm` 요청만 이 스크립트가 가로채 직접 206 을 만들어 주고, 나머지는
+전부 그대로 `env.ASSETS.fetch()` 로 넘긴다 — assets 서빙 경로 자체는 안 바뀐다.
+
+`main` 이 생기면 `assets.binding: "ASSETS"` 도 같이 있어야 스크립트가
+`env.ASSETS` 로 정적 자산에 접근할 수 있다. 워커 소스(`worker/`)는 사이트
+자산이 아니므로 `.assetsignore` 에도 추가했다.
+
 ## 워크플로가 하는 일
 
 `.github/workflows/deploy.yml` — main push 와 수동 실행(`workflow_dispatch`).

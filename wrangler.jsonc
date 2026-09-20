@@ -1,7 +1,9 @@
 {
   "name": "qfit-quickfitness",
   "compatibility_date": "2026-09-05",
+  "main": "worker/media-range.js",
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS"
   }
 }
