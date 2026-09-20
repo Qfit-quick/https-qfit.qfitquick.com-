@@ -33,8 +33,20 @@ export default {
     const buf = await full.arrayBuffer();
     const size = buf.byteLength;
     const m = /bytes=(\d*)-(\d*)/.exec(range);
-    const start = m && m[1] ? parseInt(m[1], 10) : 0;
-    const end = m && m[2] ? Math.min(parseInt(m[2], 10), size - 1) : size - 1;
+    // "bytes=-N" (접미사 range, 끝에서부터 N 바이트) 은 앞쪽이 비어 있다 —
+    // 이걸 "0-N"으로 잘못 읽으면 파일 앞부분을 끝부분인 척 돌려주게 된다.
+    // 크롬은 moov atom이 파일 끝에 있는(non-faststart) mp4의 메타데이터를
+    // 찾으려고 이 형태로 먼저 찔러보므로, 여기서 틀리면 video 가 계속
+    // stalled 에 머문다.
+    let start, end;
+    if (m && m[1] === '' && m[2] !== '') {
+      const suffixLen = parseInt(m[2], 10);
+      start = Math.max(0, size - suffixLen);
+      end = size - 1;
+    } else {
+      start = m && m[1] ? parseInt(m[1], 10) : 0;
+      end = m && m[2] ? Math.min(parseInt(m[2], 10), size - 1) : size - 1;
+    }
 
     if (!m || Number.isNaN(start) || start >= size || start > end) {
       return new Response(null, {
