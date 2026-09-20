@@ -174,7 +174,7 @@ export const PROGRAMS = [
     id: 'hotnight',
     weeks: 2,
     name: { ko: '뜨거운 밤 2주', en: 'Hot Night 2-Week', zh: '火热之夜 2周' },
-    tagline: { ko: '누워서 하는 하체·둔근 동작만 모았어요 — 매트만 있으면 됩니다', en: 'Lying-down lower-body and glute moves only — just need a mat', zh: '只挑选躺着做的下肢与臀部动作 — 有垫子就够了' },
+    tagline: { ko: '연인과 뜨겁게 — 침대 위에서도 할 수 있는 동작만 모았어요', en: 'Get hot with your partner — moves you can do right in bed', zh: '与恋人一起升温 — 床上就能完成的动作' },
     schedule: ['hotnight', 'rest', 'hotnight', 'hotnight', 'rest', 'hotnight', 'rest'],
   },
 ];
