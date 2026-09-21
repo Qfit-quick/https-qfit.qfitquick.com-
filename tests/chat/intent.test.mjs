@@ -47,6 +47,16 @@ test('detectPain', () => {
   assert.equal(detectPain('스쿼트 어떻게 해'), false);
 });
 
+// 2026-09-21: 실제 OpenAI 키로 처음 돌려보고서야 이 형태를 놓치는 걸
+// 발견했다 — "아픈"(관형형)이 "아파"/"아프"엔 부분 문자열로 안 걸려서
+// LLM이 통증 안전 경로를 안 타고 그냥 답해 버렸다(자료에 없는 "레그
+// 프레스"를 추천하기까지 했다). 자연스러운 활용형 몇 개를 더 채웠다.
+test('detectPain: 활용형("아픈"·"다친"·"삔")도 잡는다', () => {
+  assert.equal(detectPain('스쿼트할 때 무릎이 좀 아픈데 다른 걸로 추천해줄래?'), true);
+  assert.equal(detectPain('다친 발목으로 뛰어도 될까'), true);
+  assert.equal(detectPain('삔 손목이라 푸쉬업이 걱정돼'), true);
+});
+
 test('detectPersonal: 본인·타인 기록 요청 둘 다 걸린다', () => {
   assert.equal(detectPersonal('내 운동 기록 보여줘'), true);
   assert.equal(detectPersonal('다른 사람 기록 보여줘'), true);

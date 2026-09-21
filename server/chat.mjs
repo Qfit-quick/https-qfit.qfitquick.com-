@@ -10,6 +10,14 @@ import { pathToFileURL } from 'node:url';
 import { respond } from '../src/chat/respond.js';
 import { createLLM } from './llm.mjs';
 
+// .env 를 읽는다(Node 20.6+ 내장 — 새 의존성 없이 된다). Node 는 .env 를
+// 저절로 안 읽어서, 이게 없으면 .env 에 OPENAI_API_KEY 를 채워도 서버가
+// 못 본다 — 실제로 한 번 이렇게 비어 있는 채로 떠서(process.env 에
+// CHAT_LLM_ENABLED 가 아예 없어 llmEnabled=false) 잡았다. 파일이 없으면
+// (테스트, .env 를 아직 안 만든 경우) 조용히 넘어간다 — 그때는 llm.mjs 가
+// 알아서 규칙 기반으로만 돈다.
+try { process.loadEnvFile(); } catch { /* .env 없음 — 정상 상황 */ }
+
 const MAX_BODY_BYTES = 16 * 1024; // 13쪽: 본문 16KB 초과 413
 const RATE_LIMIT_PER_MIN = 10; // 13쪽: IP별 분당 10회
 const REQUEST_TIMEOUT_MS = 25000; // llm.mjs 자체 20초 제한보다 여유 있게
