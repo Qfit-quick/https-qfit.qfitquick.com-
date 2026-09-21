@@ -4557,6 +4557,44 @@ try{
  });
 }catch(e){ console.error('account tabs failed:', e); }
 
+// 이메일 형식 검사. 서버(Supabase)에 보내기 전에 흔한 오타(@ 없음, 도메인
+// 없음 등)를 미리 걸러 왕복 한 번을 아낀다.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Supabase(GoTrue)가 던지는 에러를 한국어로 옮긴다. 안 고치면 "User already
+// registered" 같은 영어 원문이 한국어 화면에 그대로 섞여 나온다.
+// error.code 는 supabase-js v2 최신판이 붙여 주는 안정적인 값이라 이걸
+// 우선 보고, 없는 옛 버전·네트워크 에러 대비로 메시지 문자열도 같이 본다.
+function authErrorMessage(e, fallback){
+ const code = e && e.code;
+ const msg = (e && e.message) || '';
+ if(code === 'user_already_exists' || /already registered|already exists/i.test(msg)){
+ return '이미 가입된 이메일입니다. 로그인을 시도해주십시오.';
+ }
+ if(code === 'email_address_invalid' || /invalid email/i.test(msg)){
+ return '이메일 형식이 올바르지 않습니다.';
+ }
+ if(code === 'invalid_credentials' || /invalid login credentials/i.test(msg)){
+ return '이메일 또는 비밀번호가 올바르지 않습니다.';
+ }
+ if(code === 'email_not_confirmed' || /email not confirmed/i.test(msg)){
+ return '이메일 인증이 아직 완료되지 않았습니다. 받으신 인증 메일을 확인해주십시오.';
+ }
+ if(code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit' || /rate limit/i.test(msg)){
+ return '요청이 너무 잦습니다. 잠시 후 다시 시도해주십시오.';
+ }
+ if(code === 'weak_password' || /password.*(least|weak)/i.test(msg)){
+ return '비밀번호가 너무 단순합니다. 다른 비밀번호를 입력해주십시오.';
+ }
+ if(code === 'signup_disabled' || /signups not allowed/i.test(msg)){
+ return '지금은 신규 가입을 받지 않고 있습니다.';
+ }
+ if(e instanceof TypeError || /failed to fetch|network/i.test(msg)){
+ return '네트워크 연결을 확인하고 다시 시도해주십시오.';
+ }
+ return fallback;
+}
+
 try{
  const loginBtn = document.getElementById('account-login-btn');
  if(loginBtn) loginBtn.addEventListener('click', async ()=>{
@@ -4566,6 +4604,7 @@ try{
  const pw = document.getElementById('account-login-pw').value;
  errEl.textContent = '처리 중...';
  if(!email){ errEl.textContent = '이메일을 입력해주십시오.'; return; }
+ if(!EMAIL_RE.test(email)){ errEl.textContent = '이메일 형식이 올바르지 않습니다.'; return; }
  const sb = await getSupabase();
  if(!sb){ errEl.textContent = '연결에 실패했어요. 페이지를 새로고침해서 다시 시도해주십시오.'; return; }
  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
@@ -4576,7 +4615,7 @@ try{
  showScreen(startScreen);
  }catch(e){
  console.error('login failed:', e);
- if(errEl) errEl.textContent = '로그인 실패: ' + (e && e.message ? e.message : '이메일/비밀번호를 확인해주십시오.');
+ if(errEl) errEl.textContent = authErrorMessage(e, '로그인에 실패했습니다. 이메일/비밀번호를 확인해주십시오.');
  }
  });
 }catch(e){ console.error('login button failed:', e); }
@@ -4591,6 +4630,7 @@ try{
  errEl.style.color = '#ff6b5b';
  errEl.textContent = '처리 중...';
  if(!email){ errEl.textContent = '이메일을 입력해주십시오.'; return; }
+ if(!EMAIL_RE.test(email)){ errEl.textContent = '이메일 형식이 올바르지 않습니다.'; return; }
  const sb = await getSupabase();
  if(!sb){ errEl.textContent = '연결에 실패했어요. 페이지를 새로고침해서 다시 시도해주십시오.'; return; }
  if(pw.length < 6){ errEl.textContent = '비밀번호는 6자리 이상이어야 합니다.'; return; }
@@ -4614,7 +4654,7 @@ try{
  showScreen(startScreen);
  }catch(e){
  console.error('signup failed:', e);
- if(errEl) errEl.textContent = '가입 실패: ' + (e && e.message ? e.message : '다시 시도해주십시오.');
+ if(errEl) errEl.textContent = authErrorMessage(e, '가입에 실패했습니다. 다시 시도해주십시오.');
  }
  });
 }catch(e){ console.error('signup button failed:', e); }
