@@ -582,6 +582,9 @@ export const STATIC_UI = {
  // 쉬운 동작 전환
  easySwapBtnLabel: {ko:'😵 힘들어요 → 쉬운 동작으로', en:'😵 Too hard → switch to an easier move', zh:'😵 太难了 → 换成简单动作'},
  easySwapBackLabel: {ko:'🔄 다시 원래 동작으로', en:'🔄 Switch back to the original move', zh:'🔄 换回原本的动作'},
+ // 어려운 동작 전환(2026-09-21) — 반대 방향. 쉬운 동작을 하다가 더 하고
+ // 싶으면 그 동작의 상위 버전으로 바꾼다(예: 스쿼트 → 점프스쿼트).
+ hardSwapBtnLabel: {ko:'🔥 더 해볼래요 → 어려운 동작으로', en:'🔥 Push harder → switch to a tougher move', zh:'🔥 想挑战 → 换成更难的动作'},
 
  // 회복 화면 소제목 (부위별/대상별/식단 셋으로 나눈다)
  injuryByPartTitle: {ko:'부위별 회복', en:'Recovery by body part', zh:'按部位恢复'},

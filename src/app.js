@@ -3532,15 +3532,30 @@ const EASY_ALT = {
  PLANKPUSHUP:'PUSHUP', MOUNTAINCLIMBER:'RUNINPLACE', ARMWALK:'PLANKPUSHUP', REVERSEPLANK:'PLANK',
 };
 
+// EASY_ALT 를 거꾸로 뒤집은 것(2026-09-21 요청: "쉬운 운동도 어려운 운동으로
+// 변경 가능하게 — 스쿼트를 점프스쿼트로"). 쉬운 동작 하나에 여러 어려운
+// 동작이 몰릴 수 있어서(SQUAT ← JUMPSQUAT·COSSACKSQUAT·BURPEE·LUNGE),
+// EASY_ALT 에 먼저 적힌 것 하나만 대표로 쓴다 — 이미 있는 순서를 그대로
+// 따르면 "스쿼트 → 점프스쿼트" 처럼 자연스러운 첫 번째 매핑이 골라진다.
+// EASY_ALT 의 키(그 자체로 "더 쉬운 쪽으로" 버튼이 있는 동작)는 여기서
+// 다시 대상으로 안 쓴다 — 그러면 한 동작에 두 방향 버튼이 필요해진다.
+const HARD_ALT = {};
+for (const [hardKey, easyKey] of Object.entries(EASY_ALT)) {
+ if (!HARD_ALT[easyKey] && !EASY_ALT[easyKey]) HARD_ALT[easyKey] = hardKey;
+}
+
 function syncEasySwapBtn(m){
  if(!easySwapBtn) return;
  if(!m || m.isBoss || !missionActive){ easySwapBtn.style.display = 'none'; return; }
- if(m.easySwapOriginalKey){
+ if(m.easySwapOriginalKey || m.hardSwapOriginalKey){
  easySwapBtn.style.display = '';
  easySwapBtn.textContent = t(STATIC_UI.easySwapBackLabel);
  } else if(EASY_ALT[m.ex.key]){
  easySwapBtn.style.display = '';
  easySwapBtn.textContent = t(STATIC_UI.easySwapBtnLabel);
+ } else if(HARD_ALT[m.ex.key]){
+ easySwapBtn.style.display = '';
+ easySwapBtn.textContent = t(STATIC_UI.hardSwapBtnLabel);
  } else {
  easySwapBtn.style.display = 'none';
  }
@@ -3573,12 +3588,29 @@ function swapToEasier(){
  applyMissionExercise(m, alt, {ko:'좋아요, 이걸로 가봐요! 💪', en:"Good call — let's do this one! 💪", zh:'好的，就选这个吧！💪'});
 }
 
+// swapToEasier 의 반대 방향(2026-09-21). 같은 easySwapOriginalKey 자리를
+// 되돌리기에 같이 쓰면 "쉬운 걸로 바꿨다가 되돌린 것"과 "어려운 걸로
+// 바꿨다가 되돌린 것"이 구분이 안 되므로, hardSwapOriginalKey 를 따로 둔다.
+function swapToHarder(){
+ if(!missionActive) return;
+ const m = missions[missionIndex];
+ if(!m || m.isBoss) return;
+ const altKey = HARD_ALT[m.ex.key];
+ if(!altKey) return;
+ const alt = EXERCISES.find(e=> e.key === altKey);
+ if(!alt) return;
+ m.hardSwapOriginalKey = m.ex.key;
+ applyMissionExercise(m, alt, {ko:'좋아요, 강도를 올려봐요! 🔥', en:"Nice — let's turn up the intensity! 🔥", zh:'好的，加大强度吧！🔥'});
+}
+
 function revertEasySwap(){
  if(!missionActive) return;
  const m = missions[missionIndex];
- if(!m || !m.easySwapOriginalKey) return;
- const original = EXERCISES.find(e=> e.key === m.easySwapOriginalKey);
+ if(!m || (!m.easySwapOriginalKey && !m.hardSwapOriginalKey)) return;
+ const originalKey = m.easySwapOriginalKey || m.hardSwapOriginalKey;
+ const original = EXERCISES.find(e=> e.key === originalKey);
  m.easySwapOriginalKey = null;
+ m.hardSwapOriginalKey = null;
  if(original) applyMissionExercise(m, original, {ko:'좋아요, 다시 도전해봐요! 🔥', en:"Alright, let's take it on again! 🔥", zh:'好的，再挑战一次吧！🔥'});
 }
 
@@ -3586,7 +3618,9 @@ try{
  easySwapBtn?.addEventListener('click', ()=>{
  Sound.unlock();
  const m = missions[missionIndex];
- if(m && m.easySwapOriginalKey) revertEasySwap(); else swapToEasier();
+ if(m && (m.easySwapOriginalKey || m.hardSwapOriginalKey)) revertEasySwap();
+ else if(m && HARD_ALT[m.ex.key] && !EASY_ALT[m.ex.key]) swapToHarder();
+ else swapToEasier();
  });
 }catch(e){ console.error('easy swap button setup failed:', e); }
 
