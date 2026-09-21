@@ -451,11 +451,15 @@ function labelOf(c) {
 
 // 개선안 06번 — 1등 점수가 여러 서로 다른 항목에 걸쳐 정확히 같으면(오타
 // 보정은 항상 -0.5 를 깎으므로 여기 안 걸린다 — 순수 동점만) 임의로 하나를
-// 고르지 않고 사용자에게 고르게 한다. score 2 미만은 한두 글자 우연한
-// 매칭이라 재질문할 만큼 근거가 못 된다.
+// 고르지 않고 사용자에게 고르게 한다.
+//
+// 문턱을 3 으로 둔다(실측: "스쿼트 빼고 하체 운동 알려줘" 에서 "하체"(2글자,
+// MUSCLE_GROUPS)와 여러 프로그램 태그라인에 흔히 들어있는 "운동"(2글자)이
+// 우연히 점수 2로 동점 나서, 멀쩡히 답할 수 있는 질문에도 재질문이 떴다 —
+// 2글자는 이렇게 무관한 항목끼리 우연히 겹치기 쉬워 재질문 근거로 약하다).
 function pickOrClarify(candidates) {
   const top = candidates[0];
-  if (top.score >= 2) {
+  if (top.score >= 3) {
     const seen = new Set([labelOf(top)]);
     const tied = [top];
     for (const c of candidates.slice(1)) {
