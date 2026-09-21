@@ -70,7 +70,13 @@ function validateBody(body) {
     conversationContext = body.conversationContext;
   }
 
-  return { value: { message, history, conversationContext } };
+  // locale 은 선택 항목(2026-09-21, 영·중 지원). 형태만 본다 — 'ko'/'en'/
+  // 'zh' 가 아닌 값은 여기서 거부하지 않고 respond.js 가 'ko' 로 조용히
+  // 되돌린다(엄격히 막을 만큼 위험한 입력이 아니라서, 안 맞는 값 하나로
+  // 요청 전체를 400 내는 게 더 나쁘다).
+  const locale = typeof body.locale === 'string' ? body.locale : undefined;
+
+  return { value: { message, history, conversationContext, locale } };
 }
 
 function readBody(req) {

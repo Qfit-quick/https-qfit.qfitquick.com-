@@ -32,10 +32,15 @@ test('타인 기록 요청도 같은 미연결 안내(개인 기록이 실제로
   assert.equal(r.intent, 'personal');
 });
 
-test('통증 질문 → pain, 검수 전 초안이라고 밝힌다', async () => {
+// 2026-09-21: 저장소 소유자가 이 문구를 직접 검토·승인해서 "[검수 전
+// 초안]" 표시를 뗐다(respond.js COPY.painDraft 주석 참고 — 전문 의료
+// 검수는 아니라는 점은 코드에 남겨 뒀다). 진단하지 않고 운동을 강행
+// 추천하지 않는다는 내용 기준은 그대로라 그 부분만 확인한다.
+test('통증 질문 → pain, 진단하지 않고 병원 안내로 이어진다', async () => {
   const r = await respond({ message: '운동하다 무릎이 아파' });
   assert.equal(r.intent, 'pain');
-  assert.match(r.answer, /검수/);
+  assert.doesNotMatch(r.answer, /확실히|틀림없이|이라는 병입니다/);
+  assert.match(r.answer, /병원/);
 });
 
 test('제외 조건이 있는 검색 — 목록 안에서도 실제로 빠진다', async () => {

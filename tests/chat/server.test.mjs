@@ -47,6 +47,12 @@ test('정상 요청 — 200, requestId 포함', withServer({ llmEnabled: false }
   assert.ok(json.requestId.length > 0);
 }));
 
+test('locale=en — 영어로 답한다', withServer({ llmEnabled: false }, async (port) => {
+  const { status, json } = await post(port, '/api/chat', { message: 'squat', locale: 'en' });
+  assert.equal(status, 200);
+  assert.match(json.answer, /Squat/i);
+}));
+
 test('빈 message — 400', withServer({ llmEnabled: false }, async (port) => {
   const { status, json } = await post(port, '/api/chat', { message: '' });
   assert.equal(status, 400);
