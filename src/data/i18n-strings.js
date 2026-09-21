@@ -79,6 +79,17 @@ export const STATIC_UI = {
  chatbotDetailLink: {ko:'%s 자세히 보기 →', en:'See more about %s →', zh:'查看更多关于%s →'},
  chatbotFoodPer100: {ko:'100g당', en:'Per 100g:', zh:'每100克：'},
  chatbotAboutKcal: {ko:'약 %skcal', en:'About %s kcal', zh:'约%s千卡'},
+ // 2026-09-21 개선(대화가 이어지게 만들기) — 인사만 하고 끝나거나("고마워"),
+ // 운동할 의욕이 없다고 하거나, 비슷한 후보가 여럿이거나, 직전에 말한
+ // 대상을 다시 가리키는 질문에 쓴다. chatbotResetBtn 은 화면 안 대화
+ // 목록을 지우고 처음부터 다시 시작하는 버튼.
+ chatbotThanksReply: {ko:'천만에요! 더 궁금한 게 있으면 말씀해 주세요.', en:"You're welcome! Let me know if you have more questions.", zh:'不客气！还有问题的话请随时问我。'},
+ chatbotMotivationReply: {ko:'그런 날도 있죠. 부담 없는 걸로 골라볼까요?', en:'That happens sometimes. Want to try something easier?', zh:'这很正常。要不要试试轻松一点的？'},
+ chatbotResetBtn: {ko:'새 대화', en:'New chat', zh:'新对话'},
+ chatbotClarifyIntro: {ko:'혹시 이 중에 어떤 걸 말씀하시는 건가요?', en:'Did you mean one of these?', zh:'您是想问下面哪一个？'},
+ chatbotCompareIntro: {ko:'두 가지를 비교해 드릴게요.', en:"Here's a comparison of both.", zh:'为您比较一下这两个。'},
+ chatbotContextNote: {ko:'방금 말씀드린 %s 기준으로 다시 보여드릴게요.', en:"Here's %s again, following up on what we just discussed.", zh:'继续说刚才提到的%s。'},
+ chatbotExcludedNote: {ko:'(%s 제외)', en:'(excluding %s)', zh:'（不含%s）'},
  settingsBtn: {ko:'설정', en:'Settings', zh:'设置'},
  // 하단 탭바(src/ui/nav.js) 전용 라벨. '체크'는 기록지(logEyebrow, '기록지')와
  // 일부러 다른 말이다 — 탭 두 자짜리가 서로 헷갈리지 않게 nav.js 가 골랐다.

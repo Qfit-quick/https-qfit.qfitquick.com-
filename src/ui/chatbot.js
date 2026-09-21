@@ -57,6 +57,13 @@ let t = (o) => (o && o.ko) || '';
 let S = {};
 let goScreen = () => {};
 
+// 2026-09-21 개선안("대화가 이어지게 만들기") — 방금 답한 대상을 기억해
+// "더 쉽게는?" 같은 대명사형 후속 질문에 이어서 답한다. 화면을 나갔다
+// 들어오면(화면 자체가 안 없어지고 숨기만 하므로) 이 값도 그대로 남는데,
+// 대화가 이어지는 게 자연스러우므로 의도적으로 초기화하지 않는다 —
+// "새 대화" 버튼을 누르면 그때 비운다.
+let lastCandidate = null;
+
 const el = (id) => document.getElementById(id);
 
 function esc(str) {
@@ -282,13 +289,24 @@ function eatoutReplyHtml(item) {
     (item.tip ? `<p>${esc(t(item.tip))}</p>` : '');
 }
 
-function muscleReplyHtml(group) {
-  const names = group.keys
-    .map((k) => EXERCISES.find((ex) => ex.key === k))
-    .filter(Boolean)
-    .slice(0, 5)
-    .map((ex) => t(ex.label));
-  return `<p><b>${esc(t(group.label))}</b></p><p>${esc(names.join(', '))}</p>`;
+// 개선안 04번(부정·제외 조건) — excludeTerms 가 있으면("스쿼트 빼고 하체
+// 운동 알려줘"에서 뽑은 "스쿼트") 그 글자를 담고 있는 운동은 목록에서
+// 뺀다. 제외 사유를 감춰서 왜 안 나왔는지 헷갈리지 않게 짧게 밝혀 둔다.
+function muscleReplyHtml(group, excludeTerms) {
+  let names = group.keys.map((k) => EXERCISES.find((ex) => ex.key === k)).filter(Boolean);
+  let excludedNote = '';
+  if (excludeTerms && excludeTerms.length) {
+    const before = names.length;
+    names = names.filter((ex) => {
+      const label = t(ex.label);
+      return !excludeTerms.some((term) => label.length >= 2 && norm(term).includes(norm(label)));
+    });
+    if (names.length < before) {
+      excludedNote = ` <span class="dim">${esc(t(S.chatbotExcludedNote).replace('%s', excludeTerms.join(', ')))}</span>`;
+    }
+  }
+  const labels = names.slice(0, 5).map((ex) => t(ex.label));
+  return `<p><b>${esc(t(group.label))}</b>${excludedNote}</p><p>${esc(labels.join(', '))}</p>`;
 }
 
 // 트랙 전체(예: 턱걸이 12주 4단계) 세부를 다 넣지는 않는다 — 한 단계에
@@ -337,6 +355,11 @@ function suggestionsFor(candidate) {
   }
 }
 
+// 개선안 16번(긴 입력·메시지 누적 제한) — 대화가 오래 쌓이면 DOM 이 계속
+// 불어나 저가 단말에서 스크롤이 무거워진다. 오래된 말풍선부터 지운다.
+// 입력 길이 제한은 여기 말고 app/index.html 의 #chatbot-input maxlength.
+const MAX_BUBBLES = 60;
+
 function appendMessage(role, html) {
   const box = el('chatbot-messages');
   if (!box) return;
@@ -344,6 +367,7 @@ function appendMessage(role, html) {
   bubble.className = 'chatbot-msg ' + role;
   bubble.innerHTML = html;
   box.appendChild(bubble);
+  while (box.children.length > MAX_BUBBLES) box.removeChild(box.firstChild);
   box.scrollTop = box.scrollHeight;
 }
 
@@ -355,16 +379,167 @@ function renderSuggestChips(topics) {
   ).join('');
 }
 
+// 개선안 04번 — "스쿼트 빼고 하체 운동 알려줘"에서 "빼고" 앞을 제외 대상으로
+// 뽑고, 그 부분을 검색 문장에서 지운다. 안 지우면 제외하려던 그 운동 자체가
+// 더 구체적인 매칭으로 걸려("스쿼트" 3글자 > "하체" 2글자, scoreMatch 참고)
+// 엉뚱하게 그 운동 설명이 먼저 나와 버린다.
+function extractExclusion(text) {
+  const m = /(.+?)\s*(?:빼고|빼줘|말고|제외하고|제외해서|제외)/.exec(text);
+  if (!m) return { text, excluded: [] };
+  const excluded = m[1].trim();
+  if (!excluded) return { text, excluded: [] };
+  const rest = (text.slice(0, m.index) + text.slice(m.index + m[0].length)).trim();
+  return { text: rest || text, excluded: [excluded] };
+}
+
+// 개선안 02번 — "A랑 B 차이" / "A vs B" 에서 비교 대상 둘을 뽑는다. 명시적인
+// 비교 표현(차이/비교/다른 점, vs)이 있을 때만 걸어서, "스쿼트와 런지 자세"
+// 같은 그냥 나열 질문까지 비교 모드로 오인하지 않게 한다.
+function extractComparisonParts(text) {
+  let m = /^(.+?)\s*(?:이랑|랑|와|과|하고)\s*(.+?)\s*(?:의\s*)?(?:차이|비교|다른\s*점)/.exec(text);
+  if (!m) m = /^(.+?)\s+vs\.?\s+(.+)$/i.exec(text);
+  if (!m) return null;
+  const a = m[1].trim(), b = m[2].trim();
+  return a && b ? [a, b] : null;
+}
+
+// collectCandidates 는 "사용자 문장이 항목 이름을 담고 있어야" 걸리는
+// 방향이다(예: "스쿼트 어떻게 해" 안에 "스쿼트"가 들어있음). 그런데
+// "Cindy"·"QCE" 처럼 비교 질문에서 짧게 뽑아낸 이름은 반대로 프로그램의
+// 정식 이름 쪽이 더 길 때가 있다("스파이더맨 Cindy 1주"에 "Cindy"가
+// 들어있는 것이지 그 반대가 아니다). 비교 모드에서만 양방향으로 한 번
+// 더 본다 — collectCandidates 자체(다른 20곳이 기대는 채점 방식)는 건드리지
+// 않는다.
+function findByShortName(phrase) {
+  const direct = collectCandidates(phrase);
+  if (direct.length && direct[0].score >= 2) return direct[0];
+  const p = norm(phrase);
+  if (p.length >= 2) {
+    const prog = PROGRAMS.find((pr) => ['ko', 'en', 'zh'].some((l) => {
+      const name = norm(stripProgramDuration((pr.name && pr.name[l]) || ''));
+      return name && (name.includes(p) || p.includes(name));
+    }));
+    if (prog) return { type: 'program', score: p.length, data: prog };
+  }
+  return direct[0] || null;
+}
+
+// 개선안 05번 — 검색 후보가 하나도 안 걸렸을 때만 본다("안녕, 스쿼트
+// 알려줘"처럼 인사말과 진짜 질문이 섞이면 스쿼트가 이미 후보로 걸려서
+// 여기까지 안 온다 — 명세의 "섞인 질문은 운동 질문으로 보낸다" 기준과 같다).
+function classifySmallTalk(text) {
+  const n = norm(text);
+  if (!n) return null;
+  if (/^(안녕|하이|hello|hi|헬로)/.test(n)) return 'greeting';
+  if (/(고마워|고맙|감사|thank)/.test(n)) return 'thanks';
+  if (/(하기싫|귀찮|의욕없|하기힘들|운동싫|운동하기싫)/.test(n)) return 'motivation';
+  return null;
+}
+
+function labelOf(c) {
+  switch (c.type) {
+    case 'injury': return t(c.data.part);
+    case 'recovery': return t(c.data.tag);
+    case 'exercise': case 'achievement': case 'food': case 'eatout': case 'muscle':
+      return t(c.data.label);
+    case 'coach': case 'program': return t(c.data.name);
+    case 'challenge': return c.data.track.name;
+    case 'faq': return c.data.keywords[0];
+    default: return '';
+  }
+}
+
+// 개선안 06번 — 1등 점수가 여러 서로 다른 항목에 걸쳐 정확히 같으면(오타
+// 보정은 항상 -0.5 를 깎으므로 여기 안 걸린다 — 순수 동점만) 임의로 하나를
+// 고르지 않고 사용자에게 고르게 한다. score 2 미만은 한두 글자 우연한
+// 매칭이라 재질문할 만큼 근거가 못 된다.
+function pickOrClarify(candidates) {
+  const top = candidates[0];
+  if (top.score >= 2) {
+    const seen = new Set([labelOf(top)]);
+    const tied = [top];
+    for (const c of candidates.slice(1)) {
+      if (c.score !== top.score) break;
+      const label = labelOf(c);
+      if (!seen.has(label)) { seen.add(label); tied.push(c); }
+    }
+    if (tied.length > 1) return { kind: 'clarify', options: tied.slice(0, 4) };
+  }
+  return { kind: 'single', candidate: top };
+}
+
+// 개선안 03번 — "더 쉽게는?"처럼 그 자체로는 아무 것도 안 걸리는 대명사형
+// 후속 질문. 방금 답한 대상(lastCandidate)이 있으면 새로 지어내지 않고
+// 같은 답을 다시 보여준다 — 데이터에 "더 쉬운 버전"이 따로 없어서, 없는
+// 사실을 만들어내는 대신 "지금 이야기 중인 게 이거 맞다"는 확인에 그친다.
+const FOLLOWUP_RE = /^(그거|그것|그\s*운동|더\s*쉽게|더\s*쉬운|더\s*어렵게|다른\s*건|다른\s*거|그럼|그건)/;
+
 function respond(text) {
-  const candidates = collectCandidates(text);
+  const { text: stripped, excluded } = extractExclusion(text);
+
+  const compareParts = extractComparisonParts(stripped);
+  if (compareParts) {
+    const a = findByShortName(compareParts[0]);
+    const b = findByShortName(compareParts[1]);
+    if (a && b && labelOf(a) !== labelOf(b)) {
+      appendMessage('bot', `<p>${esc(t(S.chatbotCompareIntro))}</p>` + replyHtmlFor(a) + replyHtmlFor(b));
+      renderSuggestChips([...new Set([...suggestionsFor(a), ...suggestionsFor(b)])].slice(0, 6));
+      lastCandidate = null;
+      return;
+    }
+    if (a || b) {
+      const found = a || b;
+      appendMessage('bot', replyHtmlFor(found));
+      renderSuggestChips(suggestionsFor(found));
+      lastCandidate = found;
+      return;
+    }
+    // 둘 다 못 찾았으면 비교 질문으로 오인한 것으로 보고 아래 일반 검색으로 넘어간다.
+  }
+
+  const candidates = collectCandidates(stripped);
+
   if (!candidates.length) {
+    if (lastCandidate && FOLLOWUP_RE.test(text.trim())) {
+      appendMessage('bot',
+        `<p>${esc(t(S.chatbotContextNote).replace('%s', labelOf(lastCandidate)))}</p>` + replyHtmlFor(lastCandidate));
+      renderSuggestChips(suggestionsFor(lastCandidate));
+      return;
+    }
+    const smallTalk = classifySmallTalk(text);
+    if (smallTalk === 'greeting') {
+      appendMessage('bot', `<p>${esc(t(S.chatbotGreeting))}</p>`);
+      renderSuggestChips(defaultSuggestions());
+      return;
+    }
+    if (smallTalk === 'thanks') {
+      appendMessage('bot', `<p>${esc(t(S.chatbotThanksReply))}</p>`);
+      renderSuggestChips(defaultSuggestions());
+      return;
+    }
+    if (smallTalk === 'motivation') {
+      const easy = [...PROGRAMS].sort((p1, p2) => p1.weeks - p2.weeks).slice(0, 3).map((p) => t(p.name));
+      appendMessage('bot', `<p>${esc(t(S.chatbotMotivationReply))}</p>`);
+      renderSuggestChips(easy.length ? easy : defaultSuggestions());
+      return;
+    }
     appendMessage('bot', `<p>${esc(t(S.chatbotFallback))}</p>`);
     renderSuggestChips(defaultSuggestions());
     return;
   }
-  const best = candidates[0];
-  appendMessage('bot', replyHtmlFor(best));
+
+  const picked = pickOrClarify(candidates);
+  if (picked.kind === 'clarify') {
+    appendMessage('bot', `<p>${esc(t(S.chatbotClarifyIntro))}</p>`);
+    renderSuggestChips(picked.options.map(labelOf));
+    return;
+  }
+
+  const best = picked.candidate;
+  const html = best.type === 'muscle' ? muscleReplyHtml(best.data, excluded) : replyHtmlFor(best);
+  appendMessage('bot', html);
   renderSuggestChips(suggestionsFor(best));
+  lastCandidate = best;
 }
 
 function handleSend() {
@@ -444,6 +619,11 @@ export function initChatbot({ translate, STATIC_UI, onShowScreen } = {}) {
 
     el('chatbot-back-btn')?.addEventListener('click', () => goScreen('more-screen'));
 
+    const showGreeting = () => {
+      appendMessage('bot', `<p>${esc(t(S.chatbotGreeting))}</p>`);
+      renderSuggestChips(defaultSuggestions());
+    };
+
     // "더보기" 목록의 항목은 회복·운동영상 항목처럼 각 화면이 자기 진입
     // 버튼을 스스로 챙긴다(app.js 의 .recovery-trigger-btn 과 같은 자리) —
     // 화면으로 들어가는 것과, 처음 열 때 한 번만 인사 + 제안 칩을 채우는
@@ -454,8 +634,18 @@ export function initChatbot({ translate, STATIC_UI, onShowScreen } = {}) {
       goScreen('chatbot-screen');
       if (greeted) return;
       greeted = true;
-      appendMessage('bot', `<p>${esc(t(S.chatbotGreeting))}</p>`);
-      renderSuggestChips(defaultSuggestions());
+      showGreeting();
+    });
+
+    // 개선안 17번(대화 보관·삭제 기준) — 이번 로컬 버전은 서버 저장이
+    // 없으니 "삭제"가 곧 "화면과 맥락 기억 비우기"다. lastCandidate 도
+    // 같이 비워야 초기화 직후에 "더 쉽게는?" 이 엉뚱한 이전 대상을
+    // 다시 불러오지 않는다.
+    el('chatbot-reset-btn')?.addEventListener('click', () => {
+      const box = el('chatbot-messages');
+      if (box) box.innerHTML = '';
+      lastCandidate = null;
+      showGreeting();
     });
   } catch (e) {
     console.error('chatbot setup failed:', e);

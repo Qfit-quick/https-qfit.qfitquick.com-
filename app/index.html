@@ -800,10 +800,13 @@
  <div class="chatbot-messages" id="chatbot-messages"></div>
  <div class="chatbot-suggest" id="chatbot-suggest"></div>
  <form class="chatbot-input-row screen-foot" id="chatbot-form">
- <input type="text" id="chatbot-input" class="inp chatbot-input" data-i18n-placeholder="chatbotPlaceholder" placeholder="궁금한 걸 물어보세요" autocomplete="off">
+ <input type="text" id="chatbot-input" class="inp chatbot-input" data-i18n-placeholder="chatbotPlaceholder" placeholder="궁금한 걸 물어보세요" autocomplete="off" maxlength="300">
  <button type="submit" class="chatbot-send-btn" id="chatbot-send-btn" aria-label="보내기" data-icon="send"></button>
  </form>
+ <div class="chatbot-foot-row">
  <button class="back-link-btn" id="chatbot-back-btn" data-i18n="backBtn">이전</button>
+ <button class="link-btn chatbot-reset-btn" id="chatbot-reset-btn" data-i18n="chatbotResetBtn">새 대화</button>
+ </div>
  </div>
 
  <!-- SETUP (coach + nickname) -->

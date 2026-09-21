@@ -1135,6 +1135,10 @@ button.card:active { background: var(--surface-2); }
   justify-content: center;
 }
 .chatbot-send-btn:active { opacity: 0.85; }
+/* 이전·새 대화 두 글자링크를 한 줄에. .back-link-btn 은 혼자일 때 왼쪽
+   정렬만 하던 것(align-self)이라, 옆에 하나 더 붙이려면 감싸는 줄이 필요. */
+.chatbot-foot-row { display: flex; align-items: center; justify-content: space-between; }
+.chatbot-reset-btn { color: var(--text-dim); }
 
 /* ── 상자 입력 ─────────────────────────────────────────
    아래 선 하나짜리(.nickname-input 등)와 달리 이쪽은 테두리를 두른다.
