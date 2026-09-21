@@ -133,6 +133,13 @@ export default defineConfig({
     // src/ 는 Vite 루트(app/) 바깥에 있다. 같이 옮기면 스크립트 열두 개의 경로가
     // 따라 바뀌는데, 그 값에 비해 얻는 게 없다.
     fs: { allow: [ROOT] },
+    // 챗봇 서버(server/chat.mjs, `npm run dev:chat`)로 넘긴다. 브라우저
+    // 입장에서는 같은 출처의 /api/chat 이라 CORS 를 신경 쓸 필요가 없다.
+    // 이 프록시는 개발 전용이다 — 배포본(Cloudflare Worker)엔 이 서버가
+    // 없으므로 그대로 안 옮겨진다.
+    proxy: {
+      '/api': { target: `http://127.0.0.1:${process.env.CHAT_PORT || 8787}`, changeOrigin: true },
+    },
   },
 
   build: {

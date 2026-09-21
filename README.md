@@ -10,7 +10,7 @@
 
 | 어디 | 무엇 |
 | --- | --- |
-| https://qfit.qfitquick.com | 사람이 보는 주소. **지금은 옛 판을 서빙 중이다** — `docs/DEPLOY.md` 참고 |
+| https://qfit.qfitquick.com | 사람이 보는 주소 |
 | https://qfit-quickfitness.monster-rpg.workers.dev | 클라우드플레어 워커. 배포하면 여기가 먼저 바뀐다 |
 | https://qfit.github.io/https-qfit.qfitquick.com- | GitHub Pages. push 마다 자동 갱신 |
 
@@ -55,6 +55,40 @@
 
 앞의 셋은 브라우저 없이 돌고 CI 에서도 돈다. `phases` 도 브라우저 없이 돌지만
 `ffmpeg-static` 이 있어야 클립 길이까지 본다(없으면 나머지만 검사한다).
+
+## 챗봇 서버 (2026-09-21, 로컬 전용 — 아직 배포 안 함)
+
+앱 안의 챗봇(더보기 → 챗봇)은 기본이 `src/ui/chatbot.js` 의 규칙 기반
+검색이다. 그 옆에 **LLM 을 붙일 수 있는 로컬 서버 시제품**을 따로 뒀다 —
+지금은 아직 화면이 이 서버를 부르지 않는다(연결은 다음 범위).
+
+    npm run dev:chat    # http://127.0.0.1:8787/api/chat
+    npm run test:chat   # 키 없이 다 돈다 — 분류·검색·제외·비교·서버 검증
+
+**키가 없어도 된다.** `.env.example` 을 `.env` 로 복사하고 값을 안 채우면
+`CHAT_LLM_ENABLED=false` 라 항상 규칙 기반(mode: `rule`/`fallback`)으로만
+답한다. 실제 모델을 쓰려면:
+
+    cp .env.example .env
+    # .env 에서 CHAT_LLM_ENABLED=true, OPENAI_API_KEY=…, OPENAI_MODEL=… 채움
+
+`npm run dev` 로 뜨는 Vite 개발 서버가 `/api` 요청을 이 서버로 넘긴다
+(`vite.config.js` 의 `server.proxy`). **배포본(Cloudflare Worker)엔 이 서버가
+없다** — `wrangler.jsonc` 가 `server/`·`tests/`·`.env.example` 을 자산에서
+빼 둔다(`.assetsignore`).
+
+구조:
+
+    src/chat/    순수 로직(intent·knowledge·retrieve·respond) — DOM 없음
+    server/      Node http 서버(chat.mjs) + 모델 호출(llm.mjs)
+    tests/chat/  node --test. 모델 호출은 흉내낸 함수로 성공·실패·시간초과를 검증
+
+**한계** — 자세한 명세(개선 제안 PDF) 대비 아직 안 한 것: 여러 턴에 걸친
+대화 맥락(지금은 한 번 질문·답 단위), 로그인 사용자의 실제 신체·기록 조회
+(개인 기록 요청은 전부 "아직 연결 안 됨" 안내로만 처리), 통증 안내 문구의
+전문 검수(지금 문구는 "[검수 전 초안]" 표시), 의미 기반(임베딩) 검색, 영·중
+지원. 실제 LLM 호출은 키가 없어 이 저장소 안에서 검증되지 않았다 — 모의
+응답으로만 테스트를 통과시켰다.
 
 ## 배포
 

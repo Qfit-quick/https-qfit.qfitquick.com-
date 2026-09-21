@@ -24,6 +24,8 @@
     "plan": "node scripts/plan.mjs",
     "stale": "node scripts/stale.mjs",
     "phases": "node scripts/phases.mjs",
+    "dev:chat": "node server/chat.mjs",
+    "test:chat": "node --test \"tests/chat/**/*.test.mjs\"",
     "deploy": "npm run build && npx --yes wrangler deploy"
   },
   "devDependencies": {
