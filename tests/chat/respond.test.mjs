@@ -116,6 +116,24 @@ test('LLM 시간초과(타임아웃 흉내) → fallback', async () => {
   assert.equal(r.mode, 'rule');
 });
 
+test('다중 턴 — conversationContext 로 "더 쉽게는?" 이 직전 대상을 이어받는다', async () => {
+  const first = await respond({ message: '푸쉬업 어떻게 해' });
+  const contextId = first.sources[0].id;
+  const followUp = await respond({ message: '더 쉽게는?', conversationContext: [contextId] });
+  assert.match(followUp.answer, /푸쉬업/);
+  assert.equal(followUp.sources[0].id, contextId);
+});
+
+test('다중 턴 — conversationContext 가 없으면 후속 질문도 그냥 모르는 질문으로 빠진다', async () => {
+  const r = await respond({ message: '더 쉽게는?' });
+  assert.equal(r.intent, 'out_of_scope');
+});
+
+test('다중 턴 — 잘못된/지워진 source ID 는 조용히 무시된다', async () => {
+  const r = await respond({ message: '더 쉽게는?', conversationContext: ['exercise:존재안함'] });
+  assert.equal(r.intent, 'out_of_scope');
+});
+
 test('LLM 이 깨진 JSON/빈 답을 주면 → fallback', async () => {
   const r = await respond(
     { message: '푸쉬업 어떻게 해' },

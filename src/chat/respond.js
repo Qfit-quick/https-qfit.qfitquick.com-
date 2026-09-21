@@ -5,7 +5,14 @@
 
 import { extractExclusion, extractComparisonParts, classifySmallTalk, norm, detectPain, detectPersonal } from './intent.js';
 import { retrieve } from './retrieve.js';
-import { KNOWLEDGE } from './knowledge.js';
+import { KNOWLEDGE, getById } from './knowledge.js';
+
+// "더 쉽게는?" 같은 대명사형 후속 질문 — 그 자체로는 검색에 아무 것도
+// 안 걸린다. src/ui/chatbot.js 의 화면판과 같은 패턴이지만, 여기는
+// 서버(요청마다 상태가 없다)라 "방금 그거"를 기억해 둘 수 없다 — 대신
+// 화면이 conversationContext 로 방금 답에 쓴 출처 ID 를 다시 보내 주면
+// 그걸로 이어 간다(10쪽 "conversationContext: 이전에 선택한 source ID").
+const FOLLOWUP_RE = /^(그거|그것|그\s*운동|더\s*쉽게|더\s*쉬운|더\s*어렵게|다른\s*건|다른\s*거|그럼|그건)/;
 
 const COPY = {
   greeting: '안녕하세요! 운동·회복·프로그램·식단 중 궁금한 걸 물어보세요.',
@@ -46,10 +53,22 @@ function findByShortName(phrase) {
   }) || null;
 }
 
+// conversationContext[0] 을 "방금 그 자료"로 본다 — 화면이 매 응답의
+// sources[0].id 를 다음 요청의 conversationContext 맨 앞에 넣어 주는
+// 것을 약속으로 둔다(README 에 적음). 여러 개를 보내도 되지만(최대
+// 5개, 서버가 자름) 여기서는 맨 앞 것만 "직전 대상"으로 쓴다.
+function contextReply(conversationContext) {
+  const id = Array.isArray(conversationContext) ? conversationContext[0] : null;
+  if (!id) return null;
+  const entry = getById(id);
+  if (!entry) return null;
+  return { answer: `${entry.title} — ${entry.body}`, intent: 'knowledge', mode: 'rule', sources: [toSource(entry)], suggestions: [] };
+}
+
 // 규칙 기반 답 — LLM 이 꺼져 있거나(mode: rule) 실패했을 때(mode: fallback)
 // 둘 다 이 함수로 만든다. 성공한 규칙 매칭은 rule, 아무 것도 못 찾은 채
 // 일반 안내로 빠지면 fallback 으로 부른다(호출부에서 구분해서 표시한다).
-function ruleBasedReply(rawText) {
+function ruleBasedReply(rawText, conversationContext) {
   const { text: stripped, excluded } = extractExclusion(rawText);
 
   const compareParts = extractComparisonParts(stripped);
@@ -74,6 +93,10 @@ function ruleBasedReply(rawText) {
 
   const hits = retrieve(stripped, { exclude: excluded });
   if (!hits.length) {
+    if (FOLLOWUP_RE.test(rawText.trim())) {
+      const fromContext = contextReply(conversationContext);
+      if (fromContext) return fromContext;
+    }
     const smallTalk = classifySmallTalk(rawText);
     if (smallTalk === 'greeting') return { answer: COPY.greeting, intent: 'greeting', mode: 'rule', sources: [], suggestions: [] };
     if (smallTalk === 'thanks') return { answer: COPY.thanks, intent: 'greeting', mode: 'rule', sources: [], suggestions: [] };
@@ -108,6 +131,7 @@ function stripExcludedFromBody(body, excluded) {
  */
 export async function respond(input, deps = {}) {
   const message = String(input.message || '').trim();
+  const conversationContext = Array.isArray(input.conversationContext) ? input.conversationContext.slice(0, 5) : [];
   const { callLLM, llmEnabled = false } = deps;
 
   // 개인 기록·통증은 LLM 을 켰어도 항상 규칙으로 먼저 받는다 — 검수 안 된
@@ -117,10 +141,16 @@ export async function respond(input, deps = {}) {
   if (detectPain(message)) return { answer: COPY.painDraft, intent: 'pain', mode: 'rule', sources: [], suggestions: [] };
 
   if (!llmEnabled || typeof callLLM !== 'function') {
-    return ruleBasedReply(message);
+    return ruleBasedReply(message, conversationContext);
   }
 
-  const hits = retrieve(message, { limit: 5 });
+  // conversationContext 로 가리킨 자료가 있으면 검색 결과 맨 앞에 끼워
+  // 모델에게도 "방금 그거"가 뭔지 보여준다 — 없으면(id 가 이미 지워졌거나
+  // 잘못됐으면) 조용히 무시한다.
+  const contextEntries = conversationContext.map(getById).filter(Boolean);
+  const hits = [...contextEntries, ...retrieve(message, { limit: 5 })]
+    .filter((entry, i, arr) => arr.findIndex((e) => e.id === entry.id) === i)
+    .slice(0, 5);
   try {
     const llmResult = await callLLM({ message, history: input.history || [], hits });
     if (!llmResult || typeof llmResult.answer !== 'string' || !llmResult.answer.trim()) {
