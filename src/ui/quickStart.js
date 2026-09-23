@@ -257,6 +257,15 @@ export function initQuickStart({ translate, STATIC_UI, onShowScreen: showFn } = 
     if (!finished) { pauseQuick(); return; }
     onShowScreen('start-screen');
   });
+  // 카운트다운 중에 뒤로가기(하드웨어 back)를 누르면 다른 화면으로 넘어가는데,
+  // countdownId 를 안 멈추면 10초가 다 찼을 때 beginRun() 이 onShowScreen('quick-screen')
+  // 을 불러 사용자를 보고 있던 화면에서 억지로 끌고 온다 — running 상태만
+  // isQuickRunning() 으로 막아서 nav.js 가 지켜주지만, 카운트다운은 아직
+  // running=false 라 그 방어를 안 탄다. 화면이 바뀔 때마다 직접 본다.
+  document.addEventListener('screenchange', (e) => {
+    if (countdownId && e.detail.id !== 'quick-screen') stopCountdown();
+  });
+
   el('quick-done-ok-btn')?.addEventListener('click', () => {
     stopTimer();
     running = false;
