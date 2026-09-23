@@ -50,8 +50,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-1z0qOwf4.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DVysq7ek.css">
+  <script type="module" crossorigin src="./assets/index-DKSx9Cp7.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CyTOUJJG.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -103,6 +103,16 @@
  <div class="weekend-banner" id="weekend-banner" style="display:none;" data-i18n="weekendBanner">주말 한정! 오늘 완주하면 XP 2배</div>
  <div class="comeback-banner" id="comeback-banner" style="display:none;"></div>
 
+ <!-- 오늘의 추천 배너(광고 느낌, 가끔만 뜸 — app.js 부팅부 참고).
+      제목·소개는 부위·동작에 따라 매번 바뀌므로 data-i18n 을 달지 않고
+      JS 가 직접 채운다(comeback-banner 와 같은 방식). 버튼 글자만
+      고정이라 data-i18n 을 쓴다. -->
+ <div class="reco-banner" id="reco-banner" style="display:none;">
+ <div class="ci-title" id="reco-banner-title"></div>
+ <div class="ci-sub" id="reco-banner-sub"></div>
+ <button type="button" id="reco-banner-btn" data-i18n="recoBannerBtn">지금 시작</button>
+ </div>
+
  <div class="hero">
  <h1 class="logo">Q-fit<span class="logo-dot">.</span></h1>
  <p class="hero-line" data-i18n="heroLine">1분이면 끝. 귀찮지 않은 운동.</p>
@@ -150,6 +160,17 @@
       네 번째 행은 저장된 루틴이 있을 때만 나온다(조건부 요소는 짝으로 움직인다). -->
  <div class="one-min-panel" id="one-min-panel" style="display:none;">
  <p class="dim sheet-note" data-i18n="sheetBackNote">뒤로가기 한 번은 시트만 닫습니다.</p>
+ <!-- 아픈 부위 회피(2026-09-10, 2026-09-22 필터로 축소). 직접선택·랜덤선택·
+      AI시작 세 길 모두 selectedExKeys 를 정하기 전에 이 값(painArea)을
+      먼저 본다 — 시작 "방법"이 아니라 그 방법들에 공통으로 걸리는
+      필터라서, 아래 방법 목록과 같은 줄 모양이면 무엇이 진짜 선택지인지
+      헷갈린다(2026-09-22 사용자 피드백 — 시트가 너무 복잡하다). 그래서
+      목록 위에 작은 링크 하나로 줄였다. -->
+ <button class="link-btn pain-area-filter-btn" id="pain-area-btn" type="button">
+ <span data-icon="heart"></span>
+ <span data-i18n="painAreaBtn">아픈 부위 피하기</span>
+ <span class="dim" id="pain-area-sub" data-i18n="painAreaOff">선택 안 함</span>
+ </button>
  <div class="sheet-rows">
  <button class="row44 card" id="mode-manual" type="button">
  <span class="row-ic" data-icon="grid"></span>
@@ -159,20 +180,42 @@
  <span class="row-ic" data-icon="dice"></span>
  <span class="row-main"><span class="row-t" data-i18n="modeRandom">랜덤 선택</span><span class="row-d dim" data-i18n="modeRandomSub">고민 없이 4개 뽑기</span></span>
  </button>
- <button class="row44 row-accent" id="mode-ai-btn" type="button">
+ <button class="row44 row-accent" id="mode-quick-btn" type="button">
  <span class="row-ic" data-icon="spark"></span>
- <span class="row-main"><span class="row-t" data-i18n="aiModeBtn">AI로 시작하기</span><span class="row-d" data-i18n="aiModeSub">질문 2개로 끝</span></span>
+ <span class="row-main"><span class="row-t" data-i18n="quickModeBtn">10초 후 시작</span><span class="row-d" data-i18n="quickModeSub">난이도만 고르면 끝</span></span>
  </button>
- <!-- 아픈 부위 회피(2026-09-10). 직접선택·랜덤선택·AI시작 세 길 모두
-      selectedExKeys 를 정하기 전에 이 값(painArea)을 먼저 본다 — 줄을
-      하나만 두면 세 길이 전부 같은 설정을 보게 된다. -->
- <button class="row44 card" id="pain-area-btn" type="button">
- <span class="row-ic" data-icon="heart"></span>
- <span class="row-main"><span class="row-t" data-i18n="painAreaBtn">아픈 부위 피하기</span><span class="row-d dim" id="pain-area-sub" data-i18n="painAreaOff">선택 안 함</span></span>
+ <!-- QCE 서킷 빠른 시작(2026-09-21). 프로그램 탭까지 가지 않고 여기서
+      바로 시작한다 — 난이도도 요일별 초점도 없는 고정 서킷 하나뿐이라
+      직접선택·랜덤선택처럼 고를 게 없다(programs.js 의 isFixedProgram). -->
+ <button class="row44 row-accent" id="mode-qce-btn" type="button">
+ <span class="row-ic" data-icon="trophy"></span>
+ <span class="row-main"><span class="row-t" data-i18n="modeQce">QCE 서킷</span><span class="row-d" data-i18n="modeQceSub">8개 스테이션 한 바퀴</span></span>
  </button>
  <button class="row44 card row-mint repeat-trigger-btn" id="repeat-trigger-start" type="button" style="display:none;">
  <span class="row-ic" data-icon="repeat"></span>
  <span class="row-main"><span class="row-t" data-i18n="repeatLast">지난 루틴 다시 시작</span><span class="row-d dim" id="repeat-trigger-sub"></span></span>
+ </button>
+ </div>
+ </div>
+
+ <!-- 난이도 4단계 고르기 시트(2026-09-23). '10초 후 시작'을 누르면
+      one-min-panel 위에 이 시트가 겹쳐 열린다(openSheet 는 열려 있던
+      시트를 알아서 접는다 — ui/sheet.js). 고르면 시트를 닫고 quick-screen
+      의 카운트다운으로 넘어간다 — 안쪽은 ui/quickStart.js 가 움직인다. -->
+ <div class="quick-level-panel" id="quick-level-panel" style="display:none;">
+ <p class="dim" data-i18n="quickLevelHint">고르면 10초 뒤 바로 시작합니다.</p>
+ <div class="sheet-rows">
+ <button class="row44 card" id="quick-level-veryEasy" type="button" data-level="veryEasy">
+ <span class="row-main"><span class="row-t" data-i18n="quickLevelVeryEasy">매우 쉬움</span></span>
+ </button>
+ <button class="row44 card" id="quick-level-easy" type="button" data-level="easy">
+ <span class="row-main"><span class="row-t" data-i18n="quickLevelEasy">쉬움</span></span>
+ </button>
+ <button class="row44 card" id="quick-level-hard" type="button" data-level="hard">
+ <span class="row-main"><span class="row-t" data-i18n="quickLevelHard">어려움</span></span>
+ </button>
+ <button class="row44 card" id="quick-level-veryHard" type="button" data-level="veryHard">
+ <span class="row-main"><span class="row-t" data-i18n="quickLevelVeryHard">매우 어려움</span></span>
  </button>
  </div>
  </div>
@@ -393,6 +436,58 @@
  <p class="dim" id="circuit-done-time">완주 기록 12:34</p>
  <p class="dim" id="circuit-done-kcal">약 120kcal 소모</p>
  <button type="button" class="primary" id="circuit-done-ok-btn" data-i18n="amrapConfirmBtn">확인</button>
+ </div>
+ </div>
+
+ <!-- '10초 후 시작' 실행 화면(2026-09-23, 대규모 교체 — 예전 AI 질문
+      2개 흐름을 대신한다). 홈의 난이도 고르기 시트에서 넘어온다.
+      circuit-screen 과 같은 CSS(.amrap-*)를 그대로 쓴다 — 카운트다운
+      상태 하나가 더 있을 뿐이다. 시연 영상은 아직 없다(나중에 붙는다,
+      data/difficultyExercises.js 머리 설명 참고) — 그래서 사진·영상
+      자리 없이 계열·동작 이름만 큰 글자로 보여준다. 안쪽은
+      src/ui/quickStart.js 가 움직인다. -->
+ <div class="screen" id="quick-screen">
+ <div id="quick-countdown" class="quick-cd">
+ <div class="cd-mid">
+ <div class="kick" id="quick-countdown-level"></div>
+ <div id="quick-countdown-num" aria-live="assertive">10</div>
+ <p class="cd-cue" data-i18n="countdownCue">자리를 잡으세요</p>
+ </div>
+ <div class="cd-foot">
+ <button class="sec2" id="quick-countdown-cancel-btn" data-i18n="cancelBtn">취소</button>
+ </div>
+ </div>
+ <!-- run·done 두 상태 모두에 걸쳐 보인다(circuit-screen 과 같은 모양 —
+      거기는 이 머리가 화면 최상단에 한 번만 있고 run/done 을 안 가린다).
+      완주 화면에서도 뒤로 나갈 길이 있어야 한다. -->
+ <div class="amrap-head" id="quick-head" hidden>
+ <button class="hd-back" type="button" id="quick-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <h2 class="hd-title" id="quick-title">10초 후 시작</h2>
+ </div>
+ <div id="quick-run" hidden>
+ <div class="amrap-stats">
+ <div class="amrap-stat">
+ <span class="dim" data-i18n="circuitStationLabel">스테이션</span>
+ <b class="amrap-round-num" id="quick-progress">1/15</b>
+ </div>
+ <div class="amrap-stat">
+ <span class="dim" data-i18n="circuitClockLabel">경과 시간</span>
+ <b class="big amrap-clock" id="quick-clock">00:00</b>
+ </div>
+ </div>
+ <p class="dim" id="quick-move-family"></p>
+ <h3 class="amrap-move-name" id="quick-move-name">동작</h3>
+ <button type="button" class="primary amrap-next-btn" id="quick-next-btn" data-i18n="circuitNextBtn">다음 스테이션</button>
+ <div class="amrap-foot">
+ <button type="button" class="sec2" id="quick-pause-btn" data-i18n="amrapPauseBtn">일시정지</button>
+ <button type="button" class="sec2 sec2-danger" id="quick-quit-btn" data-i18n="amrapQuitBtn">종료</button>
+ </div>
+ </div>
+ <div class="card amrap-done" id="quick-done" hidden>
+ <div class="program-card-name" data-i18n="quickDoneTitle">오늘 운동 완료! 🎉</div>
+ <p class="dim" id="quick-done-time">완주 기록 12:34</p>
+ <p class="dim" id="quick-done-kcal">약 120kcal 소모</p>
+ <button type="button" class="primary" id="quick-done-ok-btn" data-i18n="amrapConfirmBtn">확인</button>
  </div>
  </div>
 
@@ -801,8 +896,13 @@
  <div class="screen" id="chatbot-screen">
  <div class="chatbot-messages" id="chatbot-messages"></div>
  <div class="chatbot-suggest" id="chatbot-suggest"></div>
+ <!-- 로컬 답은 이미 위에 떴다(항상 즉시). 이 줄은 그 옆에 서버(dev:chat)
+      LLM 확인이 진행 중이거나 실패했을 때만 잠깐 뜬다 — server/chat.mjs
+      가 안 떠 있으면(대부분의 경우, 배포본 포함) 이 줄은 평생 안 보인다. -->
+ <p class="dim chatbot-status" id="chatbot-status" aria-live="polite" hidden></p>
  <form class="chatbot-input-row screen-foot" id="chatbot-form">
- <input type="text" id="chatbot-input" class="inp chatbot-input" data-i18n-placeholder="chatbotPlaceholder" placeholder="궁금한 걸 물어보세요" autocomplete="off" maxlength="300">
+ <input type="text" id="chatbot-input" class="inp chatbot-input" data-i18n-placeholder="chatbotPlaceholder" placeholder="궁금한 걸 물어보세요" autocomplete="off" maxlength="1000">
+ <span class="dim chatbot-count" id="chatbot-count">0/1000</span>
  <button type="submit" class="chatbot-send-btn" id="chatbot-send-btn" aria-label="보내기" data-icon="send"></button>
  </form>
  <div class="chatbot-foot-row">
@@ -826,6 +926,7 @@
  <input type="email" id="account-login-email" class="auth-input" placeholder="이메일" data-i18n-placeholder="loginEmailPlaceholder" autocomplete="email">
  <input type="password" id="account-login-pw" class="auth-input" placeholder="비밀번호" data-i18n-placeholder="loginPwPlaceholder" autocomplete="current-password">
  <button class="primary" id="account-login-btn" data-i18n="accountBtn">로그인</button>
+ <button class="link-btn" id="account-forgot-btn" data-i18n="forgotPwBtn">비밀번호를 잊으셨나요?</button>
  <div class="auth-error" id="account-login-error"></div>
  </div>
 
@@ -834,6 +935,24 @@
  <input type="password" id="account-signup-pw" class="auth-input" placeholder="비밀번호 (6자리 이상)" data-i18n-placeholder="signupPwPlaceholder" autocomplete="new-password">
  <button class="primary" id="account-signup-btn" data-i18n="signupBtn">회원가입</button>
  <div class="auth-error" id="account-signup-error"></div>
+ </div>
+
+ <!-- 비밀번호 재설정 요청 — 이메일만 받아서 재설정 링크를 보낸다. -->
+ <div id="account-reset-form" class="auth-form" style="display:none;">
+ <p class="tagline" data-i18n="resetPwBlurb">가입하신 이메일로 재설정 링크를 보내드려요.</p>
+ <input type="email" id="account-reset-email" class="auth-input" placeholder="이메일" data-i18n-placeholder="loginEmailPlaceholder" autocomplete="email">
+ <button class="primary" id="account-reset-btn" data-i18n="resetPwSendBtn">재설정 메일 보내기</button>
+ <button class="link-btn" id="account-reset-back-btn" data-i18n="resetPwBack">로그인으로 돌아가기</button>
+ <div class="auth-error" id="account-reset-error"></div>
+ </div>
+
+ <!-- 메일의 재설정 링크를 타고 돌아왔을 때만 뜬다(app.js 의
+      checkSupabaseSession 이 주소의 recovery 토큰을 보고 연다). -->
+ <div id="account-newpw-form" class="auth-form" style="display:none;">
+ <p class="tagline" data-i18n="newPwBlurb">새 비밀번호를 입력해주세요.</p>
+ <input type="password" id="account-newpw-pw" class="auth-input" placeholder="새 비밀번호 (6자리 이상)" data-i18n-placeholder="signupPwPlaceholder" autocomplete="new-password">
+ <button class="primary" id="account-newpw-btn" data-i18n="newPwSaveBtn">비밀번호 저장</button>
+ <div class="auth-error" id="account-newpw-error"></div>
  </div>
 
  <button class="link-btn" id="account-back-btn" data-i18n="skipAccount">계정 없이 계속하기</button>

@@ -105,6 +105,9 @@
    이 규칙은 원래 .loading-figure(막대인간 SVG)에 붙어 있었고 정작 숫자에는
    아무 스타일이 없었다 — 글자 규칙을 SVG 에 걸어 둔 것이라 아무 일도 안 했다. */
 #countdown-screen { justify-content: space-between; align-items: stretch; }
+/* '10초 후 시작'의 카운트다운(2026-09-23, ui/quickStart.js) — quick-screen
+   안의 한 상태라 화면 자체가 아니라 이 래퍼에 같은 레이아웃을 건다. */
+.quick-cd { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; }
 .cd-mid {
   flex: 1;
   display: flex;
@@ -113,7 +116,8 @@
   justify-content: center;
   gap: var(--s-2);
 }
-#countdown-num {
+#countdown-num,
+#quick-countdown-num {
   font-family: var(--font-num);
   font-size: var(--t-cd);
   font-weight: 700;

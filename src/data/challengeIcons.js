@@ -383,6 +383,19 @@ export var CHALLENGE_ICONS = {
     propsBefore: [groundProp(88)]
   }),
 
+  // 점프런지 — 공중에서 앞뒤 다리를 바꾸는 순간의 스플릿 스탠스(정면).
+  // QCE 서킷의 JUMPLUNGE 는 시연 영상이 없어(programs.js 의 QCE_STATIONS
+  // 주석 참고) PULLUP 과 같은 방식으로 이 픽토그램을 대신 쓴다.
+  lungeJump: figure({
+    head: [50, 15],
+    torso: [[50, 22], [50, 50]],
+    armL: [[50, 26], [62, 32], [70, 20]],
+    armR: [[50, 26], [40, 36], [34, 50]],
+    legL: [[50, 50], [42, 66], [38, 90]],
+    legR: [[50, 50], [62, 70], [72, 92]],
+    propsBefore: [groundProp(94)]
+  }),
+
   // 카프라주(개구리) 스트레칭 — 손을 짚고 무릎을 넓게 벌려 엎드린 자세
   frogStretch: figure({
     head: [50, 22],

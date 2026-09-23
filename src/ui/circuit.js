@@ -12,6 +12,7 @@
 
 import { EXERCISES } from '../data/exercises.js';
 import { clipThumb, disposeClipThumbs } from './clip-thumb.js';
+import { getChallengeIcon } from '../data/challengeIcons.js';
 import { loadBody } from '../health/store.js';
 import { markProgramDayDone } from './programs.js';
 
@@ -21,6 +22,10 @@ let onShowScreen = () => {};
 
 const EX_BY_KEY = Object.fromEntries(EXERCISES.map((e) => [e.key, e]));
 const el = (id) => document.getElementById(id);
+
+// PLANKJACK·JUMPLUNGE 는 EXERCISES 에 없어(시연 영상이 없어서 —
+// programs.js 의 QCE_STATIONS 주석 참고) 영상 대신 이 픽토그램을 쓴다.
+const NO_VIDEO_ICON = { PLANKJACK: 'plank', JUMPLUNGE: 'lungeJump' };
 
 let program = null;
 let dayIndex = 0;
@@ -74,7 +79,7 @@ function render() {
   if (progEl) progEl.textContent = t(S.circuitProgressFmt).replace('%s', stationIdx + 1).replace('%s', stations().length);
 
   const nameEl = el('circuit-move-name');
-  if (nameEl) nameEl.textContent = t((ex && ex.label) || { ko: st.key });
+  if (nameEl) nameEl.textContent = t((ex && ex.label) || st.label || { ko: st.key });
 
   const targetEl = el('circuit-move-target');
   if (targetEl) {
@@ -87,8 +92,12 @@ function render() {
   if (shot) {
     disposeClipThumbs(shot);
     shot.innerHTML = '';
-    const thumb = clipThumb(st.key);
-    if (thumb) shot.appendChild(thumb);
+    if (NO_VIDEO_ICON[st.key]) {
+      shot.innerHTML = getChallengeIcon(NO_VIDEO_ICON[st.key]);
+    } else {
+      const thumb = clipThumb(st.key);
+      if (thumb) shot.appendChild(thumb);
+    }
   }
 
   const isLast = stationIdx >= stations().length - 1;
@@ -112,8 +121,8 @@ function estKcal() {
   // 결과 화면·plan.js 의 sessionKcal() 과 같은 식(MET × 3.5 × 체중 ÷ 200 ×
   // 분) — 스테이션 기반 서킷이라 그 함수의 '세트 수' 인자에 맞지 않아
   // 직접 적었지만, 상수는 그대로 맞춘다.
-  const keys = stations().map((s) => s.key);
-  const avgMet = keys.reduce((s, k) => s + ((EX_BY_KEY[k] || {}).met || 5), 0) / (keys.length || 1);
+  const sts = stations();
+  const avgMet = sts.reduce((s, st) => s + ((EX_BY_KEY[st.key] || {}).met || st.met || 5), 0) / (sts.length || 1);
   const minutes = elapsedSec / 60;
   return Math.max(1, Math.round((avgMet * 3.5 * weightKg) / 200 * minutes));
 }

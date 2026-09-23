@@ -14,3 +14,10 @@ registerSW.js       -text
 workbox-*.js        -text
 manifest.webmanifest -text
 assets/**           -text
+# .assetsignore 도 못 박는다. CRLF 로 풀리면 각 줄 끝에 \r 이 붙어
+# 'node_modules\r' 가 되는데, wrangler 의 무시 규칙 파서는 그걸 실제
+# 'node_modules' 경로와 다른 것으로 본다 — 그러면 규칙이 전부 조용히
+# 안 먹혀서 node_modules·.git 까지 통째로 올라간다. CI(우분투)는 원래
+# LF 라 안 걸리고, 윈도우에서 `npx wrangler deploy` 를 직접 돌릴 때만
+# 걸린다(2026-09-23, 자산 15,163개로 잡혀 실제로 재현됨 — 정상은 99개).
+.assetsignore       -text

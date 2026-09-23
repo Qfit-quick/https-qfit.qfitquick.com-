@@ -124,7 +124,14 @@ function onKey(e) {
 export function openSheet(el, { title = '', from = null } = {}) {
   if (!sheet) build();
   if (openEl === el) return;
-  if (openEl) closeSheet();
+  // 시트 안에서 다른 시트를 여는 경우(예: '1분 시작' 안의 '아픈 부위
+  // 피하기') — keepHistory 를 안 주면 closeSheet() 가 history.back() 을
+  // 부르는데, 이건 비동기라 아래에서 새로 쌓는 history.pushState() 보다
+  // 늦게 도착한다. 그 늦은 back() 이 도착할 때는 이미 openEl 이 새
+  // 시트로 바뀐 뒤라, nav.js 의 popstate 핸들러가 "지금 열려 있는 시트"
+  // 로 오인해 방금 연 새 시트를 대신 닫아버린다(2026-09-22 발견 —
+  // 그 결과로 시트 두 개가 한 번에 닫히고 홈 화면까지 밀려난다).
+  if (openEl) closeSheet({ keepHistory: true });
 
   openEl = el;
   opener = from || document.activeElement;

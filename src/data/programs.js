@@ -55,27 +55,34 @@ export const CINDY_MOVES = [
   { key: 'SQUAT', reps: 15 },
 ];
 
-// QCE(Qfit Championship Event) 실전 서킷(2026-09-19) — 대회 기획 문서
-// "3. 큐핏 대회 프로그램 설계"의 8개 스테이션을 연습용으로 그대로 옮겼다.
-// Cindy(amrap)와 다른 점: 이건 '반복'이 아니라 '한 바퀴'다 — 8개를 순서대로
-// 한 번씩 지나가고 걸린 시간을 잰다(실제 대회의 '완주 기록'과 같은 개념).
-// 그래서 type 을 'circuit' 으로 따로 두고, ui/circuit.js 가 이 필드를 읽어
-// 스테이션을 순서대로 넘기며 스톱워치(0초부터 올라감)를 돈다.
+// QCE(Qfit Championship Event) 실전 서킷(2026-09-19, 2026-09-21 8종목 갱신) —
+// 대회 기획 문서 "3. 큐핏 대회 프로그램 설계"의 8개 스테이션을 연습용으로
+// 옮겼다. Cindy(amrap)와 다른 점: 이건 '반복'이 아니라 '한 바퀴'다 — 8개를
+// 순서대로 한 번씩 지나가고 걸린 시간을 잰다(실제 대회의 '완주 기록'과
+// 같은 개념). 그래서 type 을 'circuit' 으로 따로 두고, ui/circuit.js 가 이
+// 필드를 읽어 스테이션을 순서대로 넘기며 스톱워치(0초부터 올라감)를 돈다.
 //
-// 여덟 자리 중 셋(버피/푸쉬업/런지)은 기획 문서가 변형 동작도 같이
-// 적어 뒀지만(예: "푸쉬업/와이드푸쉬업/다이아몬드푸쉬업"), 연습 프로그램은
-// 기본형 하나만 쓴다 — 변형까지 고르게 하면 '연습해 둔 순서'와 '실제
-// 대회 순서'가 사람마다 달라져 버린다. 전부 EXERCISES 에 이미 있는
-// 동작이라 Cindy 의 PULLUP 같은 예외(픽토그램 대체)가 필요 없다.
+// 실제 QCE 대회(qceRulebook.js)와 두 곳이 다르다 — 셔틀런은 왕복 트랙,
+// 베어크롤은 바닥 이동 공간이 있어야 하는데 이 앱은 손 안에서 하는
+// 연습용이라 그 둘만 제자리 달리기·마운틴클라이머로 대체했다. 나머지
+// 여섯은 대회와 완전히 같다.
+//
+// PLANKJACK·JUMPLUNGE 는 PULLUP(위 CINDY_MOVES 주석 참고)과 같은 이유로
+// EXERCISES 24종에 없다 — 이 자리 하나 쓰자고 시연 영상을 새로 찍어야
+// 하는데 없어서, ui/circuit.js 가 영상 대신 challengeIcons.js 의 픽토그램을
+// 쓴다. label 을 여기 직접 적어 두는 것도 PULLUP과 같은 이유 — EXERCISES 에
+// 없으니 그쪽에서 이름을 못 가져온다.
 export const QCE_STATIONS = [
   { key: 'RUNINPLACE', mode: 'time', target: 45 },
   { key: 'BURPEE', mode: 'reps', target: 15 },
-  { key: 'SQUAT', mode: 'reps', target: 20 },
+  { key: 'JUMPSQUAT', mode: 'reps', target: 20 },
   { key: 'PUSHUP', mode: 'reps', target: 15 },
   { key: 'MOUNTAINCLIMBER', mode: 'time', target: 30 },
-  { key: 'PLANK', mode: 'time', target: 40 },
-  { key: 'LUNGE', mode: 'reps', target: 20 },
-  { key: 'CRUNCH', mode: 'reps', target: 20 },
+  { key: 'PLANKJACK', mode: 'reps', target: 20, met: 6.5,
+    label: { ko: '플랭크잭', en: 'Plank Jack', zh: '平板开合跳' } },
+  { key: 'JUMPLUNGE', mode: 'reps', target: 20, met: 8.0,
+    label: { ko: '점프런지', en: 'Jump Lunge', zh: '跳跃弓步' } },
+  { key: 'VUP', mode: 'reps', target: 20 },
 ];
 
 export const PROGRAMS = [
@@ -163,9 +170,9 @@ export const PROGRAMS = [
     name: { ko: 'QCE 실전 서킷', en: 'QCE Race Circuit', zh: 'QCE 实战循环' },
     tagline: { ko: '8개 스테이션 한 바퀴 · 완주 기록 재기', en: '8 stations, one lap — time your finish', zh: '8个站点一圈 · 记录完赛时间' },
     disclaimer: {
-      ko: '실제 QCE 대회 8종목을 연습용으로 그대로 옮겼습니다.',
-      en: 'The same 8 stations as the real QCE competition, for practice.',
-      zh: '与真实QCE比赛的8个项目完全一致，供练习使用。',
+      ko: '실제 QCE 대회 8종목 중 셔틀런·베어크롤은 공간 제약으로 제자리 달리기·마운틴클라이머로 대체했고, 나머지 6종목은 대회와 같습니다.',
+      en: 'Shuttle run and bear crawl are swapped for run-in-place and mountain climbers due to space limits; the other 6 stations match the real QCE competition.',
+      zh: '受空间限制，将穿梭跑和熊爬替换为原地跑和登山跑，其余6个项目与真实QCE比赛相同。',
     },
     circuit: { stations: QCE_STATIONS },
     schedule: ['circuit', 'circuit', 'circuit', 'circuit', 'circuit', 'circuit', 'circuit'],

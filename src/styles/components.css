@@ -152,6 +152,16 @@
 .back-link-btn:active,
 .btn-home:active { color: var(--text); }
 
+/* '1분 시작' 시트의 아픈 부위 필터(2026-09-22) — 아래 시작 방법 목록과
+   같은 줄 모양이면 그것도 시작 방법 중 하나처럼 보인다. 목록 위에
+   왼쪽 정렬된 작은 링크 하나로 줄여서 "이건 목록을 거르는 것" 임을
+   모양으로도 드러낸다. */
+.pain-area-filter-btn {
+  align-self: flex-start;
+  padding-left: 0;
+}
+.pain-area-filter-btn svg { width: 16px; height: 16px; flex: none; }
+
 /* ── 목록 줄 ──────────────────────────────────────────
    카드 여러 장 대신 구분선 하나. 항목이 늘어도 화면이 조각나지 않는다. */
 .menu-box,
@@ -484,6 +494,7 @@
 .comeback-banner,
 .weekend-banner,
 .challenge-invite,
+.reco-banner,
 .install-banner,
 .result-recovery-tip {
   display: flex;
@@ -496,12 +507,14 @@
   text-align: left;
 }
 .comeback-banner { border-left-color: var(--mint-text); }
-.challenge-invite { border-left-color: var(--hot); }
+.challenge-invite,
+.reco-banner { border-left-color: var(--hot); }
 .result-recovery-tip { border-left-color: var(--mint-text); }
 .comeback-banner b,
 .result-recovery-tip b { color: var(--text); font-weight: 700; }
 .ci-title { font-weight: 700; font-size: var(--t-md); color: var(--text); }
-.challenge-invite button {
+.challenge-invite button,
+.reco-banner button {
   align-self: flex-start;
   min-height: var(--tap);
   padding: 0 var(--s-4);
@@ -1120,8 +1133,11 @@ button.card:active { background: var(--surface-2); }
   padding-top: var(--s-2);
 }
 .chatbot-chip { font-size: var(--t-xs); height: auto; min-height: var(--tap); padding: var(--s-2) var(--s-3); }
+.chatbot-status { margin: 0 0 var(--s-2); min-height: 1.2em; }
+.chatbot-ai-label { font-size: var(--t-xs); margin-bottom: var(--s-1) !important; }
 .chatbot-input-row { display: flex; align-items: center; gap: var(--s-2); }
 .chatbot-input { flex: 1 1 auto; min-width: 0; }
+.chatbot-count { font-size: var(--t-xs); flex: none; white-space: nowrap; }
 .chatbot-send-btn {
   flex: none;
   width: var(--tap);
@@ -1195,6 +1211,24 @@ button.card:active { background: var(--surface-2); }
 /* 탭바가 있는 화면에서는 그만큼 더 비운다 — 안 그러면 주 버튼이 탭바에 깔린다.
    안전영역은 더하지 않는다: 탭바가 바닥에 붙은 뒤로 그 자리는 탭바 몫이다. */
 body:not(.immersive) .screen-foot {
+  padding-bottom: calc(var(--s-3) + var(--tabbar-h));
+}
+
+/* 챗봇 화면은 .screen-foot(입력 폼) 뒤에 줄이 하나 더 있다(이전·새 대화).
+   base.css 의 .screen:has(> .screen-foot)::after 는 ".screen-foot 가 있으면
+   아래 여백을 그게 이미 잡아 뒀다"고 보고 화면 전체의 기본 탭바 여백을
+   지우는데, 그 가정은 .screen-foot 가 '진짜 마지막 줄' 일 때만 맞다 —
+   여기는 뒤에 줄이 하나 더 있어서, 그 줄 자신은 아무 여백도 못 받고
+   탭바 밑에 깔린다(2026-09-22 발견 — 대화가 몇 번만 오가도 '새 대화'가
+   안 눌리고, 그 자리를 누르면 탭바의 '홈' 이 대신 눌린다). 진짜 마지막
+   줄에 그 여백을 옮겨 준다.
+   신체정보(body-screen)·직접선택(manual-select-screen)도 겉보기엔 같은
+   모양(.screen-foot 뒤에 '이전'·'닫기')이지만 실제로는 안전하다 —
+   header.js 가 그 버튼들을 부팅 때 숨기고(hidden) 화면 위쪽 공용 뒤로가기
+   화살표가 대신 눌러 주므로, 사용자가 실제로 누르는 자리가 아니다.
+   챗봇의 '새 대화'만 header.js 가 안 건드리는 진짜 사용자용 버튼이라
+   여기서 따로 여백을 준다. */
+.chatbot-foot-row {
   padding-bottom: calc(var(--s-3) + var(--tabbar-h));
 }
 

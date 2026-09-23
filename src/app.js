@@ -471,6 +471,10 @@ const heartgameScreen = document.getElementById('heartgame-screen');
 // 챌린지 트래커(2026-09-13). 프로그램과 마찬가지로 탭 전용 화면 —
 // 안쪽은 src/ui/challengeTracker.js 가 전부 그린다.
 const challengeScreen = document.getElementById('challenge-screen');
+// '10초 후 시작'(2026-09-23, 대규모 교체 — 예전 AI 질문 2개 흐름을
+// 대신한다). amrapScreen·circuitScreen 과 같은 이유로 여기서는 화면
+// 목록에 끼워 넣는 것만 한다 — 안쪽은 src/ui/quickStart.js 가 전부 붙인다.
+const quickScreen = document.getElementById('quick-screen');
 const openVideoGalleryBtn = document.getElementById('open-video-gallery-btn');
 const videoGalleryBackBtn = document.getElementById('video-gallery-back-btn');
 const videoGalleryGrid = document.getElementById('video-gallery-grid');
@@ -527,7 +531,7 @@ const bestScoreBox = document.getElementById('best-score-box');
 const bestScoreVal = document.getElementById('best-score-val');
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen,quickScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  if(el === moreScreen){
  try{
@@ -1442,16 +1446,64 @@ function updateAccountUI(){
  }
 }
 
+// 로그인/회원가입 대신 재설정 요청('reset')·새 비밀번호 입력('newpw')
+// 폼을 보여준다. 'login' 을 주면(또는 생략하면) 원래 로그인/회원가입
+// 화면으로 되돌린다 — updateAccountUI() 하나로 충분한 게, 그쪽은
+// currentUserId·탭 상태만 본다.
+function showAccountSubForm(mode){
+ const resetForm = document.getElementById('account-reset-form');
+ const newpwForm = document.getElementById('account-newpw-form');
+ const backBtn = document.getElementById('account-back-btn');
+ if(mode === 'reset' || mode === 'newpw'){
+ const loginForm = document.getElementById('account-login-form');
+ const signupForm = document.getElementById('account-signup-form');
+ const tabs = document.querySelector('.auth-tabs');
+ if(loginForm) loginForm.style.display = 'none';
+ if(signupForm) signupForm.style.display = 'none';
+ if(tabs) tabs.style.display = 'none';
+ if(resetForm) resetForm.style.display = mode === 'reset' ? 'flex' : 'none';
+ if(newpwForm) newpwForm.style.display = mode === 'newpw' ? 'flex' : 'none';
+ // 새 비밀번호를 넣는 중엔 "계정 없이 계속하기"로 빠져나갈 길을 감춘다 —
+ // 재설정 메일 링크로 받은 임시 세션 상태에서 어중간하게 나가면
+ // 다시 들어왔을 때 뭘 하던 중인지 알 길이 없다.
+ if(backBtn) backBtn.style.display = mode === 'newpw' ? 'none' : '';
+ } else {
+ if(resetForm) resetForm.style.display = 'none';
+ if(newpwForm) newpwForm.style.display = 'none';
+ if(backBtn) backBtn.style.display = '';
+ updateAccountUI();
+ }
+}
+
+// 비밀번호 재설정 메일의 링크를 타고 돌아왔는지 — Supabase 는 그 주소에
+// #access_token=...&type=recovery 를 붙인다(구현 흐름에 따라 ?code=...
+// 로 올 수도 있어 둘 다 본다). 이 앱은 해시를 자기 화면 이름으로도 쓰지만
+// (#account-screen 등) 화면 라우터는 부팅 때 그 해시를 읽어 화면을
+// 고르지 않고 그대로 두므로(nav.js 참고) 부딪히지 않는다.
+function isPasswordRecoveryRedirect(){
+ return /type=recovery/.test(location.hash) || /type=recovery/.test(location.search);
+}
+
 async function checkSupabaseSession(){
  // 로그인한 적이 없으면 SDK 를 받지도 않는다. 로그인은 선택 기능이라
- // 안 쓰는 사람에게 120KB 를 받게 할 이유가 없다.
- if(!hasStoredSession()) return;
+ // 안 쓰는 사람에게 120KB 를 받게 할 이유가 없다 — 단, 비밀번호 재설정
+ // 링크를 막 타고 온 경우는 예외로 받는다. 안 받으면 그 토큰을 처리할
+ // 클라이언트 자체가 없어서 "새 비밀번호 설정" 화면을 띄울 방법이 없다.
+ const recovering = isPasswordRecoveryRedirect();
+ if(!hasStoredSession() && !recovering) return;
  const sb = await getSupabase();
  if(!sb) return;
  try{
  const { data } = await sb.auth.getSession();
  if(data && data.session && data.session.user){
  currentUserId = data.session.user.id;
+ if(recovering){
+ // 프로필 동기화 없이 새 비밀번호 화면만 연다 — 아직 본인이 맞는지
+ // 확인 중인 단계라, 이 세션으로 기존 기기 기록을 덮어쓰지 않는다.
+ showScreen(accountScreen);
+ showAccountSubForm('newpw');
+ return;
+ }
  await syncProfileFromCloud();
  updateAccountUI();
  updateBestBox();
@@ -1752,15 +1804,17 @@ function renderCalendar(){
 }
 
 function renderRecordsScreen(){
- // 기록이 하나도 없으면 통계 여섯 칸과 캘린더를 통째로 감춘다.
- // 0 을 여섯 번 늘어놓는 것은 "아직 아무것도 없다"를 여섯 번 말하는 것이고,
- // 처음 온 사람에게는 그게 실패한 화면처럼 보인다.
- const hasAny = (myProfile.totalCompletions || 0) > 0;
+ // 기록이 하나도 없어도 통계 칸·달력을 그대로 보여준다(2026-09-22 요청) —
+ // 전부 0 으로 나오는 게, "1분 시작" 버튼만 있는 별도 빈 화면보다 낫다.
+ // 사용자가 실제로는 기록이 있는데(예: 기기를 옮겨서 화면이 비어 보이는
+ // 경우) 그걸 숨기지 않고 그대로 보여줘야 "정말 0인지 안 불러와진 건지"
+ // 를 헷갈리지 않는다. 아래 렌더 함수들은 전부 기록 0건에서도 안전하다
+ // (renderHistoryList 는 "아직 완주 기록이 없습니다", renderBodyparts 는
+ // weekPartsEmpty 문구로 빠진다).
  const emptyBox = document.getElementById('records-empty');
  const bodyBox = document.getElementById('records-body');
- if(emptyBox) emptyBox.hidden = hasAny;
- if(bodyBox) bodyBox.hidden = !hasAny;
- if(!hasAny) return;   // 감춘 것을 그릴 이유가 없다
+ if(emptyBox) emptyBox.hidden = true;
+ if(bodyBox) bodyBox.hidden = false;
 
  // 부위 비중도 여기서 같이 그린다. 화면을 켜기만 하고 렌더를 건너뛰면
  // 빈 자리가 남는데, 그건 '이번 주 운동을 안 했다'로 읽힌다.
@@ -2508,7 +2562,6 @@ const QUIZ_TITLES = {
 };
 let quizAnswers = {};
 try{
- const modeAiBtn = document.getElementById('mode-ai-btn');
  const oneMinStartBtn = document.getElementById('one-min-start-btn');
  const oneMinPanel = document.getElementById('one-min-panel');
  if(oneMinStartBtn && oneMinPanel){
@@ -2538,13 +2591,12 @@ try{
  });
  const openHeartgameBtn = document.getElementById('open-heartgame-btn');
  if(openHeartgameBtn && heartgameScreen) openHeartgameBtn.addEventListener('click', ()=> showScreen(heartgameScreen));
- if(modeAiBtn) modeAiBtn.addEventListener('click', ()=>{
- Sound.unlock();
- flash('#ffe600');
- quizAnswers = {};
- showQuizStep(0);
- showScreen(aiQuizScreen);
- });
+ // 'AI로 시작하기'(질문 2개 → 추천) 버튼은 2026-09-23 대규모 교체로
+ // 없어졌다 — 그 자리는 이제 '10초 후 시작'(난이도 4단계 고르기,
+ // src/ui/quickStart.js)이다. 아래 퀴즈 화면·함수들은 그 버튼을 잃어
+ // 더는 열리지 않는다(ai-quiz-screen 은 고아 화면). 지우지 않고 남겨
+ // 둔 이유: 이 교체 자체가 이미 크고, 60곳 넘게 걸린 옛 퀴즈 코드를
+ // 같은 커밋에서 같이 걷어내면 실수가 늘어난다 — 다음 정리 때 뗀다.
  if(aiQuizBackBtn){
  aiQuizBackBtn.addEventListener('click', ()=>{
  const currentStep = document.querySelector('.quiz-step[style*="flex"]');
@@ -4355,6 +4407,47 @@ try{
  if(weekendBanner && [0,6].includes(new Date().getDay())){ weekendBanner.style.display = 'block'; }
 }catch(e){ console.error('weekend banner setup failed:', e); }
 
+// ---------- 오늘의 추천 배너 (광고 느낌, 가끔만) ----------
+// 매번 뜨면 광고가 아니라 잔소리다 — 45% 확률로만 보여준다. 오늘 이미
+// 한 판 했으면 안 보여준다(이미 한 사람한테 "오늘 이거 어때요"는 할 말이
+// 아니다). 부위 하나를 무작위로 골라 그 부위 동작 중 몇 개를 미리
+// 채워서 랜덤 선택(mode-random)과 같은 문(pickModeAndGo)으로 보낸다 —
+// 누르면 바로 설정 화면이고, 거기 '시작'을 누르면 진행된다.
+try{
+ const recoBanner = document.getElementById('reco-banner');
+ const recoTitle = document.getElementById('reco-banner-title');
+ const recoSub = document.getElementById('reco-banner-sub');
+ const recoBtn = document.getElementById('reco-banner-btn');
+ const playedToday = myProfile.lastPlayDate === todayStr();
+ if(recoBanner && recoTitle && recoSub && recoBtn && !playedToday && Math.random() < 0.45){
+ const group = MUSCLE_GROUPS[Math.floor(Math.random() * MUSCLE_GROUPS.length)];
+ let pool = group.keys.filter(k=>{
+  const ex = EXERCISES.find(e=>e.key===k);
+  return ex && (!ex.premium || myProfile.isPremium);
+ });
+ if(painArea){
+  const avoided = avoidedKeys();
+  const safe = pool.filter(k=> !avoided.has(k));
+  if(safe.length) pool = safe;
+ }
+ if(pool.length){
+  for(let i = pool.length - 1; i > 0; i--){
+   const j = Math.floor(Math.random() * (i + 1));
+   [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const picked = pool.slice(0, 3);
+  const names = picked.map(k=> t(EXERCISES.find(e=>e.key===k).label)).join(' · ');
+  recoTitle.textContent = t(STATIC_UI.recoBannerTitle).replace('%s', t(group.label));
+  recoSub.textContent = names;
+  recoBanner.style.display = 'flex';
+  recoBtn.addEventListener('click', ()=>{
+   Sound.unlock();
+   pickModeAndGo(picked);
+  });
+ }
+ }
+}catch(e){ console.error('reco banner setup failed:', e); }
+
 // ---------- "Add to Home Screen" (설정 화면 줄) ----------
 // 예전에는 홈 화면 맨 위에 항상 뜨는 배너였다. 앱을 열 때마다 위쪽을
 // 차지하는 게 거슬린다는 요청(2026-09-15)으로 설정 안의 평범한 줄 하나로
@@ -4692,6 +4785,83 @@ try{
  }
  });
 }catch(e){ console.error('signup button failed:', e); }
+
+try{
+ const forgotBtn = document.getElementById('account-forgot-btn');
+ if(forgotBtn) forgotBtn.addEventListener('click', ()=>{
+ const resetEmail = document.getElementById('account-reset-email');
+ const loginEmail = document.getElementById('account-login-email');
+ // 로그인 칸에 이미 쳐 둔 이메일이 있으면 그대로 물려받는다 — 방금
+ // "비밀번호가 틀렸나" 싶어서 여길 눌렀을 사람에게 또 치게 하지 않는다.
+ if(resetEmail && loginEmail && loginEmail.value.trim()) resetEmail.value = loginEmail.value.trim();
+ const errEl = document.getElementById('account-reset-error');
+ if(errEl) errEl.textContent = '';
+ showAccountSubForm('reset');
+ });
+}catch(e){ console.error('forgot password button failed:', e); }
+
+try{
+ const resetBackBtn = document.getElementById('account-reset-back-btn');
+ if(resetBackBtn) resetBackBtn.addEventListener('click', ()=> showAccountSubForm('login'));
+}catch(e){ console.error('reset back button failed:', e); }
+
+try{
+ const resetBtn = document.getElementById('account-reset-btn');
+ if(resetBtn) resetBtn.addEventListener('click', async ()=>{
+ const errEl = document.getElementById('account-reset-error');
+ try{
+ const email = document.getElementById('account-reset-email').value.trim();
+ errEl.style.color = '#ff6b5b';
+ errEl.textContent = '처리 중...';
+ if(!email){ errEl.textContent = '이메일을 입력해주십시오.'; return; }
+ if(!EMAIL_RE.test(email)){ errEl.textContent = '이메일 형식이 올바르지 않습니다.'; return; }
+ const sb = await getSupabase();
+ if(!sb){ errEl.textContent = '연결에 실패했어요. 페이지를 새로고침해서 다시 시도해주십시오.'; return; }
+ // redirectTo 가 없으면 Supabase 대시보드의 기본 Site URL 로 보낸다 —
+ // 그쪽이 이미 이 사이트를 가리키고 있다면 없어도 동작은 하지만,
+ // 명시해 두면 대시보드 설정이 바뀌어도(또는 아직 안 맞춰져 있어도)
+ // 이 코드가 실제로 뜬 주소를 그대로 쓴다.
+ const redirectTo = location.origin + location.pathname;
+ const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+ if(error) throw error;
+ errEl.style.color = 'var(--volt)';
+ errEl.textContent = t(STATIC_UI.resetPwSentMsg);
+ }catch(e){
+ console.error('reset password request failed:', e);
+ if(errEl) errEl.textContent = authErrorMessage(e, '재설정 메일을 보내지 못했습니다. 다시 시도해주십시오.');
+ }
+ });
+}catch(e){ console.error('reset password button failed:', e); }
+
+try{
+ const newpwBtn = document.getElementById('account-newpw-btn');
+ if(newpwBtn) newpwBtn.addEventListener('click', async ()=>{
+ const errEl = document.getElementById('account-newpw-error');
+ try{
+ const pw = document.getElementById('account-newpw-pw').value;
+ errEl.style.color = '#ff6b5b';
+ errEl.textContent = '처리 중...';
+ if(pw.length < 6){ errEl.textContent = '비밀번호는 6자리 이상이어야 합니다.'; return; }
+ const sb = await getSupabase();
+ if(!sb){ errEl.textContent = '연결에 실패했어요. 페이지를 새로고침해서 다시 시도해주십시오.'; return; }
+ const { error } = await sb.auth.updateUser({ password: pw });
+ if(error) throw error;
+ // 이 시점의 세션은 재설정 메일 링크가 만들어 준 임시 세션인데,
+ // Supabase 는 비밀번호를 바꾼 뒤에도 그 세션을 그대로 로그인 상태로
+ // 유지한다 — 그러니 여기서부터는 정식 로그인과 같게 다룬다.
+ const { data: sessionData } = await sb.auth.getSession();
+ currentUserId = sessionData?.session?.user?.id || currentUserId;
+ await syncProfileFromCloud();
+ showAccountSubForm('login');
+ updateAccountUI();
+ toast(t(STATIC_UI.newPwSavedMsg));
+ showScreen(startScreen);
+ }catch(e){
+ console.error('set new password failed:', e);
+ if(errEl) errEl.textContent = authErrorMessage(e, '비밀번호를 바꾸지 못했습니다. 다시 시도해주십시오.');
+ }
+ });
+}catch(e){ console.error('new password button failed:', e); }
 
 try{
  window.addEventListener('beforeunload', (e)=>{

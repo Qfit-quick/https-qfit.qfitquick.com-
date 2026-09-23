@@ -11,6 +11,7 @@ import { ICON } from './icons.js';
 import { showScreenById, isWorkoutRunning } from '../app.js';
 import { isAmrapRunning, isAmrapPaused, pauseAmrap } from './amrap.js';
 import { isCircuitRunning, isCircuitPaused, pauseCircuit } from './circuit.js';
+import { isQuickRunning, isQuickPaused, pauseQuick } from './quickStart.js';
 import { closeSheet, isSheetOpen } from './sheet.js';
 
 let t = (o) => (o && o.ko) || '';
@@ -50,6 +51,8 @@ const IMMERSIVE = new Set([
   'heartgame-screen',
   // 'Cindy' AMRAP·'QCE' 서킷(2026-09-19) — 타이머가 도는 화면이라 마찬가지로 감춘다.
   'amrap-screen', 'circuit-screen',
+  // '10초 후 시작'(2026-09-23) — 카운트다운도 서킷 구간도 전부 타이머라 같은 이유.
+  'quick-screen',
 ]);
 
 // 탭이 아닌 화면에 있을 때 어느 탭을 켜 둘지. 없으면 아무것도 안 켠다.
@@ -76,6 +79,9 @@ const BELONGS_TO = {
   // QCE 경기 규칙도 프로그램 탭에서 연다. 운동 중 화면이 아니라
   // IMMERSIVE 에는 안 넣는다 — 탭바가 그대로 보여야 자연스럽다.
   'qce-rulebook-screen': 'programs-screen',
+  // '10초 후 시작'은 홈에서 연다. IMMERSIVE 라 탭바 자체가 숨어 실제로는
+  // 안 보이지만, amrap-screen·circuit-screen 과 같은 이유로 명시해 둔다.
+  'quick-screen': 'start-screen',
 };
 
 let bar = null;
@@ -215,6 +221,14 @@ export function initNav({ translate, STATIC_UI } = {}) {
     if (current === 'circuit-screen' && isCircuitRunning() && !isCircuitPaused()) {
       history.pushState({ s: 'circuit-screen' }, '', '#circuit-screen');
       pauseCircuit();
+      return;
+    }
+
+    // '10초 후 시작'도 같은 이유로 멈춘다(circuit-screen 과 같은 스톱워치
+    // 구조 — ui/quickStart.js).
+    if (current === 'quick-screen' && isQuickRunning() && !isQuickPaused()) {
+      history.pushState({ s: 'quick-screen' }, '', '#quick-screen');
+      pauseQuick();
       return;
     }
 

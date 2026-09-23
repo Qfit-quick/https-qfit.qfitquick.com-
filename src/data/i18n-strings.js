@@ -7,6 +7,7 @@ export const STATIC_UI = {
  modeLabel: {ko:'바로 고르기', en:'Pick Now', zh:'直接选择'},
  modeRandom: {ko:'랜덤 선택', en:'Random', zh:'随机'},
  modeManual: {ko:'직접 선택', en:'Manual', zh:'手动选择'},
+ modeQce: {ko:'QCE 서킷', en:'QCE Circuit', zh:'QCE 循环'},
  modeLower: {ko:'하체', en:'Lower', zh:'下肢'},
  modeUpper: {ko:'상체', en:'Upper', zh:'上肢'},
  modeCore: {ko:'코어', en:'Core', zh:'核心'},
@@ -28,7 +29,11 @@ export const STATIC_UI = {
  nextBtn: {ko:'다음', en:'Next', zh:'下一步'},
  recordsBtn: {ko:'내 기록', en:'My Records', zh:'我的记录'},
  routinesBtn: {ko:'내 루틴', en:'My Routines', zh:'我的方案'},
- aiModeBtn: {ko:'AI로 시작하기', en:'Start with AI', zh:'用AI开始'},
+ // 예전 'AI로 시작하기'(질문 2개 → 추천) 자리. 2026-09-23 대규모 교체로
+ // 난이도 4단계 고르기로 바뀌었다 — ui/quickStart.js 참고. 옛 문구가 남긴
+ // 자리를 그대로 새 키로 쓴다.
+ quickModeBtn: {ko:'10초 후 시작', en:'Starts in 10s', zh:'10秒后开始'},
+ quickModeSub: {ko:'난이도만 고르면 끝', en:'Just pick a level', zh:'选个难度就行'},
  routinesTitle: {ko:'저장한 루틴', en:'Saved Routines', zh:'已保存的方案'},
  routinesEmpty: {ko:'아직 저장한 루틴이 없습니다.', en:"You haven't saved any routines yet.", zh:'还没有保存过方案。'},
  routineNamePh: {ko:'루틴 이름 (예: 아침 전신)', en:'Routine name (e.g. Morning Full Body)', zh:'方案名称（例：晨练全身）'},
@@ -79,6 +84,14 @@ export const STATIC_UI = {
  chatbotDetailLink: {ko:'%s 자세히 보기 →', en:'See more about %s →', zh:'查看更多关于%s →'},
  chatbotFoodPer100: {ko:'100g당', en:'Per 100g:', zh:'每100克：'},
  chatbotAboutKcal: {ko:'약 %skcal', en:'About %s kcal', zh:'约%s千卡'},
+ // 로컬 서버 연결(2026-09-21) — 로컬 답은 항상 즉시 뜨고, 이 문구들은
+ // 그 옆에서 server/chat.mjs(npm run dev:chat) 응답을 기다리거나 실패했을
+ // 때만 잠깐 보인다. 서버가 안 떠 있으면(배포본 포함) 평생 안 뜬다.
+ chatbotAiChecking: {ko:'관련 자료를 AI로 한 번 더 확인하고 있어요…', en:'Double-checking with AI…', zh:'正在用AI再次核实相关资料…'},
+ chatbotAiLabel: {ko:'AI 정리', en:'AI summary', zh:'AI 总结'},
+ chatbotAiError: {ko:'AI 확인에 실패했어요.', en:"Couldn't reach the AI.", zh:'AI核实失败。'},
+ chatbotRetry: {ko:'다시 시도', en:'Retry', zh:'重试'},
+ chatbotCancel: {ko:'취소', en:'Cancel', zh:'取消'},
  // 2026-09-21 개선(대화가 이어지게 만들기) — 인사만 하고 끝나거나("고마워"),
  // 운동할 의욕이 없다고 하거나, 비슷한 후보가 여럿이거나, 직전에 말한
  // 대상을 다시 가리키는 질문에 쓴다. chatbotResetBtn 은 화면 안 대화
@@ -171,6 +184,8 @@ export const STATIC_UI = {
  installDetail1: {ko:'Safari 하단 공유 버튼()을 누르고', en:'Tap the Share button in Safari, then', zh:'点按 Safari 下方的分享按钮，然后'},
  installDetail2: {ko:'"홈 화면에 추가"', en:'"Add to Home Screen"', zh:'“添加到主屏幕”'},
  weekendBanner: {ko:'주말 한정! 오늘 완주하면 XP 2배', en:'Weekend only — finish today for 2x XP', zh:'周末限定！今天完成可得双倍XP'},
+ recoBannerTitle: {ko:'오늘은 %s 어때요?', en:'How about %s today?', zh:'今天来点%s怎么样？'},
+ recoBannerBtn: {ko:'지금 시작', en:'Start now', zh:'现在开始'},
  moreLink: {ko:'내 기록 · 루틴 더보기', en:'Records · Routines · More', zh:'记录 · 方案 · 更多'},
  aiEyebrow: {ko:'AI 루틴', en:'AI Routine', zh:'AI方案'},
  aiQ1: {ko:'오늘 목표가 무엇입니까?', en:'What\'s your goal today?', zh:'今天的目标是什么？'},
@@ -185,6 +200,15 @@ export const STATIC_UI = {
  accountBlurb: {ko:'로그인하면 기기 바뀌어도 기록이 그대로 이어져요.', en:'Log in to keep your records across devices.', zh:'登录后换设备也能保留记录。'},
  signupBtn: {ko:'회원가입', en:'Sign up', zh:'注册'},
  skipAccount: {ko:'계정 없이 계속하기', en:'Continue without an account', zh:'不登录，继续使用'},
+ // 비밀번호 재설정(2026-09-21)
+ forgotPwBtn: {ko:'비밀번호를 잊으셨나요?', en:'Forgot your password?', zh:'忘记密码了吗？'},
+ resetPwBlurb: {ko:'가입하신 이메일로 재설정 링크를 보내드려요.', en:"We'll send a reset link to your email.", zh:'我们会把重置链接发送到您的邮箱。'},
+ resetPwSendBtn: {ko:'재설정 메일 보내기', en:'Send reset email', zh:'发送重置邮件'},
+ resetPwBack: {ko:'로그인으로 돌아가기', en:'Back to login', zh:'返回登录'},
+ resetPwSentMsg: {ko:'메일을 보냈어요! 받은편지함(스팸함도)을 확인해주십시오.', en:"Email sent! Please check your inbox (and spam folder).", zh:'邮件已发送！请查收收件箱（也看看垃圾邮件）。'},
+ newPwBlurb: {ko:'새 비밀번호를 입력해주세요.', en:'Please enter a new password.', zh:'请输入新密码。'},
+ newPwSaveBtn: {ko:'비밀번호 저장', en:'Save password', zh:'保存密码'},
+ newPwSavedMsg: {ko:'비밀번호를 바꿨어요! 이제 이 비밀번호로 로그인할 수 있어요.', en:"Password changed! You can now log in with it.", zh:'密码已修改！现在可以用新密码登录了。'},
  setCountLabel: {ko:'세트 수', en:'Sets', zh:'组数'},
  sets4: {ko:'4세트', en:'4 sets', zh:'4组'},
  sets8: {ko:'8세트', en:'8 sets', zh:'8组'},
@@ -253,7 +277,17 @@ export const STATIC_UI = {
  sheetBackNote: {ko:'뒤로가기 한 번은 시트만 닫습니다.', en:'One back press just closes this sheet.', zh:'按一次返回只会关闭这个面板。'},
  modeManualSub: {ko:'동작 24개에서 고르기', en:'Pick from 24 exercises', zh:'从24个动作中挑选'},
  modeRandomSub: {ko:'고민 없이 무작위로 뽑기', en:'Randomly picked for you', zh:'随机抽取'},
- aiModeSub: {ko:'질문 2개로 끝', en:'Two questions, done', zh:'两个问题就够'},
+ modeQceSub: {ko:'8개 스테이션 한 바퀴', en:'8 stations, one lap', zh:'8个站点一圈'},
+ // 난이도 4단계 고르기 시트(2026-09-23, ui/quickStart.js). 표 자체의 운동
+ // 이름은 challengeTracks.js 와 같은 이유로 한국어 전용이라 여기 안 넣는다
+ // (data/difficultyExercises.js 머리 설명 참고).
+ quickLevelSheetTitle: {ko:'오늘 난이도를 골라주세요', en:"Pick today's difficulty", zh:'请选择今天的难度'},
+ quickLevelHint: {ko:'고르면 10초 뒤 바로 시작합니다.', en:'Starts automatically 10 seconds after you pick.', zh:'选择后10秒自动开始。'},
+ quickLevelVeryEasy: {ko:'매우 쉬움', en:'Very Easy', zh:'非常简单'},
+ quickLevelEasy: {ko:'쉬움', en:'Easy', zh:'简单'},
+ quickLevelHard: {ko:'어려움', en:'Hard', zh:'难'},
+ quickLevelVeryHard: {ko:'매우 어려움', en:'Very Hard', zh:'非常难'},
+ quickDoneTitle: {ko:'오늘 운동 완료! 🎉', en:'Workout complete! 🎉', zh:'今日锻炼完成！🎉'},
  painAreaBtn: {ko:'아픈 부위 피하기', en:'Avoid a sore spot', zh:'避开受伤部位'},
  painAreaOff: {ko:'선택 안 함', en:'Not set', zh:'未设置'},
  painAreaOn: {ko:'%s 회피 중', en:'Avoiding %s', zh:'正在避开%s'},

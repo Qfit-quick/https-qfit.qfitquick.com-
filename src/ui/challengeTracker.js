@@ -103,9 +103,23 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
     });
   });
 
+  // 시작일을 넣었거나 기록을 하나라도 남긴 트랙 = 진행 중.
+  function isTrackStarted(key) {
+    const track = CHALLENGE_TRACKS[key];
+    return !!loadStart(track.startKey) || Object.keys(getLogs(track)).length > 0;
+  }
+
+  // 진행 중인 트랙을 탭 맨 앞으로 올린다 — #challenge-tabs 는 가로
+  // 스크롤이라(challengeTracker.css), 하던 트랙이 CHALLENGE_TRACK_ORDER
+  // 뒤쪽에 있으면 들어올 때마다 옆으로 밀어서 찾아야 한다. sort 는
+  // 안정 정렬이라 진행 중끼리·안 한 것끼리는 원래 순서를 유지한다.
+  function orderedTrackKeys() {
+    return [...CHALLENGE_TRACK_ORDER].sort((a, b) => Number(isTrackStarted(b)) - Number(isTrackStarted(a)));
+  }
+
   function renderTabs() {
     els.tabsContainer.innerHTML = '';
-    CHALLENGE_TRACK_ORDER.forEach((key) => {
+    orderedTrackKeys().forEach((key) => {
       const track = CHALLENGE_TRACKS[key];
       const btn = document.createElement('button');
       btn.type = 'button';

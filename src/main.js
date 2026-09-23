@@ -27,15 +27,17 @@ import { initHeaders } from './ui/header.js';
 import { initGate } from './ui/gate.js';
 import { initPlan, renderPlanScreen } from './ui/plan.js';
 import { initLog, renderLogScreen, renderTodayCard } from './ui/log.js';
-import { initPrograms, renderProgramsScreen } from './ui/programs.js';
+import { initPrograms, renderProgramsScreen, quickStartCircuit } from './ui/programs.js';
 import { initAmrap, startAmrap } from './ui/amrap.js';
 import { initCircuit, startCircuit } from './ui/circuit.js';
+import { initQuickStart } from './ui/quickStart.js';
 import { initHeartGame } from './ui/heartgame.js';
 import { initChallengeTracker } from './ui/challengeTracker.js';
 import { initChatbot } from './ui/chatbot.js';
 import { ICON } from './ui/icons.js';
 import { STATIC_UI } from './data/i18n-strings.js';
 import { initUpdate } from './pwa/update.js';
+import { Sound } from './audio/sound.js';
 
 // 계획과 기록지를 먼저 붙인다. 둘이 홈의 '오늘 두 칸' 카드와 계획 화면의
 // 안쪽을 만들어 넣으므로, 아이콘 칠하기(paintIcons)와 머리 만들기보다
@@ -53,8 +55,20 @@ initLog({ translate: t, STATIC_UI, onShowScreen: showScreenById });
 // 못 들어간다 — startAmrap/startCircuit 이 따로 맡는다.
 initAmrap({ translate: t, STATIC_UI, onShowScreen: showScreenById });
 initCircuit({ translate: t, STATIC_UI, onShowScreen: showScreenById });
+// 홈의 '10초 후 시작'(2026-09-23, 대규모 교체) — 예전 AI 질문 2개 흐름을
+// 대신한다. 위 둘과 같은 이유로 여기서 붙인다 — app.js 는 이 화면을 모른다.
+initQuickStart({ translate: t, STATIC_UI, onShowScreen: showScreenById });
 initPrograms({ translate: t, STATIC_UI, onStartDay: startRoutine, onStartAmrap: startAmrap, onStartCircuit: startCircuit, onShowScreen: showScreenById });
 renderProgramsScreen();
+
+// 홈 '1분 시작' 시트의 QCE 서킷 줄(2026-09-21) — 직접선택·랜덤선택과 같은
+// 자리에 있지만 저 둘과 달리 app.js 가 아니라 여기서 붙인다. app.js 는
+// startCircuit/PROGRAMS 를 모르고(고정 서킷은 startRoutine 문으로 못
+// 들어간다, 위 주석 참고), 이 조립부에만 둘 다 있다.
+document.getElementById('mode-qce-btn')?.addEventListener('click', () => {
+  Sound.unlock();
+  quickStartCircuit('qce1');
+});
 initHeartGame({ translate: t, STATIC_UI });
 initChallengeTracker({ translate: t, STATIC_UI });
 initChatbot({ translate: t, STATIC_UI, onShowScreen: showScreenById });

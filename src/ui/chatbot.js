@@ -1,11 +1,16 @@
-// 챗봇 — 실제 AI 가 아니라 키워드로 답을 찾아 주는 안내다(2026-09-17 요청).
+// 챗봇 — 기본은 키워드로 답을 찾아 주는 안내다(2026-09-17 요청).
 //
-// 왜 진짜 AI 가 아닌가: 이 앱은 서버 없는 정적 사이트라, AI API 를 쓰려면
-// 키를 어딘가에 두고(브라우저에 그대로 두면 누구나 훔쳐 쓸 수 있다) 요청을
-// 대신 보내 줄 백엔드가 있어야 한다 — 그건 이번 한 줄 요청보다 훨씬 큰
-// 작업이고 매달 실제 비용이 든다. 대신 이미 앱 안에 있는 진짜 콘텐츠를
-// 키워드로 찾아 그대로 보여주는 쪽을 택했다 — 답이 뭔가 지어내는 일이 없고,
-// 화면에 있는 것과 항상 같은 말을 한다.
+// 이 앱은 서버 없는 정적 사이트라, 화면이 AI API 키를 직접 들고 부르면
+// 그 키를 누구나 훔쳐 쓸 수 있다 — 그래서 로컬 답은 여기 이 파일이 이미
+// 앱 안에 있는 진짜 콘텐츠를 키워드로 찾아 그대로(즉시, 지어내는 일 없이)
+// 보여준다. 이게 항상 먼저, 항상 뜬다.
+//
+// 2026-09-22: 그 옆에 진짜 AI 를 붙일 자리를 열었다 — tryServerAnswer() 가
+// 같은 질문을 로컬 개발 서버(server/chat.mjs, `npm run dev:chat`)로도 보내
+// 본다. 키는 그 서버 쪽 .env 에만 있고 브라우저로 안 나온다(README 의
+// "챗봇 서버" 절 참고). 이 서버가 없으면(대부분의 경우 — 배포본 포함)
+// 그 요청은 조용히 실패하고 위 로컬 답 그대로 남는다. 있고 LLM 이
+// 켜져 있으면 몇 초 뒤 AI 가 정리한 답이 보조 말풍선으로 하나 더 붙는다.
 //
 // 2026-09-17 확장 요청("큐핏에 해당하는 내용은 뭐든 검색하면 자연스럽게
 // 안내") — 부위별 대처법·회복 습관·앱 사용법 FAQ 세 곳만 찾던 것을, 운동
@@ -63,6 +68,17 @@ let goScreen = () => {};
 // 대화가 이어지는 게 자연스러우므로 의도적으로 초기화하지 않는다 —
 // "새 대화" 버튼을 누르면 그때 비운다.
 let lastCandidate = null;
+
+// 로컬 서버 연결(2026-09-22) — 로컬 답은 위 respond() 가 이미 즉시 보여준다.
+// 그 옆에서 server/chat.mjs(npm run dev:chat)로 같은 질문을 한 번 더 보내
+// LLM 이 정리한 답(mode: 'rag')을 얻으면 보조 말풍선으로 하나 더 붙인다 —
+// 서버가 없거나(배포본 포함) 키가 없으면 이 요청은 그냥 조용히 실패하고
+// 사용자에게는 이미 보여준 로컬 답 그대로 남는다. mode 가 'rule'/'fallback'
+// 이면 로컬 답과 다를 게 없으므로 굳이 또 보여주지 않는다.
+let netGeneration = 0;
+let netController = null;
+let netHistory = []; // {role,content} — 서버가 실제로 낸 답만 쌓는다
+let netContext = []; // 직전 서버 답 sources[0].id — "더 쉽게는?" 류 후속 질문용
 
 const el = (id) => document.getElementById(id);
 
@@ -553,7 +569,136 @@ function handleSend() {
   if (!text) return;
   appendMessage('user', esc(text));
   input.value = '';
+  paintCount();
   respond(text);
+  tryServerAnswer(text);
+}
+
+function paintCount() {
+  const input = el('chatbot-input');
+  const count = el('chatbot-count');
+  if (input && count) count.textContent = `${input.value.length}/1000`;
+}
+
+// server/chat.mjs 가 보는 locale 값. document.documentElement.lang 은
+// app.js 가 언어를 바꿀 때마다 같이 바꿔 둔다(중국어는 'zh-CN').
+function currentLocale() {
+  const lang = document.documentElement.lang || 'ko';
+  if (lang.startsWith('zh')) return 'zh';
+  if (lang.startsWith('en')) return 'en';
+  return 'ko';
+}
+
+// 상태 줄 — 텍스트만 줄 수도, 뒤에 링크 버튼(취소·다시 시도) 하나를
+// 붙일 수도 있다. text 가 없으면 줄 자체를 숨긴다.
+function setStatus(text, actionLabel, onAction) {
+  const line = el('chatbot-status');
+  if (!line) return;
+  if (!text) { line.hidden = true; line.textContent = ''; return; }
+  line.hidden = false;
+  line.textContent = text;
+  if (actionLabel && onAction) {
+    line.appendChild(document.createTextNode(' '));
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'link-btn';
+    btn.textContent = actionLabel;
+    btn.addEventListener('click', onAction);
+    line.appendChild(btn);
+  }
+}
+
+function aiReplyHtml(data) {
+  const sources = (data.sources || [])
+    .filter((s) => s && s.screenId)
+    .map((s) => `<button type="button" class="link-btn chatbot-detail-link" data-source-id="${esc(s.id)}" data-source-title="${esc(s.title)}" data-source-screen="${esc(s.screenId)}" data-source-entity="${esc(s.entityKey ?? '')}">` +
+      esc(t(S.chatbotDetailLink).replace('%s', s.title)) + '</button>')
+    .join('');
+  return `<p class="dim chatbot-ai-label">${esc(t(S.chatbotAiLabel))}</p><p>${esc(data.answer)}</p>${sources}`;
+}
+
+// 서버(로컬 개발용, npm run dev:chat)에 같은 질문을 한 번 더 보낸다.
+// generation 번호로 "그 사이 새 질문을 보냈거나 새 대화를 눌렀는지"를
+// 본다 — 늦게 도착한 옛 질문의 답이 지금 대화에 끼어들면 안 된다.
+async function tryServerAnswer(text) {
+  if (netController) netController.abort();
+  const controller = new AbortController();
+  netController = controller;
+  const turn = ++netGeneration;
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  setStatus(t(S.chatbotAiChecking), t(S.chatbotCancel), () => {
+    controller.abort();
+    if (turn === netGeneration) setStatus('');
+  });
+
+  let res;
+  try {
+    res = await fetch(new URL('api/chat', document.baseURI), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: text,
+        history: netHistory.slice(-6),
+        conversationContext: netContext,
+        locale: currentLocale(),
+      }),
+      signal: controller.signal,
+    });
+  } catch {
+    // 서버가 아예 없다(대부분의 경우) — 이미 로컬 답을 보여줬으니 조용히 넘어간다.
+    clearTimeout(timeout);
+    if (turn === netGeneration) setStatus('');
+    return;
+  }
+  clearTimeout(timeout);
+  if (turn !== netGeneration) return;
+
+  // 404 는 "이 경로 자체가 없다" — 배포본(Cloudflare Worker, /api/chat 이라는
+  // 파일이 없다)의 정상 상태이자, 유일한 실제 사용자 대다수가 보는 경우다.
+  // 그 외 상태(400·413·429·500·504)는 서버는 있는데 뭔가 실패했다는 뜻이라
+  // (로컬에서 dev:chat 을 안 띄웠을 때 Vite 프록시가 주는 502/500 포함)
+  // 이때만 눈에 보이게 알린다 — 404 까지 알리면 배포본 사용자 전원이
+  // 매번 "AI 확인 실패"를 보게 된다.
+  if (!res.ok) {
+    if (res.status !== 404) setStatus(t(S.chatbotAiError), t(S.chatbotRetry), () => tryServerAnswer(text));
+    else setStatus('');
+    return;
+  }
+
+  let data;
+  try { data = await res.json(); } catch { setStatus(''); return; }
+  if (turn !== netGeneration) return;
+  setStatus('');
+  if (data.mode !== 'rag' || !data.answer) return; // 규칙 기반과 다를 게 없다
+
+  appendMessage('bot', aiReplyHtml(data));
+  netHistory = [...netHistory, { role: 'user', content: text.slice(0, 1000) }, { role: 'assistant', content: String(data.answer).slice(0, 1000) }].slice(-6);
+  netContext = Array.isArray(data.sources) ? data.sources.slice(0, 1).map((s) => s.id) : [];
+}
+
+// AI 보조 답의 출처 버튼. 서버 응답의 title 은 이미 요청 locale 로 고른
+// 평문이라(src/chat/respond.js 의 toSource) 그대로 검색칸에 넣으면 된다 —
+// 단 운동 영상 검색칸만 예외라(바로 아래 goToExerciseVideo 설명) 그쪽은
+// 기존 함수를 그대로 쓴다.
+function navigateFromSource(source) {
+  if (!source || !source.screenId) return;
+  const kind = String(source.id).split(':')[0];
+  if (kind === 'exercise') { goToExerciseVideo(source.entityKey); return; }
+  if (kind === 'muscle') { document.querySelector('.video-gallery-trigger-btn')?.click(); return; }
+  if (kind === 'injury' || kind === 'program') {
+    goScreen(source.screenId);
+    const input = document.getElementById(kind === 'injury' ? 'injury-search-input' : 'program-search-input');
+    if (input) { input.value = source.title; input.dispatchEvent(new Event('input', { bubbles: true })); }
+    return;
+  }
+  if (kind === 'challenge') {
+    goScreen('challenge-screen');
+    const track = CHALLENGE_TRACKS[source.entityKey];
+    const tabBtn = track && [...document.querySelectorAll('.challenge-tab-btn')].find((b) => b.textContent.includes(track.short));
+    if (tabBtn) tabBtn.click();
+    return;
+  }
+  goScreen(source.screenId);
 }
 
 // #video-search-input 의 필터는 VIDEO_CLIPS[i].label(한국어 전용 평문
@@ -589,9 +734,22 @@ export function initChatbot({ translate, STATIC_UI, onShowScreen } = {}) {
       handleSend();
     });
 
+    el('chatbot-input')?.addEventListener('input', paintCount);
+    paintCount();
+
     el('chatbot-messages')?.addEventListener('click', (e) => {
       const link = e.target.closest('.chatbot-detail-link');
       if (!link) return;
+
+      if (link.dataset.sourceId) {
+        navigateFromSource({
+          id: link.dataset.sourceId,
+          title: link.dataset.sourceTitle,
+          screenId: link.dataset.sourceScreen,
+          entityKey: link.dataset.sourceEntity,
+        });
+        return;
+      }
 
       if (link.dataset.injury) {
         const guide = INJURY_GUIDES.find((g) => g.id === link.dataset.injury);
@@ -644,12 +802,30 @@ export function initChatbot({ translate, STATIC_UI, onShowScreen } = {}) {
     // 개선안 17번(대화 보관·삭제 기준) — 이번 로컬 버전은 서버 저장이
     // 없으니 "삭제"가 곧 "화면과 맥락 기억 비우기"다. lastCandidate 도
     // 같이 비워야 초기화 직후에 "더 쉽게는?" 이 엉뚱한 이전 대상을
-    // 다시 불러오지 않는다.
+    // 다시 불러오지 않는다. netHistory·netContext 도 같이 비운다 — 안
+    // 비우면 "새 대화" 이후에도 서버가 지난 대화 맥락을 계속 본다.
     el('chatbot-reset-btn')?.addEventListener('click', () => {
+      if (netController) { netController.abort(); netController = null; }
+      netGeneration++;
+      netHistory = [];
+      netContext = [];
+      setStatus('');
       const box = el('chatbot-messages');
       if (box) box.innerHTML = '';
       lastCandidate = null;
       showGreeting();
+    });
+
+    // 챗봇 화면을 나가면 그 사이 도착하는 서버 답을 버린다 — 안 그러면
+    // 다른 화면을 보고 있는 동안 답이 도착했다가, 나중에 챗봇으로 돌아왔을
+    // 때(대화 목록이 안 지워지므로) 뜬금없이 말풍선이 하나 더 붙는다.
+    document.addEventListener('screenchange', (e) => {
+      if (e.detail?.id !== 'chatbot-screen' && netController) {
+        netController.abort();
+        netController = null;
+        netGeneration++;
+        setStatus('');
+      }
     });
   } catch (e) {
     console.error('chatbot setup failed:', e);

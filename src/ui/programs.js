@@ -65,7 +65,7 @@ function renderQceRulebook() {
     <div class="card"><p class="dim">${esc(t(S.qceRulebookIntro))}</p></div>
     ${QCE_MOVEMENT_STANDARDS.map((s, i) => `
       <div class="card">
-        <div class="program-card-name">${i + 1}. ${esc(t(EX_LABEL[s.key] || { ko: s.key }))} <span class="plan-day-chip">${esc(s.target)}</span></div>
+        <div class="program-card-name">${i + 1}. ${esc(t(s.label || EX_LABEL[s.key] || { ko: s.key }))} <span class="plan-day-chip">${esc(s.target)}</span></div>
         <p class="dim">${esc(t(S.qceStartLabel))}: ${esc(s.start)}</p>
         <p class="dim">${esc(t(S.qceValidLabel))}: ${esc(s.valid)}</p>
         <p class="dim">${esc(t(S.qceNoRepLabel))}: ${esc(s.noRep)}</p>
@@ -210,7 +210,13 @@ function renderProgramCards(term) {
     return;
   }
 
-  container.innerHTML = filtered.map((p) => {
+  // 진행 중인(시작한) 프로그램을 목록 맨 앞으로 올린다 — 안 그러면
+  // PROGRAMS 원래 순서 그대로 나와서, 하던 프로그램이 뒤에 있으면
+  // 들어올 때마다 스크롤해서 찾아야 한다. sort 는 안정 정렬이라
+  // 진행 중끼리·안 한 것끼리는 원래 순서를 유지한다.
+  const sorted = [...filtered].sort((a, b) => Number(!!progressFor(b.id)) - Number(!!progressFor(a.id)));
+
+  container.innerHTML = sorted.map((p) => {
     const progress = progressFor(p.id);
     const history = !progress ? historyFor(p.id) : null;
     const totalDays = p.weeks * p.schedule.length;
@@ -268,6 +274,26 @@ function todaysDayPlan(program, progress) {
   const body = loadBody();
   const plan = programDayPlan(program, weekIdx, dayOfWeek, progress.level, body.weightKg);
   return { dayIndex, weekIdx, dayOfWeek, plan };
+}
+
+/**
+ * 홈의 '1분 시작' 시트에서 프로그램 탭을 거치지 않고 고정 서킷을 바로
+ * 시작한다. QCE(circuit)·Cindy(amrap) 는 초보/중수/고수도, 요일별 초점도
+ * 없는 서킷 하나뿐이라(isFixedProgram) 프로그램 탭의 '시작하기'까지 가서
+ * 고를 것이 없다 — 진행도가 없으면 여기서 바로 만들고 시작한다.
+ */
+export function quickStartCircuit(programId) {
+  const program = programById(programId);
+  if (!program || program.type !== 'circuit') return;
+  let progress = progressFor(programId);
+  if (!progress) {
+    const list = loadProgramProgress();
+    list.push({ programId, level: 'normal', startDate: Date.now(), completedDays: [] });
+    saveProgramProgress(list);
+    progress = progressFor(programId);
+  }
+  const { dayIndex } = todaysDayPlan(program, progress);
+  onStartCircuit({ program, dayIndex });
 }
 
 function renderActive(program, progress) {
