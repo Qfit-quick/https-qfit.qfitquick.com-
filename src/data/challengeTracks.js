@@ -1,11 +1,14 @@
-// 챌린지 트래커 7개 트랙의 Phase·주차 기록 데이터(2026-09-13).
+// 챌린지 트래커 트랙의 Phase·주차 기록 데이터. 원래 7개(2026-09-13)였고
+// 피스톨 스쿼트·쉬운 습관 3주 두 트랙을 더해 9개가 됐다(2026-09-24, 하체
+// 스킬 트랙이 하나도 없다는 지적 + 짧고 쉬운 트랙 요청).
 //
 // 사용자가 만든 독립 HTML(qfit-challenge-tracker.html)의 PHASES/LOGS/
 // TRACKS 데이터를 그대로 옮겼다 — 세트·횟수·주차 배정 등 숫자를 하나도
-// 안 바꿨다. 운동 이름·목표 문구·비고는 challengeGloss.js 와 같은 이유로
-// 한국어 전용으로 두고 STATIC_UI 에 옮기지 않았다(칼리스테닉스 전문
-// 용어 104개+@를 오역 위험 없이 영어·중국어로 옮기려면 별도 검수가
-// 필요하다 — 지금은 한국어만 정확하게 유지하는 쪽을 택했다).
+// 안 바꿨다(2026-09-24 에 추가한 두 트랙은 새로 짠 것이라 예외). 운동
+// 이름·목표 문구·비고는 challengeGloss.js 와 같은 이유로 한국어 전용으로
+// 두고 STATIC_UI 에 옮기지 않았다(칼리스테닉스 전문 용어를 오역 위험
+// 없이 영어·중국어로 옮기려면 별도 검수가 필요하다 — 지금은 한국어만
+// 정확하게 유지하는 쪽을 택했다).
 //
 // exercises 배열의 각 행은 [운동이름, 세트/횟수, 비고, 아이콘키] 순서다
 // (아이콘키는 challengeIcons.js 의 CHALLENGE_ICONS 를 가리킨다).
@@ -377,7 +380,102 @@ export var SPLITS_LOGS = [
   { week: 12, label: '최종 테스트 - 바닥과의 거리', unit: 'cm', type: 'number' }
 ];
 
-export var CHALLENGE_TRACK_ORDER = ['pullup', 'planche', 'handstand', 'muscleup', 'frontlever', 'dips', 'splits'];
+// 피스톨 스쿼트 트랙(2026-09-24 요청 — "하체 어려운 동작도 넣자").
+// 기존 7개가 전부 상체 당기기/밀기이거나 유연성이라 하체 스킬 트랙이
+// 하나도 없었다. 진행 흐름은 pullup 과 같은 모양(가동성·기초 볼륨 →
+// 보조 → 네거티브/박스 낮추기 → 무보조 완성)으로 맞췄다 — 이미 12주짜리
+// 트랙 여럿이 이 흐름이라 사용자가 낯설지 않다.
+export var PISTOL_PHASES = [
+  { range: [1, 3], title: '기초 다지기 (가동성 + 기본 스쿼트)',
+    goal: '맨몸 스쿼트 완전 가동범위 15~20회, 발목·고관절 가동성 확보',
+    exercises: [
+      ['맨몸 스쿼트', '3 x 15~20회', '무릎이 발끝보다 많이 앞으로 안 나가게', 'squat'],
+      ['싱글레그 밸런스', '3 x 20~30초 (양쪽)', '한 발로 서서 균형 잡기, 익숙해지면 눈 감고', 'squat'],
+      ['발목 가동성(니 투 월)', '3 x 10회 (양쪽)', '무릎으로 벽 터치, 뒤꿈치는 바닥에', 'stretch'],
+      ['딥 스쿼트 홀드(고관절 가동성)', '3 x 30초', '팔꿈치로 무릎을 살짝 바깥으로 밀어주기', 'frogStretch'],
+      ['불가리안 스플릿 스쿼트(맨몸)', '3 x 8회 (양쪽)', '뒷발을 낮은 의자에 살짝 올려서', 'splitSquatStep']
+    ] },
+  { range: [4, 6], title: '서포트 보조 피스톨',
+    goal: '벽이나 문틀을 잡고 보조 피스톨 스쿼트 5~8회',
+    exercises: [
+      ['서포트 잡고 피스톨 스쿼트', '4 x 5~8회 (양쪽)', '문틀·기둥을 가볍게 잡고 내려갔다 올라오기', 'pistolAssist'],
+      ['박스 피스톨(높은 의자)', '3 x 6~8회 (양쪽)', '반대쪽 다리는 앞으로 뻗은 채 의자에 앉았다 일어나기', 'pistolSquat'],
+      ['불가리안 스플릿 스쿼트(볼륨↑)', '3 x 10회 (양쪽)', '', 'splitSquatStep'],
+      ['맨몸 스쿼트(점프 추가)', '3 x 10회', '착지 시 무릎 부드럽게', 'squat']
+    ] },
+  { range: [7, 9], title: '박스 낮추기 + 네거티브',
+    goal: '낮은 박스 피스톨 6회, 네거티브 피스톨 3~5초 컨트롤',
+    exercises: [
+      ['박스 피스톨(낮은 의자)', '4 x 6회 (양쪽)', '박스 높이를 점점 낮춰가기', 'pistolSquat'],
+      ['네거티브 피스톨 스쿼트', '3 x 3~5회 (양쪽)', '내려가는 데 3~5초, 올라올 땐 양발로', 'pistolSquat'],
+      ['서포트 잡고 피스톨(볼륨↑)', '2 x 8회 (양쪽)', '보조를 점점 가볍게', 'pistolAssist'],
+      ['싱글레그 루마니안 데드리프트(맨몸)', '3 x 8회 (양쪽)', '균형+뒤사슬 근력', 'squat']
+    ] },
+  { range: [10, 12], title: '완성 & 볼륨',
+    goal: '무보조 피스톨 스쿼트 3~5회, 좌우 균형 맞추기',
+    exercises: [
+      ['무보조 피스톨 스쿼트', '4 x 최대개수 (양쪽)', '0개여도 OK, 매 세션 기록', 'pistolSquat'],
+      ['피스톨 클러스터 세트', '1세트', '1개+10초 휴식 x5 (양쪽)', 'pistolSquat'],
+      ['박스 피스톨(마무리 볼륨)', '2 x 8회 (양쪽)', '기초 체력 유지', 'pistolSquat'],
+      ['불가리안 스플릿 스쿼트(중량 추가 시도)', '3 x 8회 (양쪽)', '물병이나 배낭으로 부하 추가', 'splitSquatStep']
+    ] }
+];
+
+export var PISTOL_LOGS = [
+  { week: 1, label: '싱글레그 밸런스 최대시간', unit: '초', type: 'number' },
+  { week: 2, label: '싱글레그 밸런스 최대시간', unit: '초', type: 'number' },
+  { week: 3, label: '딥 스쿼트 홀드 최대시간', unit: '초', type: 'number' },
+  { week: 4, label: '서포트 피스톨 개수', unit: '회', type: 'number' },
+  { week: 5, label: '서포트 피스톨 개수', unit: '회', type: 'number' },
+  { week: 6, label: '박스 피스톨(높은 의자) 개수', unit: '회', type: 'number' },
+  { week: 7, label: '박스 피스톨(낮은 의자) 개수', unit: '회', type: 'number' },
+  { week: 8, label: '네거티브 피스톨 컨트롤 시간', unit: '초', type: 'number' },
+  { week: 9, label: '네거티브 피스톨 컨트롤 시간', unit: '초', type: 'number' },
+  { week: 10, label: '무보조 피스톨 최대개수', unit: '회', type: 'number' },
+  { week: 11, label: '무보조 피스톨 최대개수', unit: '회', type: 'number' },
+  { week: 12, label: '최종 테스트 - 무보조 피스톨 최대개수', unit: '회', type: 'number' }
+];
+
+// 쉬운 습관 3주 트랙(2026-09-24 요청 — "꾸준히 3주 하는 챌린지는 쉬운
+// 운동들로"). 나머지 8개가 전부 몇 주~몇 달짜리 고난도 스킬 트랙이라,
+// 반대로 짧고 가벼운 습관형 하나를 섞었다 — 동작은 전부 맨몸 기본기라
+// 변형·보조가 필요 없고, 그래서 phase 가 주차마다 1개씩(총 3개)뿐이다.
+export var HABIT_PHASES = [
+  { range: [1, 1], title: 'Week 1 · 몸에 익히기',
+    goal: '가볍게 매일 할 수 있는 루틴 만들기',
+    exercises: [
+      ['맨몸 스쿼트', '3 x 10회', '무릎이 발끝보다 많이 앞으로 안 나가게', 'squat'],
+      ['무릎 대고 푸쉬업', '3 x 8회', '엉덩이가 처지지 않게', 'plank'],
+      ['플랭크', '3 x 20초', '허리가 뜨지 않게', 'plank'],
+      ['힙 브릿지', '3 x 12회', '엉덩이를 짜듯이 조이기', 'hipBridge']
+    ] },
+  { range: [2, 2], title: 'Week 2 · 조금 더',
+    goal: '지난주보다 살짝 더, 크런치 추가',
+    exercises: [
+      ['맨몸 스쿼트', '3 x 15회', '', 'squat'],
+      ['무릎 대고 푸쉬업', '3 x 10회', '', 'plank'],
+      ['플랭크', '3 x 30초', '', 'plank'],
+      ['힙 브릿지', '3 x 15회', '', 'hipBridge'],
+      ['크런치', '3 x 15회', '목으로 당기지 말고 배 힘으로', 'core']
+    ] },
+  { range: [3, 3], title: 'Week 3 · 마무리',
+    goal: '3주 완주! 다음 도전(피스톨 스쿼트 등)으로 이어가기',
+    exercises: [
+      ['맨몸 스쿼트', '4 x 15회', '', 'squat'],
+      ['무릎 대고 푸쉬업(또는 일반 푸쉬업 도전)', '3 x 10회', '할 수 있으면 무릎 떼고', 'plank'],
+      ['플랭크', '3 x 40초', '', 'plank'],
+      ['힙 브릿지', '3 x 20회', '', 'hipBridge'],
+      ['크런치', '3 x 20회', '', 'core']
+    ] }
+];
+
+export var HABIT_LOGS = [
+  { week: 1, label: '플랭크 최대 유지시간', unit: '초', type: 'number' },
+  { week: 2, label: '플랭크 최대 유지시간', unit: '초', type: 'number' },
+  { week: 3, label: '최종 테스트 - 플랭크 최대 유지시간', unit: '초', type: 'number' }
+];
+
+export var CHALLENGE_TRACK_ORDER = ['pullup', 'planche', 'handstand', 'muscleup', 'frontlever', 'dips', 'splits', 'pistol', 'habit'];
 
 export var CHALLENGE_TRACKS = {
   pullup:     { name: '턱걸이',        short: '턱걸이',        totalWeeks: 12, phases: PULLUP_PHASES,     logs: PULLUP_LOGS,
@@ -393,5 +491,9 @@ export var CHALLENGE_TRACKS = {
   dips:       { name: '딥스·원암딥스',  short: '딥스',          totalWeeks: 12, phases: DIPS_PHASES,       logs: DIPS_LOGS,
                 startKey: 'qfit_challenge_dips_start',       logsKey: 'qfit_challenge_dips_logs' },
   splits:     { name: '사이드 스플릿',  short: '스플릿',        totalWeeks: 12, phases: SPLITS_PHASES,     logs: SPLITS_LOGS,
-                startKey: 'qfit_challenge_splits_start',     logsKey: 'qfit_challenge_splits_logs' }
+                startKey: 'qfit_challenge_splits_start',     logsKey: 'qfit_challenge_splits_logs' },
+  pistol:     { name: '피스톨 스쿼트',  short: '피스톨',        totalWeeks: 12, phases: PISTOL_PHASES,     logs: PISTOL_LOGS,
+                startKey: 'qfit_challenge_pistol_start',     logsKey: 'qfit_challenge_pistol_logs' },
+  habit:      { name: '쉬운 습관 3주',  short: '습관',          totalWeeks: 3,  phases: HABIT_PHASES,      logs: HABIT_LOGS,
+                startKey: 'qfit_challenge_habit_start',      logsKey: 'qfit_challenge_habit_logs' }
 };

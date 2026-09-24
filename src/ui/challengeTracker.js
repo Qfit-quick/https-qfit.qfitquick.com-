@@ -82,10 +82,11 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
   let currentTrackKey = 'pullup';
   let openPhaseIdx = 0; // 트랙 바꿀 때마다 재계산
 
-  // 검색 색인. 7개 트랙 × phase × 운동을 한 번만 평평하게 펴 둔다 —
-  // 트랙이 바뀔 때마다 다시 만들 필요가 없고(운동 목록 자체는 고정 데이터),
-  // 검색은 입력마다 이 배열만 훑는다(109개뿐이라 매번 새로 만들어도
-  // 되지만, 어차피 고정이라 한 번으로 충분하다).
+  // 검색 색인. 9개 트랙(2026-09-24, 피스톨 스쿼트·쉬운 습관 3주 추가로
+  // 7→9) × phase × 운동을 한 번만 평평하게 펴 둔다 — 트랙이 바뀔 때마다
+  // 다시 만들 필요가 없고(운동 목록 자체는 고정 데이터), 검색은 입력마다
+  // 이 배열만 훑는다(140개뿐이라 매번 새로 만들어도 되지만, 어차피
+  // 고정이라 한 번으로 충분하다).
   const SEARCH_INDEX = [];
   CHALLENGE_TRACK_ORDER.forEach((key) => {
     const track = CHALLENGE_TRACKS[key];
