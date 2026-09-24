@@ -88,6 +88,20 @@ export function clearPendingProgramDay() {
   pendingDay = null;
 }
 
+// 프로그램 카드를 눌러 상세를 보는 건 같은 programs-screen 안에서
+// viewingProgramId 만 바뀌는 재렌더라 화면 전환(showScreen)이 안 따라오고,
+// 그래서 브라우저 히스토리에도 안 쌓인다 — 상세를 보다가 하드웨어/브라우저
+// 뒤로가기를 누르면 목록이 아니라 그 전 화면(홈)으로 바로 나가 버린다
+// (2026-09-24 발견). ui/nav.js 의 popstate 가드가 이 둘로 목록 화면인
+// 것처럼 되돌린다 — game-screen 을 나가는 대신 멈추는 것과 같은 방식.
+export function isViewingProgramDetail() {
+  return !!viewingProgramId;
+}
+export function backToProgramList() {
+  viewingProgramId = null;
+  renderProgramsScreen();
+}
+
 /**
  * Cindy 처럼 고정 서킷인 프로그램의 하루를 완료 표시한다.
  *
@@ -371,10 +385,7 @@ function renderActive(program, progress) {
 }
 
 function wireActive(program, progress) {
-  el('program-back-btn')?.addEventListener('click', () => {
-    viewingProgramId = null;
-    renderProgramsScreen();
-  });
+  el('program-back-btn')?.addEventListener('click', backToProgramList);
 
   const totalDays = program.weeks * program.schedule.length;
   if (progress.completedDays.length >= totalDays) {

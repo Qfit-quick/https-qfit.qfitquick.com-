@@ -24,7 +24,8 @@ import { phasesFor } from './data/exercise-phases.js';
 import { AI_GOAL_POOLS } from './data/ai-goals.js';
 import { photoUrl, clipUrl, petUrl } from './core/assets.js';
 import { clipThumb, disposeClipThumbs } from './ui/clip-thumb.js';
-import { markWorkoutDone, wipeHealthData } from './health/store.js';
+import { markWorkoutDone, wipeHealthData, loadProgramProgress } from './health/store.js';
+import { CHALLENGE_TRACK_ORDER, CHALLENGE_TRACKS } from './data/challengeTracks.js';
 
 // ---------- DATA ----------
 // ---------- i18n ----------
@@ -539,6 +540,29 @@ const bestScoreVal = document.getElementById('best-score-val');
 // 따로 한 번 부른다 — start-screen 은 이미 HTML 에서 active 로 시작하는
 // 화면이라 showScreen() 을 안 거치고 첫 화면이 되므로, 부팅부에서 부르지
 // 않으면 첫 진입에서는 QCE 순서가 안 바뀐 채로 보인다.
+// '진행 중인 운동' 이 있는지 — 다주 프로그램에서 하루라도 끝냈거나,
+// 챌린지 트랙을 하나라도 시작(시작일을 넣었거나 기록을 남김)했으면
+// 있는 것으로 친다. '지난 루틴 다시 시작'(그냥 마지막에 골랐던 운동
+// 조합을 기억해 두는 것)은 여기 안 셌다 — 시작 화면에서 아무 운동이나
+// 한 번이라도 골라 본 사람은 거의 다 이 값이 있어서, 이걸 기준으로
+// 삼으면 QCE 가 사실상 아무한테도 맨 앞에 안 뜬다(2026-09-24 확인).
+function hasActiveProgress(){
+ try{
+ const progressList = loadProgramProgress() || [];
+ if(progressList.some(p => (p.completedDays || []).length > 0)) return true;
+ }catch(e){ console.error('program progress check failed:', e); }
+ try{
+ for(const key of CHALLENGE_TRACK_ORDER){
+  const track = CHALLENGE_TRACKS[key];
+  if(!track) continue;
+  if(localStorage.getItem(track.startKey)) return true;
+  const logsRaw = localStorage.getItem(track.logsKey);
+  if(logsRaw && Object.keys(JSON.parse(logsRaw) || {}).length) return true;
+ }
+ }catch(e){ console.error('challenge progress check failed:', e); }
+ return false;
+}
+
 function refreshStartModeRow(){
  const savedPrefs = loadSetupPrefs();
  const show = !!(savedPrefs && Array.isArray(savedPrefs.exKeys) && savedPrefs.exKeys.length);
@@ -548,13 +572,14 @@ function refreshStartModeRow(){
  // 무엇이 다시 도는지 눌러 봐야만 알 수 있다.
  const sub = document.getElementById('repeat-trigger-sub');
  if(sub) sub.textContent = show ? routineSummary(savedPrefs.exKeys) : '';
- // 이어갈 루틴이 없으면(진행 중인 운동이 없으면, 2026-09-24 요청)
- // QCE 서킷을 시작 방법 목록 맨 앞으로 옮긴다. 있으면 원래 자리
- // ('3초 후 시작' 다음)로 되돌린다 — 두 방향 다 여기서 다룬다.
+ // 진행 중인 프로그램·챌린지가 없으면(2026-09-24 요청) QCE 서킷을 시작
+ // 방법 목록 맨 앞으로 옮긴다. 있으면 원래 자리('3초 후 시작' 다음)로
+ // 되돌린다 — 두 방향 다 여기서 다룬다.
+ const active = hasActiveProgress();
  const qceBtn = document.getElementById('mode-qce-btn');
  const rows = qceBtn?.parentElement;
  if(rows && qceBtn){
- if(!show){
+ if(!active){
   if(rows.firstElementChild !== qceBtn) rows.insertBefore(qceBtn, rows.firstElementChild);
  } else {
   const quickBtn = document.getElementById('mode-quick-btn');

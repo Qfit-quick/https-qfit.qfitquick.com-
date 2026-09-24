@@ -13,6 +13,7 @@ import { isAmrapRunning, isAmrapPaused, pauseAmrap } from './amrap.js';
 import { isCircuitRunning, isCircuitPaused, pauseCircuit } from './circuit.js';
 import { isQuickRunning, isQuickPaused, pauseQuick } from './quickStart.js';
 import { isTabataRunning, isTabataPaused, pauseTabata } from './tabata.js';
+import { isViewingProgramDetail, backToProgramList } from './programs.js';
 import { closeSheet, isSheetOpen } from './sheet.js';
 import { keepAwake, allowSleep } from '../core/wakeLock.js';
 
@@ -251,6 +252,17 @@ export function initNav({ translate, STATIC_UI } = {}) {
     if (current === 'tabata-run-screen' && isTabataRunning() && !isTabataPaused()) {
       history.pushState({ s: 'tabata-run-screen' }, '', '#tabata-run-screen');
       pauseTabata();
+      return;
+    }
+
+    // 프로그램 상세(예: F45)를 보다가 뒤로가기를 누르면 목록으로 돌아가야
+    // 하는데, 상세 보기는 viewingProgramId 만 바뀌는 재렌더라 화면 전환이
+    // 안 따라오고 히스토리에도 안 쌓인다 — 그냥 두면 목록을 건너뛰고 그
+    // 전 화면(홈)으로 나가 버린다(2026-09-24 발견). 운동 중 화면을 나가는
+    // 대신 멈추는 것과 같은 방식으로, 여기서 목록으로만 되돌린다.
+    if (current === 'programs-screen' && isViewingProgramDetail()) {
+      history.pushState({ s: 'programs-screen' }, '', '#programs-screen');
+      backToProgramList();
       return;
     }
 
