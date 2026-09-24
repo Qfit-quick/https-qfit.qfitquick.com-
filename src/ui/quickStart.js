@@ -29,7 +29,7 @@ import { DIFFICULTY_LEVELS, stationsForLevel } from '../data/difficultyExercises
 import { openSheet } from './sheet.js';
 import { Sound } from '../audio/sound.js';
 import { loadBody } from '../health/store.js';
-import { speakExercise, speakMotivation, recordWorkoutSession } from '../app.js';
+import { speakExercise, speakMotivation, recordWorkoutSession, isPremiumUser } from '../app.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -43,6 +43,21 @@ const LEVEL_LABEL_KEY = {
   hard: 'quickLevelHard',
   veryHard: 'quickLevelVeryHard',
 };
+
+// 매우 쉬움·매우 어려움은 프리미엄 전용(2026-09-24 요청) — 일반은
+// 쉬움/어려움 둘만 고를 수 있다.
+const PREMIUM_LEVELS = new Set(['veryEasy', 'veryHard']);
+
+// 시트를 열 때마다 지금 프리미엄인지 다시 본다 — 시트를 연 채로 프리미엄을
+// 새로 사는 경로는 없지만(설정에서 활성화 후 돌아와 다시 열어야 한다),
+// 매번 새로 판정해야 활성화 직후 바로 반영된다.
+function renderLevelLocks() {
+  const premium = isPremiumUser();
+  PREMIUM_LEVELS.forEach((lvl) => {
+    const lock = el('quick-level-' + lvl + '-lock');
+    if (lock) lock.hidden = premium;
+  });
+}
 
 // 스테이션 하나의 목표 시간. 첫 스테이션 10초에서 시작해 매 스테이션
 // 1.1배씩 늘어난다(공용 미션 엔진의 dur *= 1.1 과 같은 식, 2026-09-23 요청
@@ -442,6 +457,7 @@ export function initQuickStart({ translate, STATIC_UI, onShowScreen: showFn } = 
   if (modeQuickBtn && quickLevelPanel) {
     modeQuickBtn.addEventListener('click', () => {
       Sound.unlock();
+      renderLevelLocks();
       openSheet(quickLevelPanel, { title: t(S.quickLevelSheetTitle), from: modeQuickBtn });
     });
   }
@@ -454,7 +470,14 @@ export function initQuickStart({ translate, STATIC_UI, onShowScreen: showFn } = 
   quickLevelPanel?.querySelectorAll('[data-level]').forEach((btn) => {
     btn.addEventListener('click', () => {
       Sound.unlock();
-      startQuickSession(btn.dataset.level);
+      const lvl = btn.dataset.level;
+      // 프리미엄 전용인데 아직 아니면 시작 대신 결제 유도 시트를 연다 —
+      // ex-card 의 잠긴 카드와 같은 문(window.openPremiumUpsell).
+      if (PREMIUM_LEVELS.has(lvl) && !isPremiumUser()) {
+        window.openPremiumUpsell?.();
+        return;
+      }
+      startQuickSession(lvl);
     });
   });
 

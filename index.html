@@ -50,8 +50,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-DSufRX2W.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CqMDiHum.css">
+  <script type="module" crossorigin src="./assets/index-C4VDA4v6.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DjO5gvZq.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -213,18 +213,23 @@
       의 카운트다운으로 넘어간다 — 안쪽은 ui/quickStart.js 가 움직인다. -->
  <div class="quick-level-panel" id="quick-level-panel" style="display:none;">
  <p class="dim" data-i18n="quickLevelHint">고르면 3초 뒤 바로 시작합니다.</p>
+ <!-- 매우 쉬움·매우 어려움은 프리미엄 전용(2026-09-24) — 별 배지는
+      잠겼을 때만 quickStart.js 가 보이게 한다(ex-card 의 .premium-lock 과
+      같은 원칙: 흐리지 않고 배지만). -->
  <div class="sheet-rows">
  <button class="row44 card" id="quick-level-veryEasy" type="button" data-level="veryEasy">
- <span class="row-main"><span class="row-t" data-i18n="quickLevelVeryEasy">매우 쉬움</span></span>
+ <span class="premium-lock" id="quick-level-veryEasy-lock" hidden>✨</span>
+ <span class="row-main"><span class="row-t" data-i18n="quickLevelVeryEasy">가볼까?</span></span>
  </button>
  <button class="row44 card" id="quick-level-easy" type="button" data-level="easy">
- <span class="row-main"><span class="row-t" data-i18n="quickLevelEasy">쉬움</span></span>
+ <span class="row-main"><span class="row-t" data-i18n="quickLevelEasy">시작이다</span></span>
  </button>
  <button class="row44 card" id="quick-level-hard" type="button" data-level="hard">
- <span class="row-main"><span class="row-t" data-i18n="quickLevelHard">어려움</span></span>
+ <span class="row-main"><span class="row-t" data-i18n="quickLevelHard">이거지</span></span>
  </button>
  <button class="row44 card" id="quick-level-veryHard" type="button" data-level="veryHard">
- <span class="row-main"><span class="row-t" data-i18n="quickLevelVeryHard">매우 어려움</span></span>
+ <span class="premium-lock" id="quick-level-veryHard-lock" hidden>✨</span>
+ <span class="row-main"><span class="row-t" data-i18n="quickLevelVeryHard">가능?</span></span>
  </button>
  </div>
  </div>

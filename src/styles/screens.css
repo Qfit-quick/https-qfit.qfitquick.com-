@@ -737,6 +737,10 @@
 /* 프리미엄 잠금 카드. 흐리게 하지 않는다 — 흐린 카드는 '로딩 중'으로도
    읽힌다. 대신 오른쪽 위에 별을 얹어 "여기 하나 더 있다"고만 말한다. */
 .ex-card.locked { position: relative; }
+/* '3초 후 시작' 난이도 시트의 잠긴 두 칸(2026-09-24)도 같은 별 배지를
+   쓴다 — .row44.card 는 기본이 static 이라 absolute 배지의 기준을
+   여기서 잡아 준다. */
+#quick-level-panel .row44.card { position: relative; }
 .premium-lock {
   position: absolute;
   top: var(--s-2);

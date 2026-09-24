@@ -614,6 +614,7 @@ export function startRoutine({ keys, totalSets, durationPreset, transitionSpeed 
 
 /** 지금 쓰이는 체중(kg). 계획 화면이 칼로리 추정에 같은 값을 쓴다. */
 export function activeWeightKg(){ return currentWeightKg(); }
+export function isPremiumUser(){ return !!myProfile.isPremium; }
 
 // ---------- AUDIO (synthesized, no files) ----------
 

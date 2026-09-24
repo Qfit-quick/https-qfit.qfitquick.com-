@@ -287,10 +287,12 @@ export const STATIC_UI = {
  // (data/difficultyExercises.js 머리 설명 참고).
  quickLevelSheetTitle: {ko:'오늘 난이도를 골라주세요', en:"Pick today's difficulty", zh:'请选择今天的难度'},
  quickLevelHint: {ko:'고르면 3초 뒤 바로 시작합니다.', en:'Starts automatically 3 seconds after you pick.', zh:'选择后3秒自动开始。'},
- quickLevelVeryEasy: {ko:'매우 쉬움', en:'Very Easy', zh:'非常简单'},
- quickLevelEasy: {ko:'쉬움', en:'Easy', zh:'简单'},
- quickLevelHard: {ko:'어려움', en:'Hard', zh:'难'},
- quickLevelVeryHard: {ko:'매우 어려움', en:'Very Hard', zh:'非常难'},
+ // 2026-09-24 요청으로 유머러스하게 바꿨다 — 매우 쉬움·매우 어려움
+ // 둘은 프리미엄 전용(quickStart.js PREMIUM_LEVELS).
+ quickLevelVeryEasy: {ko:'가볼까?', en:'Shall we?', zh:'走一个？'},
+ quickLevelEasy: {ko:'시작이다', en:"Let's go", zh:'开始吧'},
+ quickLevelHard: {ko:'이거지', en:"Now we're talking", zh:'就是它'},
+ quickLevelVeryHard: {ko:'가능?', en:'You sure?', zh:'你行吗？'},
  quickDoneTitle: {ko:'오늘 운동 완료! 🎉', en:'Workout complete! 🎉', zh:'今日锻炼完成！🎉'},
  // 타바타 타이머(2026-09-24 되살림 — src/ 개편 때 소스 없이 빌드 번들에만
  // 남아 있다가 조용히 사라졌던 기능. 그 번들의 문구를 그대로 옮겼다).
