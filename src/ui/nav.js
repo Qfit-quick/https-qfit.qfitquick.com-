@@ -12,7 +12,9 @@ import { showScreenById, isWorkoutRunning } from '../app.js';
 import { isAmrapRunning, isAmrapPaused, pauseAmrap } from './amrap.js';
 import { isCircuitRunning, isCircuitPaused, pauseCircuit } from './circuit.js';
 import { isQuickRunning, isQuickPaused, pauseQuick } from './quickStart.js';
+import { isTabataRunning, isTabataPaused, pauseTabata } from './tabata.js';
 import { closeSheet, isSheetOpen } from './sheet.js';
+import { keepAwake, allowSleep } from '../core/wakeLock.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -53,6 +55,9 @@ const IMMERSIVE = new Set([
   'amrap-screen', 'circuit-screen',
   // '10초 후 시작'(2026-09-23) — 카운트다운도 서킷 구간도 전부 타이머라 같은 이유.
   'quick-screen',
+  // 타바타 타이머(2026-09-24 되살림) — 위와 같은 이유. 설정 화면
+  // (tabata-setup-screen)은 고르는 중이라 안 넣는다.
+  'tabata-run-screen',
 ]);
 
 // 탭이 아닌 화면에 있을 때 어느 탭을 켜 둘지. 없으면 아무것도 안 켠다.
@@ -82,6 +87,11 @@ const BELONGS_TO = {
   // '10초 후 시작'은 홈에서 연다. IMMERSIVE 라 탭바 자체가 숨어 실제로는
   // 안 보이지만, amrap-screen·circuit-screen 과 같은 이유로 명시해 둔다.
   'quick-screen': 'start-screen',
+  // 타바타 타이머는 더보기 줄에서 연다. 설정 화면은 IMMERSIVE 가 아니라
+  // 탭바가 그대로 보인다(qce-rulebook-screen 과 같은 이유) — 실행 화면은
+  // IMMERSIVE 라 실제로는 안 보이지만 명시해 둔다.
+  'tabata-setup-screen': 'more-screen',
+  'tabata-run-screen': 'more-screen',
 };
 
 let bar = null;
@@ -132,7 +142,12 @@ function paint(id) {
     b.setAttribute('aria-current', b.dataset.screen === active ? 'page' : 'false');
   });
   document.body.dataset.screen = id;
-  document.body.classList.toggle('immersive', IMMERSIVE.has(id));
+  const immersive = IMMERSIVE.has(id);
+  document.body.classList.toggle('immersive', immersive);
+  // 화면 안 꺼지게(2026-09-24 요청, src/core/wakeLock.js) — 운동 중이라
+  // 탭바를 감추는 화면과 정확히 같은 판정을 쓴다. 새 운동 화면이 생겨도
+  // IMMERSIVE 에만 넣으면 잠금이 자동으로 따라온다.
+  if (immersive) keepAwake(); else allowSleep();
 }
 
 export function initNav({ translate, STATIC_UI } = {}) {
@@ -229,6 +244,13 @@ export function initNav({ translate, STATIC_UI } = {}) {
     if (current === 'quick-screen' && isQuickRunning() && !isQuickPaused()) {
       history.pushState({ s: 'quick-screen' }, '', '#quick-screen');
       pauseQuick();
+      return;
+    }
+
+    // 타바타 타이머도 같은 이유로 멈춘다.
+    if (current === 'tabata-run-screen' && isTabataRunning() && !isTabataPaused()) {
+      history.pushState({ s: 'tabata-run-screen' }, '', '#tabata-run-screen');
+      pauseTabata();
       return;
     }
 

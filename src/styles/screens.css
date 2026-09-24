@@ -839,6 +839,10 @@
    화면 절반을 가리는데, 한두 번 눌러 맞추는 값에 키보드를 부를 일이 아니다. */
 .stepper-panel { display: flex; flex-direction: column; gap: var(--s-4); }
 .stepper { display: flex; align-items: center; gap: var(--s-3); }
+/* 타바타 설정 화면(2026-09-24 되살림) 의 운동/휴식/라운드 세 줄 — 시트가
+   아니라 화면에 바로 놓인 stepper 라 자기 줄에서 라벨과 좌우로 나뉜다. */
+.tabata-field { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.tabata-field .stepper-val { width: 64px; }
 .stepper-btn { border: 1px solid var(--line); border-radius: var(--r-md); }
 .stepper-val {
   flex: 1;

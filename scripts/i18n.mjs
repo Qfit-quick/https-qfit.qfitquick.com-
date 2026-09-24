@@ -77,6 +77,8 @@ const FILLED_BY_JS = new Set([
   // '3초 후 시작'(src/ui/quickStart.js, 2026-09-23) — 위와 같은 이유.
   'quick-title', 'quick-move-name', 'quick-done-time', 'quick-done-kcal',
   'quick-move-timer',
+  // 타바타 타이머(src/ui/tabata.js, 2026-09-24 되살림) — 위와 같은 이유.
+  'tabata-phase-label',
 ]);
 
 for (const m of html.matchAll(/<([a-z][\w-]*)([^>]*)>([^<>{}]*[가-힣][^<>]*)</g)) {

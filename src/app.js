@@ -475,6 +475,10 @@ const challengeScreen = document.getElementById('challenge-screen');
 // 대신한다). amrapScreen·circuitScreen 과 같은 이유로 여기서는 화면
 // 목록에 끼워 넣는 것만 한다 — 안쪽은 src/ui/quickStart.js 가 전부 붙인다.
 const quickScreen = document.getElementById('quick-screen');
+// 타바타 타이머(2026-09-24 되살림). 위 셋과 같은 이유 — 안쪽은
+// src/ui/tabata.js 가 전부 붙인다.
+const tabataSetupScreen = document.getElementById('tabata-setup-screen');
+const tabataRunScreen = document.getElementById('tabata-run-screen');
 const openVideoGalleryBtn = document.getElementById('open-video-gallery-btn');
 const videoGalleryBackBtn = document.getElementById('video-gallery-back-btn');
 const videoGalleryGrid = document.getElementById('video-gallery-grid');
@@ -531,7 +535,7 @@ const bestScoreBox = document.getElementById('best-score-box');
 const bestScoreVal = document.getElementById('best-score-val');
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen,quickScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen,quickScreen,tabataSetupScreen,tabataRunScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  if(el === moreScreen){
  try{
@@ -700,7 +704,7 @@ export function speakExercise(label, cue){
  }catch(e){}
 }
 
-function speakTip(tipText){
+export function speakTip(tipText){
  if(Sound.isMuted() || !tipText) return;
  if(!window.speechSynthesis) return;
  try{

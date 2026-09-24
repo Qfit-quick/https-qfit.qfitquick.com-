@@ -64,6 +64,8 @@ export const ICON = {
   minus: svg('<path d="M5 12h14"/>'),
   plus: svg('<path d="M12 5v14M5 12h14"/>'),
   trophy: svg('<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0z"/>'),
+  // 타바타 타이머(2026-09-24 되살림). 시계 — 운동·휴식을 정해진 초로 반복한다는 뜻.
+  timer: svg('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6"/>'),
   send: svg('<path d="M3 11l18-8-8 18-2-8z"/>'),
   share: svg('<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v12M8 7l4-4 4 4"/>'),
   // 식단. 포크와 숟가락 — 접시(원)로 그리면 '완료' 체크의 원과 헷갈린다.

@@ -288,6 +288,28 @@ export const STATIC_UI = {
  quickLevelHard: {ko:'어려움', en:'Hard', zh:'难'},
  quickLevelVeryHard: {ko:'매우 어려움', en:'Very Hard', zh:'非常难'},
  quickDoneTitle: {ko:'오늘 운동 완료! 🎉', en:'Workout complete! 🎉', zh:'今日锻炼完成！🎉'},
+ // 타바타 타이머(2026-09-24 되살림 — src/ 개편 때 소스 없이 빌드 번들에만
+ // 남아 있다가 조용히 사라졌던 기능. 그 번들의 문구를 그대로 옮겼다).
+ tabataLinkLabel: {ko:'타바타 타이머', en:'Tabata timer', zh:'间歇计时器'},
+ tabataLinkSub: {ko:'직접 설정하는 인터벌 타이머', en:'Custom interval timer', zh:'自定义间歇计时器'},
+ tabataSetupTitle: {ko:'타바타 타이머', en:'Tabata Timer', zh:'间歇计时器'},
+ tabataWorkLabel: {ko:'운동 시간(초)', en:'Work time (sec)', zh:'运动时间（秒）'},
+ tabataRestLabel: {ko:'휴식 시간(초)', en:'Rest time (sec)', zh:'休息时间（秒）'},
+ tabataRoundsLabel: {ko:'라운드 수', en:'Rounds', zh:'回合数'},
+ tabataStartBtn: {ko:'시작', en:'Start', zh:'开始'},
+ tabataTotalHint: {ko:'총 %s분', en:'Total %s min', zh:'共%s分钟'},
+ tabataRoundLabelShort: {ko:'라운드', en:'Round', zh:'回合'},
+ tabataSkipWorkBtn: {ko:'이번 세트 건너뛰기', en:'Skip this set', zh:'跳过本组'},
+ tabataSkipRestBtn: {ko:'이번 휴식 건너뛰기', en:'Skip this rest', zh:'跳过这次休息'},
+ tabataPhaseWork: {ko:'운동!', en:'WORK!', zh:'运动！'},
+ tabataPhaseRest: {ko:'휴식', en:'REST', zh:'休息'},
+ tabataDoneTitle: {ko:'완료! 🎉', en:'Done! 🎉', zh:'完成！🎉'},
+ tabataDoneSub: {ko:'고생하셨습니다, 웃으세요 😄', en:'Great work — go on, smile 😄', zh:'辛苦了，笑一个吧 😄'},
+ // 아래 셋은 화면에 안 뜨고 음성으로만 나간다(speakMotivation 과 별도로
+ // 타바타 전용 안내 세 마디 — app.js 의 speakExercise 계열과 같은 톤).
+ tabataRoundAnnounce: {ko:'라운드 %s', en:'Round %s', zh:'第 %s 回合'},
+ tabataHalfAnnounce: {ko:'절반! 절반!', en:'Half! Half!', zh:'一半了！一半了！'},
+ tabataGreatJob: {ko:'수고하셨습니다!', en:'Great job!', zh:'辛苦了！'},
  painAreaBtn: {ko:'아픈 부위 피하기', en:'Avoid a sore spot', zh:'避开受伤部位'},
  painAreaOff: {ko:'선택 안 함', en:'Not set', zh:'未设置'},
  painAreaOn: {ko:'%s 회피 중', en:'Avoiding %s', zh:'正在避开%s'},

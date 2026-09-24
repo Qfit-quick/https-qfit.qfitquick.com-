@@ -50,8 +50,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-DeJw3k32.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CyTOUJJG.css">
+  <script type="module" crossorigin src="./assets/index-DhPGzhCH.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Be0dOqt_.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -268,6 +268,13 @@
  <button class="menu-btn video-gallery-trigger-btn" id="open-video-gallery-btn">
  <span class="row-ic" data-icon="moves"></span>
  <span class="row-main"><span class="row-t" data-i18n="movesBtn">운동동작 소개</span><span class="row-d dim" data-i18n="movesSub">12개 · 영상</span></span>
+ </button>
+ <!-- 타바타 타이머(2026-09-24 되살림 — 예전 src/ 개편 때 소스 없이 빌드
+      번들에만 남아 있다가 조용히 사라졌던 기능). 운동 목록과 무관한
+      순수 운동·휴식 반복 타이머라 시작 시트가 아니라 여기에 둔다. -->
+ <button class="menu-btn" id="open-tabata-btn">
+ <span class="row-ic" data-icon="timer"></span>
+ <span class="row-main"><span class="row-t" data-i18n="tabataLinkLabel">타바타 타이머</span><span class="row-d dim" data-i18n="tabataLinkSub">직접 설정하는 인터벌 타이머</span></span>
  </button>
  <button class="menu-btn recovery-trigger-btn" id="open-recovery-btn">
  <span class="row-ic" data-icon="heart"></span>
@@ -488,11 +495,27 @@
  <!-- 4스테이션마다 한 번(2026-09-23 요청). game-screen 의 세트 사이
       휴식(.rest-wrap 등)과 같은 모양을 그대로 쓴다 — 다 쉬어도 저절로
       안 넘어간다(그 화면의 이유와 같다: 물 마시러 간 사이에 한
-      스테이션이 그냥 지나가면 안 된다). 어디를 눌러도 바로 건너뛴다. -->
+      스테이션이 그냥 지나가면 안 된다). 어디를 눌러도 바로 건너뛴다 —
+      단 번개 인증 자리는 빼고(2026-09-24 요청, 첫 휴식에만 나온다). -->
  <div class="rest-wrap" id="quick-rest-wrap" hidden role="button" tabindex="0">
  <span class="rest-logo" aria-hidden="true">Q-fit<i class="logo-dot">.</i></span>
  <b class="rest-num" id="quick-rest-num">11</b>
  <span class="rest-go" id="quick-rest-go" hidden data-i18n="restTap">화면을 눌러 시작</span>
+ </div>
+ <!-- 휴식 인증(2026-09-24 요청 — game-screen 의 '번개 꾹 누르기'와 같은
+      모양, 첫 휴식에만 나온다). quick-rest-wrap 의 '아무 데나 눌러
+      건너뛰기'와 안 겹치게 별도 카드로 둔다 — quickStart.js 가 이 카드
+      위에서 난 클릭은 건너뛰기로 안 잡는다. -->
+ <div class="rest-touch-card" id="quick-rest-touch-card" hidden>
+ <div class="rest-touch-zone" id="quick-rest-touch-zone" role="button" tabindex="0" aria-label="인증">
+ <svg class="rest-touch-ring" viewBox="0 0 64 64" aria-hidden="true">
+ <circle class="track" cx="32" cy="32" r="26"></circle>
+ <circle class="prog" id="quick-rest-touch-prog" cx="32" cy="32" r="26"></circle>
+ </svg>
+ <span class="rest-touch-icon" id="quick-rest-touch-icon">⚡</span>
+ </div>
+ <p class="rest-touch-label" id="quick-rest-touch-label" data-i18n="restTouchLabel">⚡ 위 번개를 꾹 눌러요!</p>
+ <p class="rest-touch-caption" data-i18n="restTouchCaption">인증을 위해 첫휴식에만 화면 위 번개를 눌러주세요!</p>
  </div>
  <div class="amrap-foot">
  <button type="button" class="sec2" id="quick-pause-btn" data-i18n="amrapPauseBtn">일시정지</button>
@@ -504,6 +527,89 @@
  <p class="dim" id="quick-done-time">완주 기록 12:34</p>
  <p class="dim" id="quick-done-kcal">약 120kcal 소모</p>
  <button type="button" class="primary" id="quick-done-ok-btn" data-i18n="amrapConfirmBtn">확인</button>
+ </div>
+ </div>
+
+ <!-- 타바타 타이머 설정(2026-09-24 되살림 — src/ 개편 때 소스 없이
+      빌드 번들에만 남아 있다가 조용히 사라졌던 기능. 옛 번들을 읽어
+      그대로 복원했다). 운동 목록과 무관한 순수 운동·휴식 반복
+      타이머라 동작을 고르지 않는다 — 운동/휴식 시간·라운드 수 셋만
+      정한다. 안쪽은 src/ui/tabata.js 가 움직인다. -->
+ <div class="screen" id="tabata-setup-screen">
+ <div class="amrap-head">
+ <button class="hd-back" type="button" id="tabata-setup-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <h2 class="hd-title" data-i18n="tabataSetupTitle">타바타 타이머</h2>
+ </div>
+ <div class="card tabata-field">
+ <span class="dim" data-i18n="tabataWorkLabel">운동 시간(초)</span>
+ <div class="stepper">
+ <button class="icb stepper-btn" type="button" id="tabata-work-minus" aria-label="줄이기" data-icon="minus"></button>
+ <input class="stepper-val" id="tabata-work-value" type="number" inputmode="numeric" value="20">
+ <button class="icb stepper-btn" type="button" id="tabata-work-plus" aria-label="늘리기" data-icon="plus"></button>
+ </div>
+ </div>
+ <div class="card tabata-field">
+ <span class="dim" data-i18n="tabataRestLabel">휴식 시간(초)</span>
+ <div class="stepper">
+ <button class="icb stepper-btn" type="button" id="tabata-rest-minus" aria-label="줄이기" data-icon="minus"></button>
+ <input class="stepper-val" id="tabata-rest-value" type="number" inputmode="numeric" value="10">
+ <button class="icb stepper-btn" type="button" id="tabata-rest-plus" aria-label="늘리기" data-icon="plus"></button>
+ </div>
+ </div>
+ <div class="card tabata-field">
+ <span class="dim" data-i18n="tabataRoundsLabel">라운드 수</span>
+ <div class="stepper">
+ <button class="icb stepper-btn" type="button" id="tabata-rounds-minus" aria-label="줄이기" data-icon="minus"></button>
+ <input class="stepper-val" id="tabata-rounds-value" type="number" inputmode="numeric" value="8">
+ <button class="icb stepper-btn" type="button" id="tabata-rounds-plus" aria-label="늘리기" data-icon="plus"></button>
+ </div>
+ </div>
+ <p class="dim" id="tabata-total-hint"></p>
+ <button class="primary" id="tabata-start-btn" data-i18n="tabataStartBtn">시작</button>
+ </div>
+
+ <!-- 타바타 실행. quick-screen 과 같은 구조(카운트다운 → 머리 → 실행 →
+      완료)를 그대로 따른다. 링은 game-screen 의 버티는 동작 표시
+      (.hold-ring)를 재사용한다. -->
+ <div class="screen" id="tabata-run-screen">
+ <div id="tabata-countdown" class="quick-cd">
+ <div class="cd-mid">
+ <div id="tabata-countdown-num" aria-live="assertive">3</div>
+ <p class="cd-cue" data-i18n="countdownCue">자리를 잡으세요</p>
+ </div>
+ <div class="cd-foot">
+ <button class="sec2" id="tabata-countdown-cancel-btn" data-i18n="cancelBtn">취소</button>
+ </div>
+ </div>
+ <div class="amrap-head" id="tabata-head" hidden>
+ <button class="hd-back" type="button" id="tabata-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <h2 class="hd-title" data-i18n="tabataSetupTitle">타바타 타이머</h2>
+ </div>
+ <div id="tabata-run" hidden>
+ <div class="amrap-stats">
+ <div class="amrap-stat">
+ <span class="dim" data-i18n="tabataRoundLabelShort">라운드</span>
+ <b class="amrap-round-num" id="tabata-round-label">1 / 8</b>
+ </div>
+ </div>
+ <h3 class="amrap-move-name" id="tabata-phase-label">운동!</h3>
+ <div class="hold-ring" id="tabata-ring">
+ <svg viewBox="0 0 120 120">
+ <circle class="track" cx="60" cy="60" r="54"></circle>
+ <circle class="prog" id="tabata-ring-prog" cx="60" cy="60" r="54"></circle>
+ </svg>
+ <div class="num" id="tabata-time-num">20<i data-i18n="secUnit">초</i></div>
+ </div>
+ <button type="button" class="primary amrap-next-btn" id="tabata-skip-btn" data-i18n="tabataSkipWorkBtn">이번 세트 건너뛰기</button>
+ <div class="amrap-foot">
+ <button type="button" class="sec2" id="tabata-pause-btn" data-i18n="amrapPauseBtn">일시정지</button>
+ <button type="button" class="sec2 sec2-danger" id="tabata-quit-btn" data-i18n="amrapQuitBtn">종료</button>
+ </div>
+ </div>
+ <div class="card amrap-done" id="tabata-done" hidden>
+ <div class="program-card-name" id="tabata-done-title" data-i18n="tabataDoneTitle">완료! 🎉</div>
+ <p class="dim" id="tabata-done-sub" data-i18n="tabataDoneSub">고생하셨습니다, 웃으세요 😄</p>
+ <button type="button" class="primary" id="tabata-done-ok-btn" data-i18n="amrapConfirmBtn">확인</button>
  </div>
  </div>
 

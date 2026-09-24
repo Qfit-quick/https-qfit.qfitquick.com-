@@ -31,6 +31,7 @@ import { initPrograms, renderProgramsScreen, quickStartCircuit } from './ui/prog
 import { initAmrap, startAmrap } from './ui/amrap.js';
 import { initCircuit, startCircuit } from './ui/circuit.js';
 import { initQuickStart } from './ui/quickStart.js';
+import { initTabata } from './ui/tabata.js';
 import { initHeartGame } from './ui/heartgame.js';
 import { initChallengeTracker } from './ui/challengeTracker.js';
 import { initChatbot } from './ui/chatbot.js';
@@ -58,6 +59,8 @@ initCircuit({ translate: t, STATIC_UI, onShowScreen: showScreenById });
 // 홈의 '10초 후 시작'(2026-09-23, 대규모 교체) — 예전 AI 질문 2개 흐름을
 // 대신한다. 위 둘과 같은 이유로 여기서 붙인다 — app.js 는 이 화면을 모른다.
 initQuickStart({ translate: t, STATIC_UI, onShowScreen: showScreenById });
+// 타바타 타이머(2026-09-24 되살림) — 위와 같은 이유.
+initTabata({ translate: t, STATIC_UI, onShowScreen: showScreenById });
 initPrograms({ translate: t, STATIC_UI, onStartDay: startRoutine, onStartAmrap: startAmrap, onStartCircuit: startCircuit, onShowScreen: showScreenById });
 renderProgramsScreen();
 

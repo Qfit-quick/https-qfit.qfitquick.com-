@@ -62,6 +62,18 @@ let stationDuration = STATION_BASE_SEC;
 let nextDurationSec = STATION_BASE_SEC; // 다음 beginStation() 이 쓸 값(누적 성장)
 let resting = false;
 let restElapsed = 0;
+let restCount = 0; // 지금까지 몇 번째 휴식인지 — 번개 인증은 1번째에만 보인다
+
+// 휴식 인증(번개 꾹 누르기, 2026-09-24 요청) — app.js 의 게임 화면 것과
+// 같은 상수·리듬이다. 첫 휴식에만 보이고(공용 엔진도 휴식이 한 번뿐이라
+// 그 한 번이 곧 첫 휴식이었다), quick-rest-wrap 의 '아무 데나 눌러
+// 건너뛰기'와 안 겹치게 별도 카드다.
+const REST_TOUCH_HOLD_MS = 600;
+const REST_TOUCH_R = 26;
+const REST_TOUCH_CIRC = 2 * Math.PI * REST_TOUCH_R;
+let restTouchVerified = false;
+let restTouchPressStart = 0;
+let restTouchRaf = null;
 let timerId = null; // 스테이션·휴식 공용 1초 tick
 let countdownId = null; // 시작 전 3초 카운트다운
 let voiceTimeouts = [];
@@ -180,14 +192,72 @@ function beginStation() {
 function startRest() {
   resting = true;
   restElapsed = 0;
+  restCount++;
   clearVoiceTimeouts();
   render();
+  const touchCard = el('quick-rest-touch-card');
+  if (touchCard) touchCard.hidden = restCount !== 1;
+  if (restCount === 1) resetRestTouch();
 }
 
 function endRest() {
   if (!resting) return;
   resting = false;
+  stopRestTouchHold();
+  // 인증을 안 끝내고(꾹 누르는 중간에) 건너뛴 경우 카드가 hidden 이
+  // 아니게 남아, 다음 스테이션 화면 위에 그대로 걸쳐 보인다 — 항상
+  // 여기서 확실히 감춘다.
+  const touchCard = el('quick-rest-touch-card');
+  if (touchCard) touchCard.hidden = true;
   beginStation();
+}
+
+function resetRestTouch() {
+  restTouchVerified = false;
+  restTouchPressStart = 0;
+  if (restTouchRaf) { cancelAnimationFrame(restTouchRaf); restTouchRaf = null; }
+  const zone = el('quick-rest-touch-zone');
+  if (zone) zone.classList.remove('verified');
+  const prog = el('quick-rest-touch-prog');
+  if (prog) {
+    prog.style.strokeDasharray = String(REST_TOUCH_CIRC);
+    prog.style.strokeDashoffset = String(REST_TOUCH_CIRC);
+  }
+  const icon = el('quick-rest-touch-icon');
+  if (icon) icon.textContent = '⚡';
+  const label = el('quick-rest-touch-label');
+  if (label) label.textContent = t(S.restTouchLabel);
+}
+
+function stepRestTouch() {
+  if (restTouchVerified || !restTouchPressStart) return;
+  const elapsed = Date.now() - restTouchPressStart;
+  const pct = Math.min(1, elapsed / REST_TOUCH_HOLD_MS);
+  const prog = el('quick-rest-touch-prog');
+  if (prog) prog.style.strokeDashoffset = String(REST_TOUCH_CIRC * (1 - pct));
+  if (pct >= 1) {
+    restTouchVerified = true;
+    restTouchPressStart = 0;
+    const zone = el('quick-rest-touch-zone');
+    if (zone) zone.classList.add('verified');
+    const icon = el('quick-rest-touch-icon');
+    if (icon) icon.textContent = '✅';
+    const label = el('quick-rest-touch-label');
+    if (label) label.textContent = t(S.restTouchDone);
+    const card = el('quick-rest-touch-card');
+    setTimeout(() => { if (card) card.hidden = true; }, 500);
+    return;
+  }
+  restTouchRaf = requestAnimationFrame(stepRestTouch);
+}
+
+function stopRestTouchHold() {
+  restTouchPressStart = 0;
+  if (restTouchRaf) { cancelAnimationFrame(restTouchRaf); restTouchRaf = null; }
+  if (!restTouchVerified) {
+    const prog = el('quick-rest-touch-prog');
+    if (prog) prog.style.strokeDashoffset = String(REST_TOUCH_CIRC);
+  }
 }
 
 // 스테이션이 다 됐을 때(타이머가 0 이 됐거나 '다음 스테이션'을 눌렀을 때)
@@ -280,6 +350,7 @@ function beginRun() {
   stationIdx = 0;
   elapsedSec = 0;
   nextDurationSec = STATION_BASE_SEC;
+  restCount = 0;
   finished = false;
   resting = false;
   paused = false;
@@ -394,6 +465,18 @@ export function initQuickStart({ translate, STATIC_UI, onShowScreen: showFn } = 
   el('quick-rest-wrap')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); endRest(); }
   });
+  const restTouchZone = el('quick-rest-touch-zone');
+  if (restTouchZone) {
+    restTouchZone.addEventListener('pointerdown', (e) => {
+      if (restTouchVerified) return;
+      e.preventDefault();
+      restTouchPressStart = Date.now();
+      restTouchRaf = requestAnimationFrame(stepRestTouch);
+    });
+    restTouchZone.addEventListener('pointerup', stopRestTouchHold);
+    restTouchZone.addEventListener('pointerleave', stopRestTouchHold);
+    restTouchZone.addEventListener('pointercancel', stopRestTouchHold);
+  }
   // 카운트다운 중에 뒤로가기(하드웨어 back)를 누르면 다른 화면으로 넘어가는데,
   // countdownId 를 안 멈추면 3초가 다 찼을 때 beginRun() 이 onShowScreen('quick-screen')
   // 을 불러 사용자를 보고 있던 화면에서 억지로 끌고 온다 — running 상태만
