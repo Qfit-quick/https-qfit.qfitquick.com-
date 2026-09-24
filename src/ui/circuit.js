@@ -14,10 +14,12 @@
 // '다음 스테이션' 버튼은 reps 스테이션에서만 보인다.
 
 import { EXERCISES } from '../data/exercises.js';
+import { EX_TO_GROUP } from '../data/muscle-groups.js';
 import { clipThumb, disposeClipThumbs } from './clip-thumb.js';
 import { getChallengeIcon } from '../data/challengeIcons.js';
 import { loadBody } from '../health/store.js';
 import { markProgramDayDone } from './programs.js';
+import { recordWorkoutSession } from '../app.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -135,16 +137,28 @@ function nextStation() {
   render();
 }
 
-function estKcal() {
+function estKcal(sts) {
   const weightKg = loadBody().weightKg;
   if (!weightKg) return 0;
   // 결과 화면·plan.js 의 sessionKcal() 과 같은 식(MET × 3.5 × 체중 ÷ 200 ×
   // 분) — 스테이션 기반 서킷이라 그 함수의 '세트 수' 인자에 맞지 않아
-  // 직접 적었지만, 상수는 그대로 맞춘다.
-  const sts = stations();
+  // 직접 적었지만, 상수는 그대로 맞춘다. 중간에 그만뒀을 때(quit())는
+  // 끝낸 스테이션만 넘겨 받는다 — 안 한 것까지 평균에 넣으면 부풀어진다.
+  sts = sts || stations();
   const avgMet = sts.reduce((s, st) => s + ((EX_BY_KEY[st.key] || {}).met || st.met || 5), 0) / (sts.length || 1);
   const minutes = elapsedSec / 60;
   return Math.max(1, Math.round((avgMet * 3.5 * weightKg) / 200 * minutes));
+}
+
+// 끝낸 스테이션 목록에서 부위별 세트 수를 만든다. 완주(finish, 8개 전부)든
+// 중간에 그만뒀을 때(quit, stationIdx 개)든 이 함수 하나로 만든다.
+function groupsFor(list) {
+  const g = {};
+  list.forEach((st) => {
+    const grp = EX_TO_GROUP[st.key];
+    if (grp) g[grp] = (g[grp] || 0) + 1;
+  });
+  return g;
 }
 
 function finish() {
@@ -153,6 +167,9 @@ function finish() {
   paused = true;
   stopTimer();
   markProgramDayDone(program.id, dayIndex);
+  try {
+    recordWorkoutSession({ groups: groupsFor(stations()), seconds: elapsedSec, calories: estKcal(), xp: 20 });
+  } catch (e) { console.error('circuit record failed:', e); }
   render();
 }
 
@@ -168,7 +185,15 @@ function renderDone() {
 }
 
 function quit() {
-  if (!confirm(t(S.amrapQuitConfirm))) return;
+  // 스테이션을 하나라도 끝냈으면 그만큼은 기록에 남는다(2026-09-24).
+  const msg = stationIdx > 0 ? S.quitConfirmSaved : S.amrapQuitConfirm;
+  if (!confirm(t(msg))) return;
+  if (stationIdx > 0) {
+    try {
+      const done = stations().slice(0, stationIdx);
+      recordWorkoutSession({ groups: groupsFor(done), seconds: elapsedSec, calories: estKcal(done), xp: 20 });
+    } catch (e) { console.error('circuit partial quit record failed:', e); }
+  }
   stopTimer();
   onShowScreen('programs-screen');
 }

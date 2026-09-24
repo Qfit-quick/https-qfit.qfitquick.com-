@@ -8,7 +8,8 @@
 // 다 없애라"). 화면 안 꺼짐은 여기서 따로 안 챙긴다 — ui/nav.js 가
 // IMMERSIVE 판정으로 모든 운동 화면에 한 번에 건다(core/wakeLock.js).
 import { Sound } from '../audio/sound.js';
-import { speakExercise, speakTip } from '../app.js';
+import { speakExercise, speakTip, recordWorkoutSession } from '../app.js';
+import { loadBody } from '../health/store.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -35,6 +36,11 @@ let finished = false;
 let running = false;
 let timerId = null;
 let countdownId = null;
+// 기록용 실제 경과 시간(2026-09-24) — 운동/휴식 phase 는 목표 종료 시각
+// 기준이라 초를 따로 세지 않는다. 일시정지한 시간은 빼야 하므로
+// 세션 시작 시각에서 지금까지 멈췄던 총 시간을 뺀다.
+let sessionStartAt = 0;
+let pausedMs = 0;
 
 function fmtMin(totalSec) {
   return Math.round(totalSec / 6) / 10; // 분 단위, 소수 1자리
@@ -176,6 +182,10 @@ function finish() {
   stopTimer();
   Sound.fanfare();
   speakTip(t(S.tabataGreatJob));
+  try {
+    const seconds = sessionElapsedSec();
+    recordWorkoutSession({ groups: {}, seconds, calories: estKcal(seconds), xp: 20 });
+  } catch (e) { console.error('tabata record failed:', e); }
   renderDone();
 }
 
@@ -194,14 +204,38 @@ function togglePause() {
   if (paused) {
     pausedAt = Date.now();
   } else if (pausedAt) {
-    phaseTargetAt += Date.now() - pausedAt;
+    const gapMs = Date.now() - pausedAt;
+    phaseTargetAt += gapMs;
+    pausedMs += gapMs;
     pausedAt = 0;
   }
   renderPhase(Math.ceil(Math.max(0, phaseTargetAt - Date.now()) / 1000));
 }
 
+// 운동 목록과 무관한 순수 인터벌이라 부위별 MET 표가 없다 — quickStart.js
+// 의 같은 문제와 같은 답(보통 강도 칼리스테닉스 값으로 어림).
+const FALLBACK_MET = 5;
+function sessionElapsedSec() {
+  if (!sessionStartAt) return 0;
+  return Math.max(0, Math.round((Date.now() - sessionStartAt - pausedMs) / 1000));
+}
+function estKcal(seconds) {
+  const weightKg = loadBody().weightKg;
+  if (!weightKg) return 0;
+  const minutes = seconds / 60;
+  return Math.max(1, Math.round((FALLBACK_MET * 3.5 * weightKg) / 200 * minutes));
+}
+
 function quit() {
-  if (!confirm(t(S.amrapQuitConfirm))) return;
+  // 실제로 몇 초라도 움직였으면 그만큼은 기록에 남는다(2026-09-24).
+  const seconds = sessionElapsedSec();
+  const msg = seconds >= 5 ? S.quitConfirmSaved : S.amrapQuitConfirm;
+  if (!confirm(t(msg))) return;
+  if (seconds >= 5) {
+    try {
+      recordWorkoutSession({ groups: {}, seconds, calories: estKcal(seconds), xp: 20 });
+    } catch (e) { console.error('tabata partial quit record failed:', e); }
+  }
   stopTimer();
   running = false;
   onShowScreen('more-screen');
@@ -221,6 +255,8 @@ function beginRun() {
   finished = false;
   paused = false;
   pausedAt = 0;
+  sessionStartAt = Date.now();
+  pausedMs = 0;
   running = true;
 
   startPhase('work');

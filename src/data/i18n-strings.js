@@ -358,6 +358,9 @@ export const STATIC_UI = {
  amrapResumeBtn: {ko:'계속하기', en:'Resume', zh:'继续'},
  amrapQuitBtn: {ko:'종료', en:'Quit', zh:'结束'},
  amrapQuitConfirm: {ko:'정말 종료할까요? 지금까지의 라운드는 기록되지 않아요.', en:'Quit for real? This session will not be recorded.', zh:'确定要结束吗？本次记录不会保存。'},
+ // 뭔가 한 만큼은 기록되는 경우(2026-09-24, 중간에 그만둬도 기록) 위
+ // 문구 대신 쓴다 — Cindy·QCE·'3초 후 시작'·타바타가 공용으로 쓴다.
+ quitConfirmSaved: {ko:'정말 종료할까요? 지금까지 한 만큼은 기록에 저장돼요.', en:"Quit for real? What you've done so far will still be saved.", zh:'确定要结束吗？目前为止的进度会保存。'},
  amrapDoneTitle: {ko:'Cindy 완료! 🎉', en:'Cindy complete! 🎉', zh:'Cindy 完成！🎉'},
  // 세 동작을 삼각형으로 한 번에 보여주면서(2026-09-24) '라운드 완료'
  // 단위로만 세게 됐다 — 라운드 중간에 시간이 다 됐어도 몇 동작째였는지는

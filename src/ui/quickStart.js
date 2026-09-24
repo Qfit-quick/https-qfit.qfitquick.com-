@@ -29,7 +29,7 @@ import { DIFFICULTY_LEVELS, stationsForLevel } from '../data/difficultyExercises
 import { openSheet } from './sheet.js';
 import { Sound } from '../audio/sound.js';
 import { loadBody } from '../health/store.js';
-import { speakExercise, speakMotivation } from '../app.js';
+import { speakExercise, speakMotivation, recordWorkoutSession } from '../app.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -305,6 +305,13 @@ function finish() {
   resting = false;
   clearVoiceTimeouts();
   stopTimer();
+  // 이 표의 동작은 src/data/exercises.js 카탈로그 밖이라(머리 설명 참고)
+  // 부위별 groups 는 못 만든다 — 시간·칼로리만 기록에 남긴다.
+  if (stationIdx > 0) {
+    try {
+      recordWorkoutSession({ groups: {}, seconds: elapsedSec, calories: estKcal(loadBody().weightKg), xp: 20 });
+    } catch (e) { console.error('quickStart record failed:', e); }
+  }
   renderDone();
 }
 
@@ -330,7 +337,14 @@ function togglePause() {
 }
 
 function quit() {
-  if (!confirm(t(S.amrapQuitConfirm))) return;
+  // 스테이션을 하나라도 끝냈으면 그만큼은 기록에 남는다(2026-09-24).
+  const msg = stationIdx > 0 ? S.quitConfirmSaved : S.amrapQuitConfirm;
+  if (!confirm(t(msg))) return;
+  if (stationIdx > 0) {
+    try {
+      recordWorkoutSession({ groups: {}, seconds: elapsedSec, calories: estKcal(loadBody().weightKg), xp: 20 });
+    } catch (e) { console.error('quickStart partial quit record failed:', e); }
+  }
   clearVoiceTimeouts();
   stopTimer();
   running = false;

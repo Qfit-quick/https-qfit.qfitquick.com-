@@ -802,8 +802,31 @@ try{
  });
  if(quitBtn && pauseOverlay){
  quitBtn.addEventListener('click', ()=>{
- const msg = t({ko:'정말 운동을 종료할까요? 지금까지 기록은 저장되지 않아요.', en:"Quit this workout? Today's progress won't be saved.", zh:'确定要结束这次训练吗？当前进度不会保存。'});
+ // 세트 사이에 그만두면(missionIndex > 0) 지금까지 끝낸 세트만큼은
+ // 기록에 남긴다 — 2026-09-24 요청. 아직 첫 세트도 못 끝냈으면(0개)
+ // 남길 게 없으니 예전 문구 그대로 "저장되지 않아요"를 쓴다.
+ const doneCount = missionIndex;
+ const msg = doneCount > 0
+ ? t({ko:'정말 운동을 종료할까요? 지금까지 끝낸 ' + doneCount + '세트는 기록에 저장돼요.', en:'Quit this workout? The ' + doneCount + ' set(s) you finished will still be saved.', zh:'确定要结束这次训练吗？已完成的' + doneCount + '组会保存。'})
+ : t({ko:'정말 운동을 종료할까요? 지금까지 기록은 저장되지 않아요.', en:"Quit this workout? Today's progress won't be saved.", zh:'确定要结束这次训练吗？当前进度不会保存。'});
  if(confirm(msg)){
+ if(doneCount > 0){
+ try{
+  const doneMissions = missions.slice(0, doneCount);
+  const groups = {};
+  doneMissions.forEach(m => {
+  const grp = EX_TO_GROUP[m.ex.key];
+  if(grp) groups[grp] = (groups[grp] || 0) + 1;
+  });
+  const seconds = doneMissions.reduce((s, m) => s + m.duration, 0);
+  const weightKg = currentWeightKg();
+  const calories = doneMissions.reduce((s, m) => {
+  const met = (m.ex && m.ex.met) || 6.0;
+  return s + met * 3.5 * weightKg / 200 * (m.duration / 60);
+  }, 0);
+  recordWorkoutSession({ groups, seconds, calories, xp: 20 });
+ }catch(e){ console.error('partial quit record failed:', e); }
+ }
  isPaused = false;
  pauseOverlay.classList.remove('on');
  missionActive = false;
@@ -2197,7 +2220,10 @@ function renderBodyparts(){
  ).join('');
 }
 
-function recordCompletion(){
+// groups 를 안 주면(공용 미션 엔진의 기존 호출) 지금 돌고 있는 missions
+// 전체에서 만든다 — 2026-09-24 이전에는 이 자리에서 직접 만들었다.
+// 다른 화면(amrap.js 등)은 자기 몫만큼만 골라 명시적으로 넘긴다.
+function recordCompletion(groups){
  const today = todayStr();
  const mKey = monthKeyStr();
  myProfile.totalCompletions = (myProfile.totalCompletions||0) + 1;
@@ -2218,12 +2244,15 @@ function recordCompletion(){
  // 예전에는 시각만 남겼다. 부위 비중(FR-12)을 세려면 어떤 동작을 했는지가 있어야 해서
  // {t: 시각, g: {묶음: 세트수}} 로 바꿨다.
  // 옛 기록은 숫자 그대로 남아 있으므로 읽는 쪽이 두 모양을 다 견뎌야 한다.
- const groups = {};
+ const g = groups || (() => {
+ const gg = {};
  (missions || []).forEach(m => {
- const g = EX_TO_GROUP[m.ex.key];
- if(g) groups[g] = (groups[g] || 0) + 1;
+  const grp = EX_TO_GROUP[m.ex.key];
+  if(grp) gg[grp] = (gg[grp] || 0) + 1;
  });
- myProfile.history.unshift({ t: Date.now(), g: groups });
+ return gg;
+ })();
+ myProfile.history.unshift({ t: Date.now(), g });
  myProfile.history = myProfile.history.slice(0, 50);
 
  saveProfile();
@@ -2234,6 +2263,20 @@ function recordCompletion(){
  // 반드시 어긋난다. 기록지가 이 함수를 유일한 출처로 삼는다.
  try{ markWorkoutDone(); }catch(e){ console.error('markWorkoutDone failed:', e); }
  document.dispatchEvent(new CustomEvent('qfit:completed'));
+}
+
+// Cindy·QCE·'3초 후 시작'·타바타 화면이 쓰는 공용 기록 창구(2026-09-24).
+// 그 화면들은 공용 미션 엔진(missions 전역)을 안 쓰므로 각자 계산한
+// groups(부위별 세트 수)·seconds·calories·xp 를 직접 넘긴다. 완주뿐
+// 아니라 중간에 그만뒀을 때도 그때까지 한 만큼을 넘기면 그대로 기록되니,
+// '완주냐 아니냐'는 여기서 가리지 않는다 — 부르는 쪽이 판단한다.
+export function recordWorkoutSession({ groups = {}, seconds = 0, calories = 0, xp = 20 } = {}){
+ recordCompletion(groups);
+ myProfile.totalWorkoutSeconds = (myProfile.totalWorkoutSeconds || 0) + Math.max(0, Math.round(seconds));
+ myProfile.totalCalories = (myProfile.totalCalories || 0) + Math.max(0, Math.round(calories));
+ myProfile.xp = (myProfile.xp || 0) + Math.max(0, Math.round(xp));
+ checkAchievements();
+ saveProfile();
 }
 
 // ---------- SETUP: coach + exercise pickers ----------

@@ -19,10 +19,12 @@
 
 import { CINDY_MOVES } from '../data/programs.js';
 import { EXERCISES } from '../data/exercises.js';
+import { EX_TO_GROUP } from '../data/muscle-groups.js';
 import { clipThumb, disposeClipThumbs } from './clip-thumb.js';
 import { getChallengeIcon } from '../data/challengeIcons.js';
 import { loadBody } from '../health/store.js';
 import { markProgramDayDone } from './programs.js';
+import { recordWorkoutSession } from '../app.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -135,12 +137,28 @@ function estKcal() {
   return Math.max(1, Math.round((avgMet * 3.5 * weightKg) / 200 * elapsedMin));
 }
 
+// 지금까지 돈 라운드 수만큼 세 동작 각각을 그만큼 한 것으로 친다 —
+// 완주든 중간에 그만뒀든(quit()) 이 값을 그대로 쓴다.
+function sessionGroups() {
+  const g = {};
+  moves().forEach((m) => {
+    const grp = EX_TO_GROUP[displayKey(m)];
+    if (grp) g[grp] = (g[grp] || 0) + round;
+  });
+  return g;
+}
+
 function finish() {
   if (finished) return;
   finished = true;
   paused = true;
   stopTimer();
   markProgramDayDone(program.id, dayIndex);
+  if (round > 0) {
+    try {
+      recordWorkoutSession({ groups: sessionGroups(), seconds: capSec - remainSec, calories: estKcal(), xp: 20 });
+    } catch (e) { console.error('amrap record failed:', e); }
+  }
   render();
 }
 
@@ -156,7 +174,15 @@ function renderDone() {
 }
 
 function quit() {
-  if (!confirm(t(S.amrapQuitConfirm))) return;
+  // 라운드를 하나라도 돌았으면 그만큼은 기록에 남는다(2026-09-24) — 문구도
+  // 그에 맞게 바꾼다.
+  const msg = round > 0 ? S.quitConfirmSaved : S.amrapQuitConfirm;
+  if (!confirm(t(msg))) return;
+  if (round > 0) {
+    try {
+      recordWorkoutSession({ groups: sessionGroups(), seconds: capSec - remainSec, calories: estKcal(), xp: 20 });
+    } catch (e) { console.error('amrap partial quit record failed:', e); }
+  }
   stopTimer();
   onShowScreen('programs-screen');
 }
