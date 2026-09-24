@@ -6,9 +6,12 @@
 // (실제 대회의 '완주 기록'과 같은 개념). 그래서 시계는 20분에서 내려가는
 // 게 아니라 0초에서 계속 올라간다 — 라운드도, 대체 동작도 없다.
 //
-// 스테이션마다 목표(예: 45초, 15회)를 보여주지만 자동으로 재거나 세지
-// 않는다 — 이 앱은 원래 카메라도 판정도 없다(FR-02). 사람이 목표를 보고
-// 스스로 하다가 '다음 스테이션'을 눌러 넘긴다.
+// 스테이션마다 목표(예: 45초, 15회)를 보여준다. reps 스테이션은 자동으로
+// 세지 않으므로(이 앱은 원래 카메라도 판정도 없다, FR-02) 사람이 보고
+// 스스로 하다가 '다음 스테이션'을 눌러 넘긴다. 반면 time 스테이션(제자리
+// 달리기·마운틴클라이머)은 목표가 '시간'이라 셀 필요가 없다 — 그래서
+// 2026-09-24 부터 카운트다운을 직접 재고 다 되면 클릭 없이 넘어간다.
+// '다음 스테이션' 버튼은 reps 스테이션에서만 보인다.
 
 import { EXERCISES } from '../data/exercises.js';
 import { clipThumb, disposeClipThumbs } from './clip-thumb.js';
@@ -31,6 +34,7 @@ let program = null;
 let dayIndex = 0;
 let stationIdx = 0;
 let elapsedSec = 0;
+let stationElapsed = 0; // time 스테이션 안에서 지난 초 — reps 스테이션에서는 안 쓴다
 let timerId = null;
 let paused = true;
 let finished = false;
@@ -56,11 +60,27 @@ function tick() {
   if (paused || finished) return;
   elapsedSec++;
   renderClock();
+
+  const st = currentStation();
+  if (st && st.mode === 'time') {
+    stationElapsed++;
+    renderStationTarget();
+    if (stationElapsed >= st.target) nextStation();
+  }
 }
 
 function renderClock() {
   const clockEl = el('circuit-clock');
   if (clockEl) clockEl.textContent = fmtClock(elapsedSec);
+}
+
+function renderStationTarget() {
+  const st = currentStation();
+  const targetEl = el('circuit-move-target');
+  if (!targetEl || !st) return;
+  targetEl.textContent = st.mode === 'time'
+    ? t(S.circuitTimeRemain).replace('%s', Math.max(0, st.target - stationElapsed))
+    : t(S.amrapRepsLabel).replace('%s', st.target);
 }
 
 function render() {
@@ -81,12 +101,7 @@ function render() {
   const nameEl = el('circuit-move-name');
   if (nameEl) nameEl.textContent = t((ex && ex.label) || st.label || { ko: st.key });
 
-  const targetEl = el('circuit-move-target');
-  if (targetEl) {
-    targetEl.textContent = st.mode === 'time'
-      ? t(S.circuitTimeTarget).replace('%s', st.target)
-      : t(S.amrapRepsLabel).replace('%s', st.target);
-  }
+  renderStationTarget();
 
   const shot = el('circuit-move-shot');
   if (shot) {
@@ -102,7 +117,11 @@ function render() {
 
   const isLast = stationIdx >= stations().length - 1;
   const nextBtn = el('circuit-next-btn');
-  if (nextBtn) nextBtn.textContent = t(isLast ? S.circuitFinishBtn : S.circuitNextBtn);
+  if (nextBtn) {
+    // time 스테이션은 카운트다운이 다 되면 알아서 넘어간다 — 누를 게 없다.
+    nextBtn.hidden = st.mode === 'time';
+    nextBtn.textContent = t(isLast ? S.circuitFinishBtn : S.circuitNextBtn);
+  }
 
   const pauseBtn = el('circuit-pause-btn');
   if (pauseBtn) pauseBtn.textContent = t(paused ? S.amrapResumeBtn : S.amrapPauseBtn);
@@ -112,6 +131,7 @@ function nextStation() {
   if (finished) return;
   if (stationIdx >= stations().length - 1) { finish(); return; }
   stationIdx++;
+  stationElapsed = 0;
   render();
 }
 
@@ -165,6 +185,7 @@ export function startCircuit({ program: p, dayIndex: d }) {
   dayIndex = d;
   stationIdx = 0;
   elapsedSec = 0;
+  stationElapsed = 0;
   finished = false;
   paused = false;
 

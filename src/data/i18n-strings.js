@@ -368,7 +368,7 @@ export const STATIC_UI = {
  circuitStationLabel: {ko:'스테이션', en:'Station', zh:'站点'},
  circuitClockLabel: {ko:'경과 시간', en:'Elapsed time', zh:'用时'},
  circuitProgressFmt: {ko:'%s/%s', en:'%s/%s', zh:'%s/%s'},
- circuitTimeTarget: {ko:'%s초', en:'%ss', zh:'%s秒'},
+ circuitTimeRemain: {ko:'%s초 남음', en:'%ss left', zh:'剩 %s 秒'},
  circuitNextBtn: {ko:'다음 스테이션', en:'Next station', zh:'下一个站点'},
  circuitFinishBtn: {ko:'완주!', en:'Finish!', zh:'完赛！'},
  circuitDoneTitle: {ko:'QCE 완주! 🏁', en:'QCE finished! 🏁', zh:'QCE 完赛！🏁'},
