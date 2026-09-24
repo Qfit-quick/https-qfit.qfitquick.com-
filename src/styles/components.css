@@ -527,6 +527,11 @@
 }
 /* 축제 느낌으로 다른 배너들과 색을 구분한다(빨강 대신 보름달 금색). */
 .chuseok-banner button { background: var(--accent); color: var(--on-accent); }
+/* 이 셋만 눌러도 반응이 없었다(2026-09-24) — .primary·.sec2 등 다른 버튼과
+   같은 눌림 효과를 준다. */
+.challenge-invite button:active,
+.reco-banner button:active,
+.chuseok-banner button:active { transform: scale(0.98); }
 
 .install-banner-main { display: flex; align-items: center; gap: var(--s-3); }
 .install-banner-text { flex: 1; min-width: 0; color: var(--text); }
