@@ -258,6 +258,7 @@ body.gated { overflow: hidden; }
   background: var(--mint);
   color: var(--on-mint);
 }
+.plan-tab:active { background: var(--surface-2); }
 
 .plan-pane { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
 

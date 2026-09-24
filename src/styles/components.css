@@ -111,6 +111,9 @@
 .save-routine-btn:active,
 .jump-to-injury-btn:active,
 .install-action-btn:active { transform: scale(0.98); background: var(--surface-2); }
+/* .auth-tab 는 transform 전환까지 걸어 뒀는데 정작 :active 값이 없어서
+   눌러도 그대로였다(2026-09-24 발견). */
+.auth-tab:active { transform: scale(0.98); }
 
 .btn-restart,
 .save-routine-btn { width: 100%; }
@@ -221,6 +224,7 @@
   color: var(--on-accent);
   border-color: var(--accent);
 }
+.voice-toggle-btn:active { transform: scale(0.98); }
 
 /* 친구 초대 배너. 로그인했을 때만 뜬다(익명 상태엔 ?ref= 에 넣을 아이디가
    없다). 카드보다 옅게 — 매번 봐야 하는 목록 위에서 광고처럼 도드라지면
@@ -239,6 +243,7 @@
   text-align: left;
   box-sizing: border-box;
 }
+.invite-friend-card:active { transform: scale(0.98); }
 .invite-icon { font-size: 22px; flex-shrink: 0; }
 .invite-text { min-width: 0; }
 .invite-title { font-size: var(--t-sm); font-weight: 800; color: var(--text); margin-bottom: 2px; }
@@ -591,7 +596,8 @@
 .video-lightbox-close { right: calc(var(--s-3) + env(safe-area-inset-right)); }
 .mute-btn:active,
 .lang-btn:active,
-.pause-btn:active { background: var(--surface-2); }
+.pause-btn:active,
+.video-lightbox-close:active { background: var(--surface-2); }
 
 /* ── 덮는 것 ─────────────────────────────────────────── */
 .pause-overlay,
@@ -1092,6 +1098,7 @@ button.card:active { background: var(--surface-2); }
   color: var(--on-accent);
 }
 .chip:disabled { opacity: 0.4; pointer-events: none; }
+.chip:active { transform: scale(0.96); }
 
 /* 옆으로 굴러가는 한 줄. 스크롤바는 감추되 손가락으로는 밀린다.
    flex:none 이 없으면 세로 flex 인 .screen 안에서 눌려 칩 윗동만 보인다. */
