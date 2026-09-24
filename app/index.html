@@ -180,7 +180,7 @@
  </button>
  <button class="row44 row-accent" id="mode-quick-btn" type="button">
  <span class="row-ic" data-icon="spark"></span>
- <span class="row-main"><span class="row-t" data-i18n="quickModeBtn">10초 후 시작</span><span class="row-d" data-i18n="quickModeSub">난이도만 고르면 끝</span></span>
+ <span class="row-main"><span class="row-t" data-i18n="quickModeBtn">3초 후 시작</span><span class="row-d" data-i18n="quickModeSub">난이도만 고르면 끝</span></span>
  </button>
  <!-- QCE 서킷 빠른 시작(2026-09-21). 프로그램 탭까지 가지 않고 여기서
       바로 시작한다 — 난이도도 요일별 초점도 없는 고정 서킷 하나뿐이라
@@ -196,12 +196,12 @@
  </div>
  </div>
 
- <!-- 난이도 4단계 고르기 시트(2026-09-23). '10초 후 시작'을 누르면
+ <!-- 난이도 4단계 고르기 시트(2026-09-23). '3초 후 시작'을 누르면
       one-min-panel 위에 이 시트가 겹쳐 열린다(openSheet 는 열려 있던
       시트를 알아서 접는다 — ui/sheet.js). 고르면 시트를 닫고 quick-screen
       의 카운트다운으로 넘어간다 — 안쪽은 ui/quickStart.js 가 움직인다. -->
  <div class="quick-level-panel" id="quick-level-panel" style="display:none;">
- <p class="dim" data-i18n="quickLevelHint">고르면 10초 뒤 바로 시작합니다.</p>
+ <p class="dim" data-i18n="quickLevelHint">고르면 3초 뒤 바로 시작합니다.</p>
  <div class="sheet-rows">
  <button class="row44 card" id="quick-level-veryEasy" type="button" data-level="veryEasy">
  <span class="row-main"><span class="row-t" data-i18n="quickLevelVeryEasy">매우 쉬움</span></span>
@@ -437,10 +437,10 @@
  </div>
  </div>
 
- <!-- '10초 후 시작' 실행 화면(2026-09-23, 대규모 교체 — 예전 AI 질문
-      2개 흐름을 대신한다). 홈의 난이도 고르기 시트에서 넘어온다.
-      circuit-screen 과 같은 CSS(.amrap-*)를 그대로 쓴다 — 카운트다운
-      상태 하나가 더 있을 뿐이다. 시연 영상은 아직 없다(나중에 붙는다,
+ <!-- '3초 후 시작' 실행 화면(2026-09-23 대규모 교체, 2026-09-23 타이머·
+      휴식·음성 추가). 홈의 난이도 고르기 시트에서 넘어온다.
+      circuit-screen 과 같은 CSS(.amrap-*)를 그대로 쓴다 — 카운트다운·
+      휴식 상태가 더 있을 뿐이다. 시연 영상은 아직 없다(나중에 붙는다,
       data/difficultyExercises.js 머리 설명 참고) — 그래서 사진·영상
       자리 없이 계열·동작 이름만 큰 글자로 보여준다. 안쪽은
       src/ui/quickStart.js 가 움직인다. -->
@@ -448,19 +448,19 @@
  <div id="quick-countdown" class="quick-cd">
  <div class="cd-mid">
  <div class="kick" id="quick-countdown-level"></div>
- <div id="quick-countdown-num" aria-live="assertive">10</div>
+ <div id="quick-countdown-num" aria-live="assertive">3</div>
  <p class="cd-cue" data-i18n="countdownCue">자리를 잡으세요</p>
  </div>
  <div class="cd-foot">
  <button class="sec2" id="quick-countdown-cancel-btn" data-i18n="cancelBtn">취소</button>
  </div>
  </div>
- <!-- run·done 두 상태 모두에 걸쳐 보인다(circuit-screen 과 같은 모양 —
-      거기는 이 머리가 화면 최상단에 한 번만 있고 run/done 을 안 가린다).
-      완주 화면에서도 뒤로 나갈 길이 있어야 한다. -->
+ <!-- run·rest·done 세 상태 모두에 걸쳐 보인다(circuit-screen 과 같은
+      모양 — 거기는 이 머리가 화면 최상단에 한 번만 있고 나머지를 안
+      가린다). 완주 화면에서도 뒤로 나갈 길이 있어야 한다. -->
  <div class="amrap-head" id="quick-head" hidden>
  <button class="hd-back" type="button" id="quick-back-btn" aria-label="뒤로" data-icon="back"></button>
- <h2 class="hd-title" id="quick-title">10초 후 시작</h2>
+ <h2 class="hd-title" id="quick-title">3초 후 시작</h2>
  </div>
  <div id="quick-run" hidden>
  <div class="amrap-stats">
@@ -473,9 +473,25 @@
  <b class="big amrap-clock" id="quick-clock">00:00</b>
  </div>
  </div>
+ <!-- 동작 표시와 휴식 표시가 같은 자리를 번갈아 쓴다 — 일시정지·종료는
+      휴식 중에도 그대로 눌려야 하므로 amrap-foot 밖에 둔다. -->
+ <div id="quick-move-group">
  <p class="dim" id="quick-move-family"></p>
  <h3 class="amrap-move-name" id="quick-move-name">동작</h3>
+ <!-- 이 스테이션에 남은 초. 다 되면 자동으로 다음으로 넘어간다 —
+      QCE 서킷과 다르게 여기는 목표 시간이 있다(2026-09-23 요청). -->
+ <p class="amrap-move-reps" id="quick-move-timer">10초</p>
  <button type="button" class="primary amrap-next-btn" id="quick-next-btn" data-i18n="circuitNextBtn">다음 스테이션</button>
+ </div>
+ <!-- 4스테이션마다 한 번(2026-09-23 요청). game-screen 의 세트 사이
+      휴식(.rest-wrap 등)과 같은 모양을 그대로 쓴다 — 다 쉬어도 저절로
+      안 넘어간다(그 화면의 이유와 같다: 물 마시러 간 사이에 한
+      스테이션이 그냥 지나가면 안 된다). 어디를 눌러도 바로 건너뛴다. -->
+ <div class="rest-wrap" id="quick-rest-wrap" hidden role="button" tabindex="0">
+ <span class="rest-logo" aria-hidden="true">Q-fit<i class="logo-dot">.</i></span>
+ <b class="rest-num" id="quick-rest-num">11</b>
+ <span class="rest-go" id="quick-rest-go" hidden data-i18n="restTap">화면을 눌러 시작</span>
+ </div>
  <div class="amrap-foot">
  <button type="button" class="sec2" id="quick-pause-btn" data-i18n="amrapPauseBtn">일시정지</button>
  <button type="button" class="sec2 sec2-danger" id="quick-quit-btn" data-i18n="amrapQuitBtn">종료</button>

@@ -32,7 +32,7 @@ export const STATIC_UI = {
  // 예전 'AI로 시작하기'(질문 2개 → 추천) 자리. 2026-09-23 대규모 교체로
  // 난이도 4단계 고르기로 바뀌었다 — ui/quickStart.js 참고. 옛 문구가 남긴
  // 자리를 그대로 새 키로 쓴다.
- quickModeBtn: {ko:'10초 후 시작', en:'Starts in 10s', zh:'10秒后开始'},
+ quickModeBtn: {ko:'3초 후 시작', en:'Starts in 3s', zh:'3秒后开始'},
  quickModeSub: {ko:'난이도만 고르면 끝', en:'Just pick a level', zh:'选个难度就行'},
  routinesTitle: {ko:'저장한 루틴', en:'Saved Routines', zh:'已保存的方案'},
  routinesEmpty: {ko:'아직 저장한 루틴이 없습니다.', en:"You haven't saved any routines yet.", zh:'还没有保存过方案。'},
@@ -282,7 +282,7 @@ export const STATIC_UI = {
  // 이름은 challengeTracks.js 와 같은 이유로 한국어 전용이라 여기 안 넣는다
  // (data/difficultyExercises.js 머리 설명 참고).
  quickLevelSheetTitle: {ko:'오늘 난이도를 골라주세요', en:"Pick today's difficulty", zh:'请选择今天的难度'},
- quickLevelHint: {ko:'고르면 10초 뒤 바로 시작합니다.', en:'Starts automatically 10 seconds after you pick.', zh:'选择后10秒自动开始。'},
+ quickLevelHint: {ko:'고르면 3초 뒤 바로 시작합니다.', en:'Starts automatically 3 seconds after you pick.', zh:'选择后3秒自动开始。'},
  quickLevelVeryEasy: {ko:'매우 쉬움', en:'Very Easy', zh:'非常简单'},
  quickLevelEasy: {ko:'쉬움', en:'Easy', zh:'简单'},
  quickLevelHard: {ko:'어려움', en:'Hard', zh:'难'},

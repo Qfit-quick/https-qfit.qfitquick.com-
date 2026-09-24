@@ -671,7 +671,7 @@ function pickEnergeticVoice(){
  const sorted = pool.slice().sort((a,b)=> scoreOf(b) - scoreOf(a));
  return sorted[0];
 }
-function speakExercise(label, cue){
+export function speakExercise(label, cue){
  if(Sound.isMuted()) return;
  if(!window.speechSynthesis) return;
  try{
@@ -716,7 +716,7 @@ function speakTip(tipText){
  window.speechSynthesis.speak(u);
  }catch(e){}
 }
-function speakMotivation(){
+export function speakMotivation(){
  if(Sound.isMuted()) return;
  if(!window.speechSynthesis) return;
  try{
