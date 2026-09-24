@@ -76,7 +76,9 @@ export const STATIC_UI = {
  inappDismiss: {ko:'그냥 계속하기 (소리 없이)', en:'Continue anyway (no sound)', zh:'仍然继续（无声音）'},
  movesBtn: {ko:'운동동작 소개', en:'Exercise Guide', zh:'动作介绍'},
  recoveryBtn: {ko:'회복 · SOS', en:'Recovery · SOS', zh:'恢复 · SOS'},
- chatbotBtn: {ko:'챗봇', en:'Chatbot', zh:'聊天机器人'},
+ // 실제 대화형 AI 가 아니라 키워드 검색에 가까워서(chatbot-screen 머리
+ // 설명 참고) 2026-09-24 에 이름을 그 성격에 맞게 바꿨다.
+ chatbotBtn: {ko:'검색하기(챗봇)', en:'Search (Chatbot)', zh:'搜索（聊天机器人）'},
  chatbotTitle: {ko:'챗봇', en:'Chatbot', zh:'聊天机器人'},
  chatbotPlaceholder: {ko:'궁금한 걸 물어보세요', en:'Ask me something', zh:'想问点什么？'},
  chatbotGreeting: {ko:'안녕하세요! 부위별 대처법, 회복 습관, 운동 방법, 업적, 프로그램, 음식 칼로리, 앱 사용법을 물어보세요.', en:"Hi! Ask me about injury care by body part, recovery habits, exercises, achievements, programs, food calories, or how the app works.", zh:'你好！可以问我部位处理方法、恢复习惯、运动方法、成就、训练计划、食物热量或使用方法。'},
@@ -606,7 +608,8 @@ export const STATIC_UI = {
  // '물·체중'만 위의 운동·식단 체크와 달리 아무 설명 없이 병 그림과 입력칸부터
  // 나왔다 — 눌러도 위 '오늘 상태'는 안 바뀌니 뭐 하는 칸인지 몰라 헤맨다는
  // 피드백(2026-09-15). 식단 칸의 logDietRule 처럼 kick 바로 아래 한 줄을 둔다.
- logExtraNote: {ko:'위 체크 표시에는 들어가지 않습니다 — 물은 그날 마신 양을, 체중은 변화 추이를 남겨 두는 자리입니다.', en:"These don't count toward the check-off above — water logs how much you drank today, weight tracks the trend over time.", zh:'不计入上面的打勾状态 — 饮水记录当天喝了多少，体重记录变化趋势。'},
+ // 2026-09-24 요청으로 설명문 대신 물 권장량 한 줄로 바꿨다.
+ logExtraNote: {ko:'하루 2리터 권장합니다.', en:'2 liters a day is recommended.', zh:'建议每天 2 升。'},
  logWater: {ko:'물', en:'Water', zh:'饮水'},
  logSteps: {ko:'만보기', en:'Steps', zh:'步数'},
  logStepsUnit: {ko:'보', en:' steps', zh:'步'},
