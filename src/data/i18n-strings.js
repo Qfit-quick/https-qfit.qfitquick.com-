@@ -618,6 +618,12 @@ export const STATIC_UI = {
  logStepsMeasureStop: {ko:'측정 중지', en:'Stop', zh:'停止测量'},
  logStepsMeasuring: {ko:'측정 중입니다 — 폰을 들고 걸어보세요. 화면을 벗어나면 멈춰요.', en:"Measuring — walk with your phone. It stops if you leave this screen.", zh:'正在测量——带着手机走动吧。离开本页面会停止。'},
  logStepsUnsupported: {ko:'이 기기·브라우저에서는 걸음 측정을 지원하지 않아요. 숫자는 직접 적을 수 있어요.', en:"This device/browser doesn't support step measuring. You can still type the number.", zh:'此设备/浏览器不支持计步，但仍可手动输入步数。'},
+ // Google Fit 연동(2026-09-24, 안드로이드 전용 — health/googleFit.js 참고).
+ logStepsGfitConnect: {ko:'Google Fit 연동하기', en:'Connect Google Fit', zh:'连接 Google Fit'},
+ logStepsGfitConnecting: {ko:'연동 중…', en:'Connecting…', zh:'连接中…'},
+ logStepsGfitConnected: {ko:'Google Fit 연동됨 — 들고만 다녀도 기록돼요', en:'Google Fit connected — just carry your phone', zh:'已连接 Google Fit — 只要带着手机就会记录'},
+ logStepsGfitDisconnect: {ko:'연동 해제', en:'Disconnect', zh:'取消连接'},
+ logStepsGfitNote: {ko:'Google Fit에서 오늘 걸음 수를 가져와요. 이 화면을 안 열어도 계속 기록돼요.', en:"Pulls today's steps from Google Fit — keeps counting even with this screen closed.", zh:'从 Google Fit 获取今天的步数 — 即使不打开此页面也会持续记录。'},
  logWeight: {ko:'오늘 체중', en:'Weight today', zh:'今日体重'},
  logWeightNote: {ko:'여기 적으면 신체정보의 체중도 같이 바뀝니다 — 계획이 옛 체중으로 계산되지 않게.', en:'Entering it here also updates your body info, so the plan is never calculated from an old weight.', zh:'在这里填写会同时更新身体信息，避免计划用旧体重计算。'},
  logWeightChartTitle: {ko:'체중 변화', en:'Weight trend', zh:'体重变化'},

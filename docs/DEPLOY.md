@@ -146,6 +146,39 @@ workers.dev 주소의 가운데(계정 서브도메인)는 대시보드에서 �
 - 또는 그 계정의 DNS 에서 `qfit` 을 `qfit.github.io` 로 CNAME.
   Pages 는 이미 최신을 서빙 중이므로 이쪽이 더 빠르다.
 
+## Google Fit 연동 (2026-09-24)
+
+만보기가 화면을 열어 둔 동안만 재는 문제를 안드로이드에서 없애려고
+`src/health/googleFit.js` 를 추가했다 — 폰이 이미 백그라운드로 돌리는
+Google Fit 걸음 기록을 읽어 온다(iOS 는 애플이 안 열어줘서 불가능,
+그 파일 머리 설명 참고).
+
+**지금 상태: `CLIENT_ID` 가 빈 문자열이라 기능이 꺼져 있다.** 코드는
+다 됐고, Google Cloud Console 에서 OAuth 클라이언트를 만들어 그
+파일에 채우기만 하면 된다 — 아래는 그 절차다.
+
+1. [Google Cloud Console](https://console.cloud.google.com/) 에서 프로젝트를
+   만들거나 고른다.
+2. **API 및 서비스 → 라이브러리** 에서 **Fitness API** 를 검색해 사용
+   설정한다.
+3. **API 및 서비스 → OAuth 동의 화면** — User type `외부`, 앱 이름·이메일
+   입력, 범위(scopes)에 `https://www.googleapis.com/auth/fitness.activity.read`
+   추가. 심사(verification) 전에는 테스트 사용자만 쓸 수 있다 — 일반
+   공개하려면 구글의 민감한 범위 심사를 받아야 한다(수일~수주 걸릴 수
+   있다).
+4. **API 및 서비스 → 사용자 인증 정보 → 사용자 인증 정보 만들기 →
+   OAuth 클라이언트 ID** — 애플리케이션 유형 **웹 애플리케이션**,
+   **승인된 자바스크립트 원본**에 `https://qfit.qfitquick.com` 추가.
+   (client secret 은 필요 없다 — 이 흐름은 프론트에서 액세스 토큰만
+   받는 implicit flow 라 secret 을 안 쓴다.)
+5. 발급된 **클라이언트 ID**를 `src/health/googleFit.js` 의 `CLIENT_ID`
+   에 붙여넣고 배포한다.
+
+클라이언트 ID는 시크릿이 아니다(웹 앱용 OAuth 클라이언트 ID는 원래
+프론트 코드에 그대로 노출되는 값이다 — `cloud/supabase.js` 의
+anon key 와 같은 성격) — 그래서 GitHub Secrets 가 아니라 소스에 직접
+적는다.
+
 ## workers.dev 주소의 `monster-rpg` 는 무엇인가
 
 워커에 들어간 것이 아니다. **계정 전체의 workers.dev 서브도메인 이름**이고,

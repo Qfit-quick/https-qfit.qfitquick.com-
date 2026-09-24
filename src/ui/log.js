@@ -17,6 +17,7 @@ import { MOOD_OPTIONS, DRIVE_OPTIONS } from '../data/checkin.js';
 import { nutritionPlan, mealPlan } from '../data/plan.js';
 import { ICON } from './icons.js';
 import { moodUrl, driveUrl } from '../core/assets.js';
+import { isGoogleFitAvailable, isGoogleFitConnected, connectGoogleFit, disconnectGoogleFit, fetchTodaySteps } from '../health/googleFit.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -193,6 +194,32 @@ async function toggleStepMeasure(date) {
   if (note) note.textContent = t(S.logStepsMeasuring);
 }
 
+// Google Fit 자동 동기화(2026-09-24). 연동돼 있고 오늘 날짜를 보고 있으면
+// paintExtra() 가 그릴 때마다 조용히 한 번 불러온다 — 버튼을 또 누르게
+// 하지 않아야 '들고만 다녀도' 되는 느낌이 산다. gfitSyncing 가드로 겹쳐
+// 부르지 않는다(fetchTodaySteps 가 네트워크+조용한 OAuth 재발급을 거쳐
+// 좀 걸릴 수 있다).
+let gfitSyncing = false;
+async function syncGoogleFitSteps(date) {
+  if (gfitSyncing) return;
+  gfitSyncing = true;
+  try {
+    const steps = await fetchTodaySteps();
+    if (steps != null) {
+      if (steps !== (loadDay(date).steps || 0)) {
+        saveDay(date, { steps });
+        paintExtra(date);
+      }
+    } else if (!isGoogleFitConnected()) {
+      // fetchTodaySteps 가 토큰 재발급 실패로 연동을 스스로 끊었다 —
+      // 화면을 다시 그려 '연동하기' 버튼이 돌아오게 한다.
+      paintExtra(date);
+    }
+  } finally {
+    gfitSyncing = false;
+  }
+}
+
 function shortDate(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
   return t({
@@ -275,27 +302,44 @@ function paintExtra(dateStr) {
     '</div>' +
     '</div>';
 
-  // 만보기(2026-09-17). 폰 브라우저는 기기 자체의 걸음 센서(구글 핏·헬스 앱이
-  // 쓰는 것)에 접근할 방법이 없다 — 그래서 두 가지를 같이 둔다: ①숫자를
-  // 직접 적기(폰의 걸음 수 앱을 보고 옮겨 적는 용도), ②"측정" 버튼으로
-  // 이 화면이 열려 있는 동안만 가속도 센서로 대략 세는 보조 기능. ②는
-  // 화면을 벗어나거나 잠그면 멈춘다 — 진짜 만보기처럼 하루 종일 백그라운드로
-  // 세는 것은 웹에서 불가능하다는 것을 숨기지 않는다.
+  // 만보기(2026-09-17, Google Fit 연동은 2026-09-24). 폰 브라우저는 화면을
+  // 벗어나거나 잠그면 기기 센서 접근이 끊긴다 — 웹 기술만으로는 진짜
+  // 백그라운드 만보기가 안 된다. 그래서 세 갈래다: ①숫자 직접 적기,
+  // ②이 화면을 열어 둔 동안만 가속도 센서로 대략 세는 보조 기능,
+  // ③(안드로이드 한정) 폰이 이미 백그라운드로 돌리고 있는 Google Fit
+  // 기록을 읽어 오는 진짜 연동 — 이건 '들고만 다녀도' 된다. iOS 는
+  // 애플이 Health 데이터를 웹에 안 열어줘서 ③이 없다(health/googleFit.js
+  // 머리 설명 참고) — ①·②만 그대로 둔다.
   const steps = Math.max(0, day.steps || 0);
   const stepsPct = Math.min(100, Math.round((steps / STEPS_TARGET) * 100));
+  const gfitOn = isGoogleFitConnected();
   html += '<div class="log-steps-row">' +
     '<span class="log-water-head">' +
     `<span class="log-water-l">${esc(t(S.logSteps))}</span>` +
     `<span class="log-water-n">${steps.toLocaleString()}${esc(t(S.logStepsUnit))} <span class="dim">/ ${STEPS_TARGET.toLocaleString()}${esc(t(S.logStepsUnit))}</span></span>` +
     '</span>' +
-    '<div class="log-steps-bar"><div class="log-steps-fill" style="width:' + stepsPct + '%"></div></div>' +
-    '<div class="log-steps-controls">' +
-    '<span class="inp-wrap log-steps-inp-wrap">' +
-    `<input class="inp" id="log-steps-input" type="number" inputmode="numeric" min="0" max="99999" step="1" value="${steps || ''}" placeholder="0">` +
-    `<span class="inp-unit">${esc(t(S.logStepsUnit))}</span></span>` +
-    `<button type="button" class="sec2 log-steps-measure-btn" id="log-steps-measure-btn">${esc(t(S.logStepsMeasureStart))}</button>` +
-    '</div>' +
-    `<p class="dim log-note" id="log-steps-note">${esc(t(S.logStepsNote))}</p>` +
+    '<div class="log-steps-bar"><div class="log-steps-fill" style="width:' + stepsPct + '%"></div></div>';
+
+  if (gfitOn) {
+    // 연동됐으면 Google Fit 값이 유일한 출처다 — 손으로 적는 칸·가속도
+    // 측정 버튼을 같이 두면 둘이 다른 숫자를 말할 수 있다.
+    html += '<div class="log-steps-controls log-steps-gfit-on">' +
+      `<span class="dim log-steps-gfit-status">${esc(t(S.logStepsGfitConnected))}</span>` +
+      `<button type="button" class="link-btn log-steps-gfit-off-btn" id="log-steps-gfit-off-btn">${esc(t(S.logStepsGfitDisconnect))}</button>` +
+      '</div>';
+  } else {
+    html += '<div class="log-steps-controls">' +
+      '<span class="inp-wrap log-steps-inp-wrap">' +
+      `<input class="inp" id="log-steps-input" type="number" inputmode="numeric" min="0" max="99999" step="1" value="${steps || ''}" placeholder="0">` +
+      `<span class="inp-unit">${esc(t(S.logStepsUnit))}</span></span>` +
+      `<button type="button" class="sec2 log-steps-measure-btn" id="log-steps-measure-btn">${esc(t(S.logStepsMeasureStart))}</button>` +
+      '</div>';
+    if (isGoogleFitAvailable()) {
+      html += `<button type="button" class="link-btn log-steps-gfit-on-btn" id="log-steps-gfit-on-btn">${esc(t(S.logStepsGfitConnect))}</button>`;
+    }
+  }
+  html +=
+    `<p class="dim log-note" id="log-steps-note">${esc(t(gfitOn ? S.logStepsGfitNote : S.logStepsNote))}</p>` +
     '</div>';
 
   // 오늘 체중. 여기서 적으면 신체정보의 체중도 같이 바뀐다 — 두 곳에 따로
@@ -328,6 +372,10 @@ function paintExtra(dateStr) {
   }
 
   box.innerHTML = html;
+
+  // 오늘 날짜를 보고 있고 연동돼 있으면 조용히 최신 걸음 수를 가져온다 —
+  // 지난 날짜는 건드리지 않는다(Google Fit 이 오늘 것만 준다).
+  if (gfitOn && dateStr === dayKey()) syncGoogleFitSteps(dateStr);
 }
 
 // ── 최근 14일 스트립 ──────────────────────────────────────────
@@ -507,6 +555,21 @@ export function initLog({ translate, STATIC_UI, onShowScreen } = {}) {
 
       if (e.target.closest('#log-steps-measure-btn')) {
         toggleStepMeasure(date);
+        return;
+      }
+      if (e.target.closest('#log-steps-gfit-on-btn')) {
+        const btn = e.target.closest('#log-steps-gfit-on-btn');
+        btn.disabled = true;
+        btn.textContent = t(S.logStepsGfitConnecting);
+        connectGoogleFit()
+          .then(() => syncGoogleFitSteps(date))
+          .catch((err) => console.error('Google Fit connect failed:', err))
+          .then(() => paintExtra(date));
+        return;
+      }
+      if (e.target.closest('#log-steps-gfit-off-btn')) {
+        disconnectGoogleFit();
+        paintExtra(date);
         return;
       }
     });

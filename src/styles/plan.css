@@ -725,6 +725,13 @@ body.gated { overflow: hidden; }
 .log-steps-controls .inp { padding: 0 34px 0 12px; text-align: right; }
 .log-steps-measure-btn { flex: none; min-height: var(--tap); white-space: nowrap; }
 
+/* Google Fit 연동(2026-09-24). 연동 전 링크는 칸 아래 왼쪽에 작게,
+   연동 후에는 상태 글자와 해제 링크를 양 끝으로 벌린다. */
+.log-steps-gfit-on-btn { align-self: flex-start; padding-left: 0; }
+.log-steps-gfit-on { justify-content: space-between; }
+.log-steps-gfit-status { flex: 1 1 auto; min-width: 0; }
+.log-steps-gfit-off-btn { flex: none; padding-right: 0; }
+
 .log-weight-row { display: flex; align-items: center; gap: var(--s-3); }
 .log-weight-row .inp-wrap { flex: 1 1 auto; min-width: 0; }
 /* 아이콘 자리로 비워 둔 왼쪽 40px 을 되돌린다(신체정보 칸과 같은 이유). */
