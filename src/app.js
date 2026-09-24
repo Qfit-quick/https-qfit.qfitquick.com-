@@ -4411,19 +4411,51 @@ try{
  if(weekendBanner && [0,6].includes(new Date().getDay())){ weekendBanner.style.display = 'block'; }
 }catch(e){ console.error('weekend banner setup failed:', e); }
 
+// ---------- 추석 이벤트 배너 (2026-09-24, 이번 주 일요일까지 한정) ----------
+// 날짜만 다르고 나머지 구조는 reco-banner 와 같다 — 무작위 부위 대신
+// 고정된 동작 조합(전신을 크게 움직이는, "재밌는" 쪽)을 pickModeAndGo 로
+// 넘긴다. 프리미엄·통증 회피 필터는 reco-banner 와 동일하게 적용한다 —
+// 이벤트라고 그 규칙을 건너뛸 이유가 없다.
+let chuseokBannerShown = false;
+try{
+ const chuseokBanner = document.getElementById('chuseok-banner');
+ const chuseokBtn = document.getElementById('chuseok-banner-btn');
+ const CHUSEOK_EVENT_END = '2026-09-27'; // 이번 주 일요일
+ if(chuseokBanner && chuseokBtn && todayStr() <= CHUSEOK_EVENT_END){
+ let pool = ['BURPEE', 'JUMPSQUAT', 'RUNINPLACE', 'ARMYCRAWL'].filter(k=>{
+  const ex = EXERCISES.find(e=>e.key===k);
+  return ex && (!ex.premium || myProfile.isPremium);
+ });
+ if(painArea){
+  const avoided = avoidedKeys();
+  const safe = pool.filter(k=> !avoided.has(k));
+  if(safe.length) pool = safe;
+ }
+ if(pool.length){
+  chuseokBanner.style.display = 'flex';
+  chuseokBannerShown = true;
+  chuseokBtn.addEventListener('click', ()=>{
+   Sound.unlock();
+   pickModeAndGo(pool);
+  });
+ }
+ }
+}catch(e){ console.error('chuseok banner setup failed:', e); }
+
 // ---------- 오늘의 추천 배너 (광고 느낌, 가끔만) ----------
 // 매번 뜨면 광고가 아니라 잔소리다 — 45% 확률로만 보여준다. 오늘 이미
 // 한 판 했으면 안 보여준다(이미 한 사람한테 "오늘 이거 어때요"는 할 말이
 // 아니다). 부위 하나를 무작위로 골라 그 부위 동작 중 몇 개를 미리
 // 채워서 랜덤 선택(mode-random)과 같은 문(pickModeAndGo)으로 보낸다 —
 // 누르면 바로 설정 화면이고, 거기 '시작'을 누르면 진행된다.
+// 추석 배너가 떴으면 성격이 겹치니 같이 띄우지 않는다.
 try{
  const recoBanner = document.getElementById('reco-banner');
  const recoTitle = document.getElementById('reco-banner-title');
  const recoSub = document.getElementById('reco-banner-sub');
  const recoBtn = document.getElementById('reco-banner-btn');
  const playedToday = myProfile.lastPlayDate === todayStr();
- if(recoBanner && recoTitle && recoSub && recoBtn && !playedToday && Math.random() < 0.45){
+ if(recoBanner && recoTitle && recoSub && recoBtn && !chuseokBannerShown && !playedToday && Math.random() < 0.45){
  const group = MUSCLE_GROUPS[Math.floor(Math.random() * MUSCLE_GROUPS.length)];
  let pool = group.keys.filter(k=>{
   const ex = EXERCISES.find(e=>e.key===k);

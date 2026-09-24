@@ -495,6 +495,7 @@
 .weekend-banner,
 .challenge-invite,
 .reco-banner,
+.chuseok-banner,
 .install-banner,
 .result-recovery-tip {
   display: flex;
@@ -514,7 +515,8 @@
 .result-recovery-tip b { color: var(--text); font-weight: 700; }
 .ci-title { font-weight: 700; font-size: var(--t-md); color: var(--text); }
 .challenge-invite button,
-.reco-banner button {
+.reco-banner button,
+.chuseok-banner button {
   align-self: flex-start;
   min-height: var(--tap);
   padding: 0 var(--s-4);
@@ -523,6 +525,8 @@
   color: var(--on-hot);
   font-weight: 700;
 }
+/* 축제 느낌으로 다른 배너들과 색을 구분한다(빨강 대신 보름달 금색). */
+.chuseok-banner button { background: var(--accent); color: var(--on-accent); }
 
 .install-banner-main { display: flex; align-items: center; gap: var(--s-3); }
 .install-banner-text { flex: 1; min-width: 0; color: var(--text); }

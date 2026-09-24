@@ -186,6 +186,10 @@ export const STATIC_UI = {
  weekendBanner: {ko:'주말 한정! 오늘 완주하면 XP 2배', en:'Weekend only — finish today for 2x XP', zh:'周末限定！今天完成可得双倍XP'},
  recoBannerTitle: {ko:'오늘은 %s 어때요?', en:'How about %s today?', zh:'今天来点%s怎么样？'},
  recoBannerBtn: {ko:'지금 시작', en:'Start now', zh:'现在开始'},
+ // 추석 이벤트 배너(2026-09-24, 이번 주 일요일까지 한정 — app.js 부팅부 참고).
+ chuseokBannerTitle: {ko:'🌕 추석 이벤트 큐핏', en:'🌕 Chuseok Event Q-fit', zh:'🌕 中秋活动 Q-fit'},
+ chuseokBannerSub: {ko:'차례상 차리기 전에 몸부터 풀자 — 이번 주 일요일까지', en:'Loosen up before the feast — this Sunday only', zh:'摆桌前先活动一下 — 仅限本周日之前'},
+ chuseokBannerBtn: {ko:'이벤트 운동 시작', en:'Start event workout', zh:'开始活动运动'},
  moreLink: {ko:'내 기록 · 루틴 더보기', en:'Records · Routines · More', zh:'记录 · 方案 · 更多'},
  aiEyebrow: {ko:'AI 루틴', en:'AI Routine', zh:'AI方案'},
  aiQ1: {ko:'오늘 목표가 무엇입니까?', en:'What\'s your goal today?', zh:'今天的目标是什么？'},
