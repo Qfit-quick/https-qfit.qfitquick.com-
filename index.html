@@ -50,8 +50,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-C4MOr0_2.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-Be0dOqt_.css">
+  <script type="module" crossorigin src="./assets/index-D14ljmSy.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-6ru1bjl8.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -390,11 +390,29 @@
  <b class="big amrap-clock" id="amrap-clock">20:00</b>
  </div>
  </div>
- <div class="amrap-move-shot" id="amrap-move-shot"></div>
- <h3 class="amrap-move-name" id="amrap-move-name">풀업</h3>
- <p class="amrap-move-reps" id="amrap-move-reps">5회</p>
+ <!-- 세 동작을 한 번에 삼각형으로(2026-09-24 요청 — '다음 동작'을
+      눌러 하나씩 넘기지 않는다. 위 꼭짓점·왼쪽 아래·오른쪽 아래 순).
+      Cindy 가 정확히 세 동작(풀업·푸쉬업·스쿼트)이라 자연스럽게
+      맞는다 — 다른 AMRAP 프로그램이 생기면 이 모양을 다시 봐야 한다. -->
+ <div class="amrap-triangle" id="amrap-triangle">
+ <div class="amrap-tri-vertex amrap-tri-top">
+ <span class="amrap-tri-shot" id="amrap-tri-shot-0"></span>
+ <span class="amrap-tri-name" id="amrap-tri-name-0">풀업</span>
+ <span class="amrap-tri-reps" id="amrap-tri-reps-0">5회</span>
+ </div>
+ <div class="amrap-tri-vertex amrap-tri-left">
+ <span class="amrap-tri-shot" id="amrap-tri-shot-1"></span>
+ <span class="amrap-tri-name" id="amrap-tri-name-1">푸쉬업</span>
+ <span class="amrap-tri-reps" id="amrap-tri-reps-1">10회</span>
+ </div>
+ <div class="amrap-tri-vertex amrap-tri-right">
+ <span class="amrap-tri-shot" id="amrap-tri-shot-2"></span>
+ <span class="amrap-tri-name" id="amrap-tri-name-2">스쿼트</span>
+ <span class="amrap-tri-reps" id="amrap-tri-reps-2">15회</span>
+ </div>
+ </div>
  <button type="button" class="sec2 amrap-sub-btn" id="amrap-sub-btn" hidden data-i18n="amrapSubBtn">철봉이 없어요 → 버피로</button>
- <button type="button" class="primary amrap-next-btn" id="amrap-next-btn" data-i18n="amrapNextBtn">다음 동작</button>
+ <button type="button" class="primary amrap-next-btn" id="amrap-round-done-btn" data-i18n="amrapRoundDoneBtn">라운드 완료</button>
  <div class="amrap-foot">
  <button type="button" class="sec2" id="amrap-pause-btn" data-i18n="amrapPauseBtn">일시정지</button>
  <button type="button" class="sec2 sec2-danger" id="amrap-quit-btn" data-i18n="amrapQuitBtn">종료</button>

@@ -345,14 +345,20 @@ export const STATIC_UI = {
  amrapRoundLabel: {ko:'라운드', en:'Round', zh:'轮次'},
  amrapClockLabel: {ko:'남은 시간', en:'Time left', zh:'剩余时间'},
  amrapRepsLabel: {ko:'%s회', en:'×%s reps', zh:'%s次'},
- amrapNextBtn: {ko:'다음 동작', en:'Next move', zh:'下一个动作'},
+ // 예전엔 '다음 동작'을 눌러 셋을 하나씩 넘겼다. 이제 셋을 삼각형으로
+ // 한 번에 보여주므로(2026-09-24 요청), 이 버튼은 한 바퀴(세 동작)를
+ // 다 했다는 뜻이다.
+ amrapRoundDoneBtn: {ko:'라운드 완료', en:'Round done', zh:'完成一轮'},
  amrapSubBtn: {ko:'철봉이 없어요 → 버피로', en:'No bar? Switch to burpees', zh:'没有单杠 → 换成波比跳'},
  amrapPauseBtn: {ko:'일시정지', en:'Pause', zh:'暂停'},
  amrapResumeBtn: {ko:'계속하기', en:'Resume', zh:'继续'},
  amrapQuitBtn: {ko:'종료', en:'Quit', zh:'结束'},
  amrapQuitConfirm: {ko:'정말 종료할까요? 지금까지의 라운드는 기록되지 않아요.', en:'Quit for real? This session will not be recorded.', zh:'确定要结束吗？本次记录不会保存。'},
  amrapDoneTitle: {ko:'Cindy 완료! 🎉', en:'Cindy complete! 🎉', zh:'Cindy 完成！🎉'},
- amrapDoneRounds: {ko:'%s라운드 + %s동작 완료', en:'%s rounds + %s more moves', zh:'完成%s轮 + %s个动作'},
+ // 세 동작을 삼각형으로 한 번에 보여주면서(2026-09-24) '라운드 완료'
+ // 단위로만 세게 됐다 — 라운드 중간에 시간이 다 됐어도 몇 동작째였는지는
+ // 더는 모른다(그 값을 몰라도 되는 화면 구조로 바뀌었다).
+ amrapDoneRounds: {ko:'%s라운드 완료', en:'%s rounds complete', zh:'完成%s轮'},
  amrapDoneKcal: {ko:'약 %skcal 소모', en:'About %s kcal burned', zh:'约消耗%s千卡'},
  amrapConfirmBtn: {ko:'확인', en:'OK', zh:'确定'},
 

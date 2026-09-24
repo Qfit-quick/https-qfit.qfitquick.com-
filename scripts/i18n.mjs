@@ -70,8 +70,12 @@ const FILLED_BY_JS = new Set([
   'rec-total', 'rec-total-time', 'neon-avatar-label', 'warmup-video-error',
   'ex-name', 'ex-cue', 'result-time-val', 'final-sub', 'final-rank',
   // Cindy AMRAP(src/ui/amrap.js) — 마크업의 한글은 자리만 잡아 둔 예시값이고
-  // 실제 값은 render()/renderDone() 이 매번 새로 채운다.
-  'amrap-move-name', 'amrap-move-reps', 'amrap-done-rounds', 'amrap-done-kcal',
+  // 실제 값은 render()/renderDone() 이 매번 새로 채운다. 세 꼭짓점
+  // (2026-09-24, 삼각형으로 교체) 셋 다 마찬가지다.
+  'amrap-tri-name-0', 'amrap-tri-reps-0',
+  'amrap-tri-name-1', 'amrap-tri-reps-1',
+  'amrap-tri-name-2', 'amrap-tri-reps-2',
+  'amrap-done-rounds', 'amrap-done-kcal',
   // QCE 서킷(src/ui/circuit.js) — 위와 같은 이유.
   'circuit-move-name', 'circuit-move-target', 'circuit-done-time', 'circuit-done-kcal',
   // '3초 후 시작'(src/ui/quickStart.js, 2026-09-23) — 위와 같은 이유.

@@ -1051,6 +1051,32 @@
 .amrap-move-name { text-align: center; font-size: var(--t-lg); font-weight: 800; margin: 0; }
 .amrap-move-reps { text-align: center; font-size: var(--t-display); font-weight: 700; margin: 0 0 var(--s-3); }
 .amrap-sub-btn, .amrap-next-btn { width: 100%; margin-bottom: var(--s-3); }
+
+/* Cindy 의 세 동작을 한 번에 보여주는 삼각형(2026-09-24 요청). 위 꼭짓점
+   하나 + 아래 둘, 딱 세 동작(풀업·푸쉬업·스쿼트)에 맞춘 모양이라 절대
+   좌표로 놓는다 — 넷 이상이 되면 이 모양 자체를 다시 짜야 한다. */
+.amrap-triangle { position: relative; width: 100%; max-width: 300px; aspect-ratio: 1 / 0.95; margin: 0 auto var(--s-4); }
+.amrap-tri-vertex {
+  position: absolute;
+  width: 42%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--s-2);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  text-align: center;
+}
+.amrap-tri-top { top: 0; left: 50%; transform: translateX(-50%); }
+.amrap-tri-left { bottom: 0; left: 0; }
+.amrap-tri-right { bottom: 0; right: 0; }
+.amrap-tri-shot { width: 40px; height: 40px; color: var(--mint); }
+.amrap-tri-shot svg { width: 100%; height: 100%; }
+.amrap-tri-shot video { width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-md); }
+.amrap-tri-name { font-weight: 700; font-size: var(--t-sm); }
+.amrap-tri-reps { font-family: var(--font-num); font-weight: 800; font-size: var(--t-md); color: var(--accent-text); }
 .amrap-foot { display: flex; gap: var(--s-2); }
 .amrap-foot button { flex: 1; }
 .amrap-done { align-items: center; text-align: center; gap: var(--s-2); }

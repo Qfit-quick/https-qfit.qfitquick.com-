@@ -5,11 +5,17 @@
 // 모양이 다르다: 정해진 세 동작(풀업 5·푸쉬업 10·스쿼트 15)을 정확한
 // 반복수로 20분 동안 몇 바퀴 도는지가 전부라, 세트·초 기반 엔진에
 // 끼워 맞추면 반복수도 시간 상한도 표현할 수 없다. 그래서 이 화면은
-// 완전히 따로 두고 타이머·바퀴 수·동작 전환을 직접 관리한다.
+// 완전히 따로 두고 타이머·바퀴 수를 직접 관리한다.
 //
 // 반복수는 사람이 스스로 센다 — 이 앱은 원래 카메라도 판정도 없다
 // (FR-02, app.js 의 showRemain 주석과 같은 전제). 화면은 목표 반복수만
-// 보여주고, 다 하면 사람이 '다음 동작'을 눌러 넘긴다.
+// 보여준다.
+//
+// 세 동작을 한 번에(2026-09-24 요청). 예전엔 동작 하나씩 보여주고
+// '다음 동작'을 눌러 넘겼다 — 운동하다가 매번 화면을 눌러야 하는
+// 구조였다. 정확히 세 동작뿐인 Cindy 라서, 삼각형 세 꼭짓점에 셋을
+// 한꺼번에 놓고 사람이 순서대로 스스로 하게 바꿨다. 한 바퀴(세 동작)를
+// 다 하면 '라운드 완료' 한 번만 누른다 — 동작 사이 클릭이 없어진다.
 
 import { CINDY_MOVES } from '../data/programs.js';
 import { EXERCISES } from '../data/exercises.js';
@@ -30,7 +36,6 @@ let dayIndex = 0;
 let capSec = 20 * 60;
 let remainSec = capSec;
 let round = 0; // 완료한 바퀴 수
-let moveIdx = 0; // 이번 바퀴에서 지금 몇 번째 동작인지
 let subPullup = false; // 철봉 없음 → 남은 시간 동안 버피로 대체
 let timerId = null;
 let paused = true;
@@ -40,12 +45,8 @@ function moves() {
   return (program && program.amrap && program.amrap.moves) || CINDY_MOVES;
 }
 
-// 지금 보여줄 동작. 풀업 차례인데 대체를 켰으면 버피로 바꿔 보여준다 —
-// reps 목표(5회)는 그대로 두고 동작만 바뀐다. 원본(sub 필드)을 찾을 때는
-// 대체 여부와 무관하게 항상 필요하므로 baseMove() 로 따로 둔다.
-function baseMove() {
-  return moves()[moveIdx];
-}
+// 풀업 차례인데 대체를 켰으면 버피로 바꿔 보여준다 — reps 목표(5회)는
+// 그대로 두고 동작만 바뀐다.
 function displayKey(m) {
   return m.key === 'PULLUP' && subPullup ? m.sub : m.key;
 }
@@ -80,46 +81,45 @@ function render() {
   if (run) run.hidden = false;
   if (done) done.hidden = true;
 
-  const m = baseMove();
-  const key = displayKey(m);
-  const ex = EX_BY_KEY[key];
-
   renderClock();
   const roundEl = el('amrap-round');
   if (roundEl) roundEl.textContent = String(round);
 
-  const nameEl = el('amrap-move-name');
-  if (nameEl) nameEl.textContent = t((key === m.key ? m.label : null) || (ex && ex.label) || m.label);
+  // 세 꼭짓점 전부를 한 번에 채운다 — 더는 '지금 몇 번째'가 없다.
+  moves().forEach((m, i) => {
+    const key = displayKey(m);
+    const ex = EX_BY_KEY[key];
 
-  const repsEl = el('amrap-move-reps');
-  if (repsEl) repsEl.textContent = t(S.amrapRepsLabel).replace('%s', m.reps);
+    const nameEl = el('amrap-tri-name-' + i);
+    if (nameEl) nameEl.textContent = t((key === m.key ? m.label : null) || (ex && ex.label) || m.label);
 
-  const shot = el('amrap-move-shot');
-  if (shot) {
-    disposeClipThumbs(shot);
-    shot.innerHTML = '';
-    if (key === 'PULLUP') {
-      shot.innerHTML = getChallengeIcon('pull');
-    } else {
-      const thumb = clipThumb(key);
-      if (thumb) shot.appendChild(thumb);
+    const repsEl = el('amrap-tri-reps-' + i);
+    if (repsEl) repsEl.textContent = t(S.amrapRepsLabel).replace('%s', m.reps);
+
+    const shot = el('amrap-tri-shot-' + i);
+    if (shot) {
+      disposeClipThumbs(shot);
+      shot.innerHTML = '';
+      if (key === 'PULLUP') {
+        shot.innerHTML = getChallengeIcon('pull');
+      } else {
+        const thumb = clipThumb(key);
+        if (thumb) shot.appendChild(thumb);
+      }
     }
-  }
+  });
 
+  const pullupIdx = moves().findIndex((m) => m.key === 'PULLUP' && m.sub);
   const subBtn = el('amrap-sub-btn');
-  if (subBtn) subBtn.hidden = !(m.key === 'PULLUP' && m.sub && !subPullup);
+  if (subBtn) subBtn.hidden = !(pullupIdx >= 0 && !subPullup);
 
   const pauseBtn = el('amrap-pause-btn');
   if (pauseBtn) pauseBtn.textContent = t(paused ? S.amrapResumeBtn : S.amrapPauseBtn);
 }
 
-function nextMove() {
+function completeRound() {
   if (finished) return;
-  moveIdx++;
-  if (moveIdx >= moves().length) {
-    moveIdx = 0;
-    round++;
-  }
+  round++;
   render();
 }
 
@@ -150,7 +150,7 @@ function renderDone() {
   if (run) run.hidden = true;
   if (done) done.hidden = false;
   const roundsEl = el('amrap-done-rounds');
-  if (roundsEl) roundsEl.textContent = t(S.amrapDoneRounds).replace('%s', round).replace('%s', moveIdx);
+  if (roundsEl) roundsEl.textContent = t(S.amrapDoneRounds).replace('%s', round);
   const kcalEl = el('amrap-done-kcal');
   if (kcalEl) kcalEl.textContent = t(S.amrapDoneKcal).replace('%s', estKcal());
 }
@@ -174,7 +174,6 @@ export function startAmrap({ program: p, dayIndex: d }) {
   capSec = Math.max(60, Math.round((p.amrap.capMin || 20) * 60));
   remainSec = capSec;
   round = 0;
-  moveIdx = 0;
   subPullup = false;
   finished = false;
   paused = false;
@@ -205,7 +204,7 @@ export function initAmrap({ translate, STATIC_UI, onShowScreen: showFn } = {}) {
   if (STATIC_UI) S = STATIC_UI;
   if (showFn) onShowScreen = showFn;
 
-  el('amrap-next-btn')?.addEventListener('click', nextMove);
+  el('amrap-round-done-btn')?.addEventListener('click', completeRound);
   el('amrap-sub-btn')?.addEventListener('click', () => { subPullup = true; render(); });
   el('amrap-pause-btn')?.addEventListener('click', togglePause);
   el('amrap-quit-btn')?.addEventListener('click', quit);
