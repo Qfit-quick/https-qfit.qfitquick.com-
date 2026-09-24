@@ -534,6 +534,35 @@ const homeBtn = document.getElementById('home-btn');
 const bestScoreBox = document.getElementById('best-score-box');
 const bestScoreVal = document.getElementById('best-score-val');
 
+// 홈의 '시작 방법' 줄(직접선택·랜덤선택·3초후시작·QCE·지난 루틴). 화면이
+// start-screen 이 될 때마다(showScreen) 다시 부르고, 맨 처음 켤 때도
+// 따로 한 번 부른다 — start-screen 은 이미 HTML 에서 active 로 시작하는
+// 화면이라 showScreen() 을 안 거치고 첫 화면이 되므로, 부팅부에서 부르지
+// 않으면 첫 진입에서는 QCE 순서가 안 바뀐 채로 보인다.
+function refreshStartModeRow(){
+ const savedPrefs = loadSetupPrefs();
+ const show = !!(savedPrefs && Array.isArray(savedPrefs.exKeys) && savedPrefs.exKeys.length);
+ const startBtn = document.getElementById('repeat-trigger-start');
+ if(startBtn) startBtn.style.display = show ? '' : 'none';
+ // 행 아래 줄에 그 루틴이 무엇인지 적는다. '지난 루틴 다시' 만으로는
+ // 무엇이 다시 도는지 눌러 봐야만 알 수 있다.
+ const sub = document.getElementById('repeat-trigger-sub');
+ if(sub) sub.textContent = show ? routineSummary(savedPrefs.exKeys) : '';
+ // 이어갈 루틴이 없으면(진행 중인 운동이 없으면, 2026-09-24 요청)
+ // QCE 서킷을 시작 방법 목록 맨 앞으로 옮긴다. 있으면 원래 자리
+ // ('3초 후 시작' 다음)로 되돌린다 — 두 방향 다 여기서 다룬다.
+ const qceBtn = document.getElementById('mode-qce-btn');
+ const rows = qceBtn?.parentElement;
+ if(rows && qceBtn){
+ if(!show){
+  if(rows.firstElementChild !== qceBtn) rows.insertBefore(qceBtn, rows.firstElementChild);
+ } else {
+  const quickBtn = document.getElementById('mode-quick-btn');
+  if(quickBtn && quickBtn.nextElementSibling !== qceBtn) quickBtn.after(qceBtn);
+ }
+ }
+}
+
 function showScreen(el){
  [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen,quickScreen,tabataSetupScreen,tabataRunScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
@@ -554,16 +583,7 @@ function showScreen(el){
  }catch(e){ console.error('more screen refresh failed:', e); }
  }
  if(el === startScreen){
- try{
- const savedPrefs = loadSetupPrefs();
- const show = !!(savedPrefs && Array.isArray(savedPrefs.exKeys) && savedPrefs.exKeys.length);
- const startBtn = document.getElementById('repeat-trigger-start');
- if(startBtn) startBtn.style.display = show ? '' : 'none';
- // 행 아래 줄에 그 루틴이 무엇인지 적는다. '지난 루틴 다시' 만으로는
- // 무엇이 다시 도는지 눌러 봐야만 알 수 있다.
- const sub = document.getElementById('repeat-trigger-sub');
- if(sub) sub.textContent = show ? routineSummary(savedPrefs.exKeys) : '';
- }catch(e){ console.error('repeat button refresh failed:', e); }
+ try{ refreshStartModeRow(); }catch(e){ console.error('repeat button refresh failed:', e); }
  try{ renderWeekStrip(); }catch(e){ console.error('week strip render failed:', e); }
  // 운동을 끝내고 홈으로 오면 XP 가 늘어 있다. 여기서 다시 그리지 않으면
  // 알은 앱을 다시 켤 때까지 옛 레벨로 남는다.
@@ -4450,6 +4470,10 @@ try{ loadNickname(); }catch(e){ console.error('loadNickname failed:', e); }
 try{ loadWeightKg(); }catch(e){ console.error('loadWeightKg failed:', e); }
 try{ applySetupPrefs(loadSetupPrefs()); }catch(e){ console.error('applySetupPrefs boot failed:', e); }
 try{ renderWeekStrip(); }catch(e){ console.error('week strip boot render failed:', e); }
+// start-screen 은 HTML 에서부터 이미 active 라 showScreen() 을 안 거치고
+// 첫 화면이 된다 — refreshStartModeRow() 를 여기서 한 번 더 안 부르면
+// 첫 진입에서는 QCE 가 옛 자리(2026-09-24 이전)에 그대로 보인다.
+try{ refreshStartModeRow(); }catch(e){ console.error('start mode row boot refresh failed:', e); }
 try{
  const weekendBanner = document.getElementById('weekend-banner');
  if(weekendBanner && [0,6].includes(new Date().getDay())){ weekendBanner.style.display = 'block'; }
