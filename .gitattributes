@@ -4,20 +4,16 @@
 # 그러면 sw.js 의 precacheAndRoute revision(index.html·manifest 의 md5)이
 # 실제 파일과 어긋난다. 실제로 manifest.webmanifest 가 이 때문에 한 번
 # 어긋나 있었다. 산출물은 빌드가 뱉은 LF 그대로 둬야 배포본과 같아진다.
-index.html          -text
-sw.js               -text
-sw-push.js          -text
+#
+# 2026-09-25: 산출물 위치가 저장소 루트에서 app/dist/ 로 옮겨졌다 —
+# 이 파일의 경로도 같이 옮겼다.
+app/dist/index.html          -text
+app/dist/sw.js               -text
+app/dist/sw-push.js          -text
 # 그 원본도 같이 못 박는다. 여기를 빼면 윈도우에서 원본이 CRLF 로 풀리고,
-# 빌드가 그걸 그대로 루트에 복사하면서 산출물이 매번 '바뀐 것' 으로 잡힌다.
-public/sw-push.js   -text
-registerSW.js       -text
-workbox-*.js        -text
-manifest.webmanifest -text
-assets/**           -text
-# .assetsignore 도 못 박는다. CRLF 로 풀리면 각 줄 끝에 \r 이 붙어
-# 'node_modules\r' 가 되는데, wrangler 의 무시 규칙 파서는 그걸 실제
-# 'node_modules' 경로와 다른 것으로 본다 — 그러면 규칙이 전부 조용히
-# 안 먹혀서 node_modules·.git 까지 통째로 올라간다. CI(우분투)는 원래
-# LF 라 안 걸리고, 윈도우에서 `npx wrangler deploy` 를 직접 돌릴 때만
-# 걸린다(2026-09-23, 자산 15,163개로 잡혀 실제로 재현됨 — 정상은 99개).
-.assetsignore       -text
+# 빌드가 그걸 그대로 산출물에 복사하면서 산출물이 매번 '바뀐 것' 으로 잡힌다.
+public/sw-push.js            -text
+app/dist/registerSW.js       -text
+app/dist/workbox-*.js        -text
+app/dist/manifest.webmanifest -text
+app/dist/assets/**           -text

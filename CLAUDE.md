@@ -3,71 +3,92 @@
 이 저장소에서 작업할 때 먼저 읽는다. **다른 저장소의 상식이 여기서는 틀리는
 지점들**만 적는다. 코드를 읽으면 알 수 있는 것은 적지 않는다.
 
-## 이 저장소의 제일 이상한 점
+## 이 저장소의 제일 이상한 점 (2026-09-25 이전 버전)
 
-**빌드 산출물이 저장소 루트에 커밋되어 있다.** `index.html`, `sw.js`,
-`registerSW.js`, `manifest.webmanifest`, `workbox-*.js`, `assets/` 는 전부
-빌드가 만든 것이고 git 이 추적한다.
+**빌드 산출물이 저장소에 커밋되어 있다.** `app/dist/index.html`·
+`app/dist/sw.js`·`app/dist/assets/` 등은 전부 빌드가 만든 것이고 git 이
+추적한다.
 
-이유는 서빙 방식이다. GitHub Pages 는 'main 브랜치의 루트를 그대로' 로 잡혀
-있고(저장소 관리자만 바꿀 수 있다), 클라우드플레어 워커도
-`wrangler.jsonc` 의 `assets.directory: "."` 로 **저장소 루트 전체**를
-서빙한다. 즉 루트에 놓인 파일이 곧 사이트다.
+이유는 서빙 방식이다. 클라우드플레어 워커가 `wrangler.jsonc` 의
+`assets.directory: "./app/dist"` 로 그 폴더를 그대로 서빙한다. 즉 그
+폴더에 놓인 파일이 곧 사이트다.
+
+**2026-09-25 이전에는 이 폴더가 저장소 루트 전체였다.** GitHub Pages 가
+'main 브랜치의 루트를 그대로' 서빙하도록 잡혀 있어서(저장소 관리자만
+바꿀 수 있는 설정), 워커도 같은 루트를 보게 맞췄었다. Toss 결제 API
+(`worker/api/billing.js`)를 붙이면서 산출물을 `app/dist/` 로 옮기고 GitHub
+Pages 경로는 포기했다 — 그 주소(`qfit.github.io/...`)는 이제 갱신되지
+않는다. **실제 서비스 주소(qfit.qfitquick.com)는 그대로 클라우드플레어
+워커라 영향이 없다.** Pages 쪽을 계속 쓰려면 저장소 관리자가 Pages 설정
+자체를 바꿔야 한다.
 
 여기서 따라오는 규칙들:
 
-- **소스 `index.html` 은 `app/` 에 있다.** 루트에 두면 빌드가 자기 입력을
-  덮어쓴다. `vite.config.js` 의 `root: 'app'`.
-- **`build.emptyOutDir` 을 켜면 안 된다.** `outDir` 이 저장소 루트라
-  켜는 순간 `src/`·`scripts/`·`legacy/` 가 통째로 날아간다. 지난 산출물은
-  `scripts/clean.mjs` 가 **이름을 아는 것만** 골라 지운다.
-- **`base: './'` 를 유지한다.** Pages 가 저장소 이름이 붙은 하위 경로로
-  서빙해서, 절대 경로(`/assets/...`)로 뽑으면 배포본이 전부 404 다.
-  화면 이동이 해시(`#records-screen`)라 지금은 안전하다. 경로 라우팅으로
-  바꾸는 날 이게 제일 먼저 깨진다.
+- **소스 `index.html` 은 `app/` 에 있다.** 빌드 산출물(`app/dist/`)과
+  같은 폴더가 아니라야 빌드가 자기 입력을 덮어쓰지 않는다.
+  `vite.config.js` 의 `root: 'app'`, `build.outDir: 'app/dist'`.
+- **`base: './'` 를 유지한다.** 클라우드플레어가 워커 이름이 아니라 이
+  경로 그대로 서빙하긴 하지만, 상대 경로를 절대 경로(`/assets/...`)로
+  바꾸면 서브경로로 열람하는 경우 전부 깨진다. 화면 이동이
+  해시(`#records-screen`)라 지금은 안전하다. 경로 라우팅으로 바꾸는
+  날 이게 제일 먼저 깨진다.
 - **소스만 커밋하고 push 하면 사이트는 안 바뀐다.** 저장소를 보면 다 되어
   있어 보이므로 알아채기가 제일 어렵다. `.github/workflows/deploy.yml` 이
   push 마다 다시 빌드해서 산출물이 다르면 되커밋한다.
+- **`app/dist/` 는 소스와 완전히 분리된 폴더다.** 그래서(2026-09-25 이전과
+  달리) `vite build` 가 `emptyOutDir: true` 로 매번 통째로 비우고 다시
+  채워도 안전하다 — `src/`·`scripts/`·`legacy/` 를 지울 위험이 없다.
+  "이름을 아는 것만 골라 지우는" `scripts/clean.mjs` 는 이제 필요 없어져
+  지웠다.
+- **`.assetsignore` 도 필요 없어져 지웠다.** `assets.directory` 가
+  산출물만 담긴 `app/dist/` 를 가리키므로, 소스·설정 파일을 걸러낼
+  대상 자체가 없다. (예전엔 저장소 루트 전체가 대상이라 `.git`·
+  `node_modules`·소스까지 다 걸러내야 했다 — 그때 실수로 자산이
+  14,704개로 잡혀 배포가 실패한 사고가 있었다. 이제 구조적으로 그
+  사고가 다시 날 수 없다.)
 
 ## `npm run build` 를 그냥 돌리지 않는다
 
-`build` 는 `node scripts/clean.mjs && vite build` 다. **clean 이 먼저 돈다.**
+`npm install` 을 먼저 해야 한다 — 안 하면 `vite build` 자체가 실패한다.
+`app/dist/` 는 소스와 분리돼 있으므로 실패해도 소스가 지워지는 일은
+이제 없다(2026-09-25 이전엔 여기서 저장소 루트가 통째로 날아가는 사고가
+있었다 — 그래서 이 절이 있다).
 
-`node_modules` 가 없는 상태로 돌리면 clean 은 성공해서 루트 산출물을 지우고,
-`vite build` 는 실패한다. 결과는 **사이트가 통째로 사라진 작업 트리**다.
-2026-09-08 에 실제로 이 일이 있었다.
-
-    npm install     # 먼저. 이게 없으면 build 는 지우기만 하고 끝난다
+    npm install
     npm run build
 
-지워졌으면 당황할 것 없다. 전부 커밋되어 있으므로 되돌리면 된다:
-
-    git checkout -- index.html sw.js registerSW.js manifest.webmanifest assets 'workbox-*.js'
-
-**배포만 하려면 빌드가 필요 없다.** 저장소에 있는 산출물이 곧 배포본이다:
+**배포만 하려면 빌드가 필요 없다.** 저장소에 있는 `app/dist/` 가 곧
+배포본이다:
 
     npx wrangler deploy
 
-## 루트에 파일을 새로 만들면 `.assetsignore` 를 본다
+## Toss Payments 연동 (2026-09-25)
 
-`assets.directory` 가 `"."` 이므로 **`.assetsignore` 에서 빼지 않은 것은
-전부 공개 URL 이 된다.** 루트에 새 파일·폴더를 만들면 그것이 사이트에
-올라가도 되는 것인지 먼저 판단한다.
+정기결제(프리미엄 월 구독)가 `worker/api/billing.js`(서버 전용) +
+`src/ui/billing.js`(카드 등록 버튼) + Supabase 세 테이블
+(`docs/sql/2026-09-toss-billing.sql`)로 붙어 있다. 자세한 API 동작은
+`docs/sql/` 옆의 명세서, 계정·시크릿 발급 절차는 `docs/DEPLOY.md` 를
+본다.
 
-예전에 이 목록이 `node_modules` 한 줄뿐이었을 때, `wrangler deploy` 는
-자산을 14,704개로 잡고 **실패했다** — `.git/objects/pack` 의 팩 파일이
-워커의 파일당 25MiB 한도를 넘겼기 때문이다.
-
-올릴 것을 바꿨으면 배포 전에 확인한다:
-
-    npx wrangler deploy --dry-run
+- **Toss 시크릿 키는 절대 `src/` 에 두지 않는다.** `worker/api/billing.js`
+  가 유일하게 그 키를 쓰고, 이 파일은 브라우저 번들(vite 가 빌드하는
+  `app/dist/assets/*.js`)에 절대 들어가지 않는다 — `worker/` 는 클라우드
+  플레어가 별도로 실행하는 코드지 사이트 자산이 아니다.
+- **`successUrl`/`failUrl` 은 해시(`#billing-return`)를 쓴다.** 이 앱은
+  경로 라우팅이 없는 SPA 라, Toss 가 돌려보내는 주소가 실제 경로(예:
+  `/billing/success`)면 그 경로엔 파일이 없어 404 가 난다. 해시는 항상
+  `index.html` 하나로 떨어지므로 안전하다.
+- **결제 갱신은 매시 정각 크론(`wrangler.jsonc` 의 `triggers.crons`)이
+  돈다.** 대시보드에서 크론을 손으로 추가해도 다음 배포 때 이 설정으로
+  되돌아간다 — 바꾸려면 여기를 고친다.
 
 ## 산출물의 줄바꿈은 LF 여야 한다
 
-`sw.js` 는 `index.html`·`manifest.webmanifest` 의 md5 를 적어 둔다. 윈도우에서
-`core.autocrlf=true` 로 clone 해 CRLF 로 풀리면 그 md5 가 실제 파일과
-어긋나고, **사용자에게 영원히 옛 판이 나간다.** `.gitattributes` 가 산출물을
-`-text` 로 못 박아 두었다. 산출물을 새로 늘리면 거기에도 추가한다.
+`app/dist/sw.js` 는 `index.html`·`manifest.webmanifest` 의 md5 를 적어
+둔다. 윈도우에서 `core.autocrlf=true` 로 clone 해 CRLF 로 풀리면 그 md5 가
+실제 파일과 어긋나고, **사용자에게 영원히 옛 판이 나간다.** `.gitattributes`
+가 `app/dist/` 안의 산출물을 `-text` 로 못 박아 두었다. 산출물을 새로
+늘리면 거기에도 추가한다.
 
 ## 커밋 메시지
 

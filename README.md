@@ -19,27 +19,27 @@
     npm install
     npm run dev        # http://localhost:5173
 
-`npm install` 을 건너뛰면 안 된다. `npm run build` 는 지난 산출물을 먼저
-지우므로, 의존성이 없으면 **지우기만 하고 실패한다.** `CLAUDE.md` 참고.
+`npm install` 을 건너뛰지 않는다 — 빌드가 의존성을 그대로 가정한다.
 
 ## 만들기
 
-    npm run build      # 산출물이 저장소 루트에 놓인다
+    npm run build      # 산출물이 app/dist/ 에 놓인다
     npm run preview    # 빌드된 것을 5180 포트로 확인
 
-이 저장소는 **빌드 산출물을 커밋한다.** 루트의 `index.html`·`sw.js`·
-`assets/` 등이 그것이고, 그 파일들이 곧 사이트다. 이유와 주의점은
-`CLAUDE.md` 에 적혀 있다.
+이 저장소는 **빌드 산출물을 커밋한다.** `app/dist/index.html`·`sw.js`·
+`assets/` 등이 그것이고, 그 폴더가 곧 사이트다(2026-09-25 이전엔 저장소
+루트였다). 이유와 주의점은 `CLAUDE.md` 에 적혀 있다.
 
 ## 구조
 
-    app/         소스 index.html — 루트에 두면 빌드가 덮어쓴다
+    app/         소스 index.html, 빌드 산출물(app/dist/, 커밋됨)
     src/         앱 코드
       data/      운동·식단·번역 등 데이터. 화면이 아니라 여기를 고친다
       ui/        화면 조각
       styles/    CSS
       health/    체중·기록 저장소
       cloud/     supabase (선택 기능, 지연 로딩)
+    worker/      클라우드플레어 워커 — 영상 Range 서빙 + 결제 API(아래 참고)
     public/      그대로 복사되는 것 — 아이콘·미디어·manifest
     scripts/     검사·생성 스크립트
     legacy/      예전 판. 참고용
@@ -84,8 +84,8 @@
 
 `npm run dev` 로 뜨는 Vite 개발 서버가 `/api` 요청을 이 서버로 넘긴다
 (`vite.config.js` 의 `server.proxy`). **배포본(Cloudflare Worker)엔 이 서버가
-없다** — `wrangler.jsonc` 가 `server/`·`tests/`·`.env.example` 을 자산에서
-빼 둔다(`.assetsignore`).
+없다** — `server/`·`tests/`·`.env.example` 은 애초에 `app/dist/` 밖에 있어서
+빌드에도 배포에도 안 들어간다.
 
 구조:
 
@@ -104,7 +104,7 @@
 **언어**: 요청에 `locale: "ko"|"en"|"zh"` 를 실어 보내면 그 언어로 답한다
 (기본 `ko`). `src/chat/knowledge.js` 의 자료가 전부 `{ko,en,zh}` 사전이라
 검색도 세 언어를 다 본다("Squat" 이라고 쳐도 스쿼트를 찾는다) — 단
-challengeTracks(턱걸이·플란체 같은 챌린지 트랙 7개)는 원본 데이터 자체가
+challengeTracks(턱걸이·플란체 같은 챌린지 트랙 9개)는 원본 데이터 자체가
 전문 용어 오역을 피하려고 한국어 전용이라, en/zh 로 물어도 한국어로 답한다.
 
 **통증 문구**: PDF 는 전문 의료 검수 전까지 "검수 전 초안" 표시를 달아
@@ -125,6 +125,17 @@ challengeTracks(턱걸이·플란체 같은 챌린지 트랙 7개)는 원본 데
 실제 신체·기록 조회(개인 기록 요청은 전부 "아직 연결 안 됨" 안내로만
 처리), 의미 기반(임베딩) 검색. 화면 연결은 됐지만 **보조 답 하나만** —
 로컬 규칙 기반 답을 LLM 답으로 통째로 갈아 끼우지는 않는다(아래 참고).
+
+## 결제 (2026-09-25)
+
+정기결제(프리미엄 월 구독)는 Toss Payments 로 붙어 있다 — 카드 등록은
+설정 화면의 "카드 등록"에서, 실제 청구·갱신은 `worker/api/billing.js`
+(서버 전용, Toss 시크릿 키가 여기에만 있다)가 한다. 매시 정각 크론이
+기간이 끝난 구독을 갱신한다. 데이터베이스 스키마는
+`docs/sql/2026-09-toss-billing.sql`, API 명세는 그 옆의 문서를 본다.
+
+**`TOSS_SECRET_KEY`·`TOSS_CLIENT_KEY` 워커 시크릿을 넣어야 동작한다** —
+발급·설정 방법은 `docs/DEPLOY.md` 의 "Toss Payments 연동" 항목 참고.
 
 ## 배포
 

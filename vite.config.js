@@ -58,10 +58,10 @@ export default defineConfig({
       injectRegister: 'auto',
       manifest: false, // public/manifest.webmanifest 를 그대로 쓴다
       workbox: {
-        // 담을 것을 **열거한다**. 산출물 폴더가 곧 저장소 루트라
-        // '**/*.js' 로 잡으면 vite.config.js 같은 소스까지 프리캐시된다.
-        // 실제로 그렇게 들어갔다 — 제외 목록을 늘리는 쪽은 새 파일이 생길
-        // 때마다 또 새므로, 담을 것을 적는 쪽이 맞다.
+        // 담을 것을 **열거한다**. outDir 이 app/dist 로 소스와 분리된
+        // 뒤로는(2026-09-25) '**/*.js' 로 잡아도 소스가 섞일 일은 없지만,
+        // 그래도 필요한 것만 적어 둔다 — 새 산출물 종류가 늘 때 이 목록을
+        // 봐야 한다는 사실 자체가 안전장치다.
         globPatterns: ['index.html', 'assets/**/*.{js,css}', 'icons/*.png', 'manifest.webmanifest'],
         // 4일 주기 웹푸시(2026-09-16) 의 push/notificationclick 처리.
         // generateSW 모드라 워크박스 코드를 직접 못 고치므로, sw.js 맨 위에서
@@ -74,14 +74,6 @@ export default defineConfig({
           // Supabase SDK(약 219KB)도 뺀다. 로그인은 선택 기능인데 프리캐시에
           // 남겨 두면 결국 모두가 받게 되어, 지연 로딩으로 만든 뜻이 사라진다.
           '**/supabase-*.js',
-          // 산출물이 저장소 루트에 놓이므로 소스도 같은 폴더에 있다.
-          // 걸러 내지 않으면 워크박스가 src/·scripts/·legacy/ 까지 프리캐시한다.
-          'src/**',
-          'scripts/**',
-          'legacy/**',
-          'app/**',
-          'public/**',
-          'node_modules/**',
         ],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
@@ -119,12 +111,8 @@ export default defineConfig({
   // 상대 경로가 안전하다. 경로 라우팅으로 바꾸는 날 이게 먼저 깨진다.
   base: './',
 
-  // 소스 index.html 은 app/ 에 둔다.
-  //
-  // 이 저장소의 Pages 는 'main 브랜치의 루트를 그대로 서빙' 으로 잡혀 있고 그 설정은
-  // 저장소 관리자만 바꿀 수 있다(우리는 push 권한뿐이다). 그래서 배포하려면 빌드
-  // 결과가 루트에 있어야 하는데, 소스 index.html 도 루트면 빌드가 자기 입력을
-  // 덮어쓴다. 둘 중 하나는 비켜야 하고, 비킬 수 있는 쪽은 소스다.
+  // 소스 index.html 은 app/ 에 둔다. 빌드 결과(app/dist/)와 같은 폴더가
+  // 아니라야 빌드가 자기 입력을 덮어쓰지 않는다.
   root: 'app',
   publicDir: path.join(ROOT, 'public'),
 
@@ -143,13 +131,14 @@ export default defineConfig({
   },
 
   build: {
-    // 저장소 루트로 뽑는다. Pages 가 거기를 서빙한다.
-    //
-    // emptyOutDir 은 반드시 꺼 둔다 — 켜면 빌드가 src/·scripts/·legacy/ 를 통째로
-    // 지운다. 지난 산출물은 `npm run build` 가 먼저 부르는 scripts/clean.mjs 가
-    // 이름을 아는 것만 골라 지운다.
-    outDir: ROOT,
-    emptyOutDir: false,
+    // app/dist/ 로 뽑는다(2026-09-25, 예전엔 저장소 루트였다 — CLAUDE.md
+    // 참고). wrangler.jsonc 의 assets.directory 가 이 폴더를 그대로
+    // 가리킨다. outDir 이 소스(app/, src/, scripts/...)와 완전히 분리된
+    // 폴더라 emptyOutDir 을 켜도 안전하다 — Vite 가 빌드마다 이 폴더만
+    // 통째로 비우고 새로 채운다. scripts/clean.mjs 로 "이름을 아는 것만
+    // 골라 지우던" 예전 방식이 필요 없어졌다(파일 자체를 지웠다).
+    outDir: path.join(ROOT, 'app/dist'),
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         // Supabase 를 이름이 정해진 청크로 뽑는다. 해시 이름 그대로 두면

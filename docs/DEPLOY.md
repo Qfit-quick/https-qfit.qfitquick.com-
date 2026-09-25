@@ -1,51 +1,70 @@
 # 배포
 
-마지막 확인: **2026-09-08**
+마지막 확인: **2026-09-25**
 
 ## 지금 상태 한 줄
 
-배포 자동화는 고쳐 놓았지만 **아직 초록불이 아니다.** 막고 있는 것이 둘이고,
-둘 다 클라우드플레어 대시보드에서 사람이 해야 한다. 아래 [남은 일](#남은-일).
+배포 자동화는 돌고 있고, `qfit.qfitquick.com` 이 실제로 최신 판을
+서빙한다. 이 문서를 처음 쓴 2026-09-08 시점엔 커스텀 도메인이 워커에
+안 붙어 있었는데, 그 뒤 어느 시점에 해결되어 있었다(정확한 시점은
+기록에 없다 — 이 문서를 다시 다듬으며 실제로 qfit.qfitquick.com 에
+배포가 반영되는 것을 여러 차례 확인했다).
+
+**2026-09-25 부터 달라진 것**: 빌드 산출물 위치가 저장소 루트에서
+`app/dist/` 로 옮겨졌다(Toss 결제 API 를 붙이면서 같이 정리). 아래
+내용은 새 구조 기준이다 — 예전 판을 찾는다면 git 이력의 2026-09-25
+이전 커밋을 본다.
 
 ## 어디가 무엇을 서빙하나
 
 | 주소 | 실체 | 갱신 방법 |
 | --- | --- | --- |
-| `qfit.qfitquick.com` | **다른 클라우드플레어 계정**의 무언가 | 지금은 갱신 경로가 없다 |
-| `qfit-quickfitness.monster-rpg.workers.dev` | 워커 `qfit-quickfitness` | `wrangler deploy` |
-| `qfit.github.io/https-qfit.qfitquick.com-` | GitHub Pages | main 에 push |
+| `qfit.qfitquick.com` | 클라우드플레어 워커 `qfit-quickfitness` | `main` push 또는 `wrangler deploy` |
+| `qfit-quickfitness.monster-rpg.workers.dev` | 같은 워커의 기본 주소 | 위와 같음 |
+| `qfit.github.io/https-qfit.qfitquick.com-` | GitHub Pages | **2026-09-25 부터 더는 갱신되지 않는다** — 아래 참고 |
 
-세 곳이 **서로 다른 것을 서빙할 수 있다.** 실제로 그랬다. 여기가 이 문서의
-핵심이다.
+**GitHub Pages 는 이제 옛 판(또는 404)을 보여준다.** Pages 는 '저장소
+루트를 그대로' 서빙하도록 잡혀 있는데, 산출물이 `app/dist/` 로 옮겨가면서
+루트에 더는 `index.html` 이 없다. 실제 서비스 주소는 Pages 가 아니라
+클라우드플레어 워커라 사용자에게 영향은 없다 — 다만 이 Pages 주소를
+따로 쓰고 있었다면(북마크 등) 옮겨야 한다. Pages 설정 자체(무엇을
+서빙할지)는 저장소 관리자만 바꿀 수 있다.
 
 ## 왜 push 만으로는 안 되나
 
 클라우드플레어 워커는 저장소를 보지 않는다. **자기가 올려받은 자산 묶음**을
-서빙한다(`wrangler.jsonc` 의 `assets.directory: "."`). GitHub 에 push 하는
-것과 워커에 올리는 것은 완전히 다른 두 동작이다.
+서빙한다(`wrangler.jsonc` 의 `assets.directory: "./app/dist"`). GitHub 에
+push 하는 것과 워커에 올리는 것은 완전히 다른 두 동작이다.
 
-그래서 push 만 하면 Pages 는 새 판인데 워커는 옛 판인 상태가 된다.
-저장소를 봐도, Pages 를 봐도 멀쩡해 보인다.
+그래서 push 만 하면 저장소는 새 판인데 워커는 옛 판인 상태가 된다.
+저장소를 봐도 멀쩡해 보인다 — 그래서 `.github/workflows/deploy.yml` 이
+push 마다 다시 빌드해서 산출물이 다르면 되커밋하고, 그 다음 클라우드플레어에
+올린다.
 
 ## 무엇이 실제로 올라가나
 
-`.assetsignore` 가 정한다. `assets.directory` 가 `"."` 라 **저장소 루트
-전체가 대상**이고, 거기서 빼지 않은 것은 전부 공개 URL 이 된다.
-
-지금 올라가는 것은 99개다:
-
-    index.html · sw.js · registerSW.js · workbox-*.js · manifest.webmanifest
-    assets/ · icons/ · media/ · .nojekyll
-
-확인하는 법:
+`assets.directory` 가 `app/dist/` 를 가리키므로, **그 폴더 안의 전부**가
+그대로 공개 URL 이 된다. 그 폴더에는 애초에 빌드 산출물만 있어서(소스·
+설정 파일은 다른 폴더에 있다) 걸러낼 것이 없다 — `.assetsignore` 는
+2026-09-25 에 지웠다.
 
     npx wrangler deploy --dry-run
 
-### 예전에 여기서 죽었다
+지금은 127개 파일, 17.69 KiB(워커 스크립트 자체 크기 — 정적 자산은
+별도 집계)가 잡힌다. 이 숫자가 갑자기 만 단위로 뛰면 `assets.directory`
+가 잘못된 폴더(예: 저장소 루트)를 가리키고 있는지 `wrangler.jsonc` 를
+본다.
 
-`.assetsignore` 가 `node_modules` 한 줄뿐이던 시절, 자산이 14,704개로 잡히고
-배포가 **실패했다**. `.git/objects/pack` 의 팩 파일(53MB)이 워커의 파일당
-25MiB 한도를 넘겼기 때문이다. 소스와 18MB 짜리 zip 도 같이 올라가고 있었다.
+### 예전(2026-09-25 이전)에 여기서 죽었다
+
+그때는 `assets.directory` 가 저장소 루트(`"."`)였다. `.assetsignore` 가
+`node_modules` 한 줄뿐이던 시절엔 자산이 14,704개로 잡히고 배포가
+**실패했다** — `.git/objects/pack` 의 팩 파일(53MB)이 워커의 파일당
+25MiB 한도를 넘겼기 때문이다. 그 뒤로도 `.assetsignore` 목록을 계속
+손봐야 했고, 윈도우에서 `npx wrangler deploy` 를 직접 돌리면 그 목록이
+제대로 안 먹히는 별도 버그도 있었다(경로 구분자 문제, 되풀이 확인됨).
+산출물 폴더를 분리한 지금은 이 문제들이 **구조적으로 다시 날 수 없다**
+— 걸러낼 대상 자체가 없어졌다.
 
 ## 워커에 `main` 스크립트가 붙은 이유 (2026-09-20)
 
@@ -60,14 +79,63 @@
 전부 그대로 `env.ASSETS.fetch()` 로 넘긴다 — assets 서빙 경로 자체는 안 바뀐다.
 
 `main` 이 생기면 `assets.binding: "ASSETS"` 도 같이 있어야 스크립트가
-`env.ASSETS` 로 정적 자산에 접근할 수 있다. 워커 소스(`worker/`)는 사이트
-자산이 아니므로 `.assetsignore` 에도 추가했다.
+`env.ASSETS` 로 정적 자산에 접근할 수 있다. 워커 소스(`worker/`)는 원래
+`app/dist/` 밖에 있어서 자산으로 같이 올라갈 일이 없다.
 
 **기본은 자산 우선이라 이것만으로는 안 된다.** `main`과 `assets`를 같이
 쓰면 클라우드플레어는 요청과 일치하는 정적 파일이 있으면 워커 스크립트를
 아예 안 거치고 바로 서빙한다 — `media/clips/*.mp4`도 파일이라 그대로
-걸린다. 그래서 `assets.run_worker_first: ["/media/clips/*"]`로 이 경로만
-워커를 먼저 태우게 했다. 다른 자산(이미지 등)은 여전히 워커를 안 거친다.
+걸린다. 그래서 `assets.run_worker_first: ["/media/clips/*", "/api/*"]`로
+이 경로들만 워커를 먼저 태우게 했다(`/api/*` 는 아래 결제 API). 다른
+자산(이미지 등)은 여전히 워커를 안 거친다.
+
+## Toss Payments 연동 (2026-09-25)
+
+정기결제(프리미엄 월 구독, 월 2,400원)가 `worker/api/billing.js` +
+`src/ui/billing.js` + Supabase 세 테이블로 붙어 있다. API 동작·DB 스키마
+자세한 내용은 `docs/sql/2026-09-toss-billing.sql` 과 그 옆 명세서를 본다.
+
+**지금 상태: Toss 시크릿이 아직 안 들어가 있어서 실제 결제는 안 된다.**
+카드 등록 버튼(설정 화면)을 누르면 서버가 `TOSS_SECRET_KEY` 를 못 찾아
+500 을 준다. 아래 절차로 발급·설정한다.
+
+### 1. Toss 키 발급
+
+1. [Toss Payments 개발자센터](https://developers.tosspayments.com) 가입.
+   사업자 등록 없이도 **테스트 키**는 바로 나온다.
+2. "내 개발정보"에서 **시크릿 키**·**클라이언트 키** 확인.
+3. 정기결제(빌링) 기능은 별도 활성화가 필요할 수 있다 — 메뉴에서
+   "빌링"/"자동결제" 항목을 찾아 켠다.
+4. 실 결제(라이브 키)로 가려면 사업자 등록 심사가 필요하다 — 테스트
+   단계에서는 테스트 키로 충분하다.
+
+### 2. 워커 시크릿 등록
+
+GitHub Secrets 가 아니라 **클라우드플레어 워커 시크릿**이다 — CI 가 아니라
+실행 중인 워커가 직접 읽는 값이라 그렇다.
+
+    npx wrangler secret put TOSS_SECRET_KEY
+    npx wrangler secret put TOSS_CLIENT_KEY
+    npx wrangler secret put SUPABASE_URL              # cloud/supabase.js 의 URL 과 같은 값
+    npx wrangler secret put SUPABASE_PUBLISHABLE_KEY  # cloud/supabase.js 의 anon key 와 같은 값
+    npx wrangler secret put SUPABASE_SECRET_KEY       # Supabase 대시보드의 service_role 키 — 절대 프론트에 노출 금지
+
+`TOSS_CLIENT_KEY` 는 사실 비밀이 아니다(카드 등록창을 여는 데 브라우저로
+그대로 내려준다, `worker/api/billing.js` 의 `prepare` 참고) — 그래도
+워커 시크릿으로 관리하면 나중에 값을 바꿀 때 코드를 안 건드려도 된다.
+
+### 3. 데이터베이스 준비
+
+Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-toss-billing.sql`
+내용을 한 번 실행한다. `billing_customers`·`subscriptions`·
+`payment_orders` 세 테이블과 RLS 정책을 만든다 — 서비스 롤 키로만 쓰고
+읽기는 있는데 걸리는 정책이라, 잘못 실행해도 기존 데이터에 영향은 없다.
+
+### 4. 크론 확인
+
+`wrangler.jsonc` 의 `triggers.crons: ["0 * * * *"]` 가 매시 정각에
+`renewDueSubscriptions()` 를 돌린다 — 별도 설정 없이 배포하면 자동으로
+등록된다.
 
 ## 워크플로가 하는 일
 
@@ -75,8 +143,8 @@
 
 1. **자격증명 확인** — `CLOUDFLARE_API_TOKEN` 이 없으면 여기서 빨간불.
 2. `npm ci`
-3. **소스 검사** — `i18n`·`coverage`·`contrast` (브라우저 없이 도는 것)
-4. **빌드**
+3. **소스 검사** — `i18n`·`media`·`coverage`·`contrast`·`test:chat` (브라우저 없이 도는 것)
+4. **빌드** — `app/dist/` 로 뽑는다
 5. **산출물이 달라졌으면 되커밋** — 사람이 `npm run build` 를 잊어도 사이트가
    따라오게. 커밋 메시지의 `[skip ci]` 가 무한 루프를 막는다.
 6. **클라우드플레어에 배포** — `wrangler-action`, wrangler 4 고정
@@ -94,7 +162,7 @@
 
 | 워커 주소 | 커스텀 도메인 | 뜻 |
 | --- | --- | --- |
-| 옛 판 | 옛 판 | **배포 자체가 안 됐다.** 워크플로·`.assetsignore` 문제 |
+| 옛 판 | 옛 판 | **배포 자체가 안 됐다.** 워크플로·`wrangler.jsonc` 문제 |
 | 새 판 | 옛 판 | **도메인이 이 워커를 안 가리킨다.** 클라우드플레어 설정 문제 |
 | 새 판 | 새 판 | 정상 |
 
@@ -104,47 +172,18 @@ workers.dev 주소의 가운데(계정 서브도메인)는 대시보드에서 �
 
 ## 손으로 배포하기
 
-빌드 없이 된다. 저장소에 커밋된 산출물이 곧 배포본이다.
+빌드 없이 된다. 저장소에 커밋된 `app/dist/` 가 곧 배포본이다.
 
     npx wrangler login      # 브라우저가 열린다
     npx wrangler deploy
 
-`npm run deploy` 는 빌드부터 한다. 그건 `npm install` 을 먼저 해야 하고,
-안 하면 산출물만 지우고 실패한다(`CLAUDE.md` 참고).
+`npm run deploy` 는 빌드부터 한다. 그건 `npm install` 을 먼저 해야 한다
+(`CLAUDE.md` 참고).
 
-## 남은 일
-
-### 1. 시크릿 두 개
-
-저장소 **Settings → Secrets and variables → Actions → New repository secret**
-
-| 이름 | 어디서 |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | 대시보드 → My Profile → API Tokens → **Edit Cloudflare Workers** 템플릿 |
-| `CLOUDFLARE_ACCOUNT_ID` | Workers & Pages 개요 화면 오른쪽 |
-
-이게 없으면 워크플로가 1번 단계에서 선다.
-
-### 2. `qfit.qfitquick.com` 을 워커에 연결
-
-2026-09-08 에 API 로 확인한 것:
-
-- 워커 `qfit-quickfitness` 에 붙은 **커스텀 도메인 0개**
-- 배포 계정(`kim3106611@gmail.com`, `d4210a15825eeb0961a1ff8cbf43765e`)에
-  **존 0개** — `qfitquick.com` 이 이 계정에 없다
-- `qfitquick.com` 의 네임서버는 `remy`/`desiree.ns.cloudflare.com` →
-  클라우드플레어에 있긴 하나 **다른 계정**이다
-- 확증: 현재 자산 `assets/index-DzOMgzMg.js` 가 워커 주소에서는 200,
-  `qfit.qfitquick.com` 에서는 **404**
-
-**커스텀 도메인은 워커와 같은 계정의 존에만 붙는다.** 그래서 지금 계정에서는
-아무리 배포해도 그 주소가 안 바뀐다. 둘 중 하나를 해야 한다.
-
-- `qfitquick.com` 존을 가진 계정에서 워커를 배포하고, Workers & Pages →
-  qfit-quickfitness → Settings → Domains & Routes 에서 `qfit.qfitquick.com`
-  추가. CI 시크릿도 그 계정 것으로 바꾼다.
-- 또는 그 계정의 DNS 에서 `qfit` 을 `qfit.github.io` 로 CNAME.
-  Pages 는 이미 최신을 서빙 중이므로 이쪽이 더 빠르다.
+윈도우에서 `npx wrangler deploy --dry-run` 을 직접 돌려도 이제 정상
+동작한다 — 예전엔(저장소 루트가 대상이던 시절) 경로 구분자 문제로
+자산이 15,163개까지 잡히는 별도 버그가 있었는데, `app/dist/` 로
+분리되며 재현되지 않는다(2026-09-25 확인).
 
 ## Google Fit 연동 (2026-09-24)
 

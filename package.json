@@ -6,8 +6,8 @@
   "description": "Q-fit — 게임을 켰더니 운동이 끝나있다",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/clean.mjs && vite build",
-    "preview": "vite preview --outDir .. --port 5180",
+    "build": "vite build",
+    "preview": "vite preview --port 5180",
     "smoke": "node scripts/smoke.mjs",
     "flow": "node scripts/flow.mjs",
     "compare": "node scripts/compare.mjs",
@@ -22,7 +22,6 @@
     "media": "node scripts/media.mjs",
     "reminder": "node scripts/reminder.mjs",
     "plan": "node scripts/plan.mjs",
-    "stale": "node scripts/stale.mjs",
     "phases": "node scripts/phases.mjs",
     "dev:chat": "node server/chat.mjs",
     "test:chat": "node --test \"tests/chat/**/*.test.mjs\"",
@@ -36,6 +35,7 @@
     "vite-plugin-pwa": "^1.3.0"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.114.0"
+    "@supabase/supabase-js": "^2.114.0",
+    "@tosspayments/tosspayments-sdk": "^2.8.1"
   }
 }

@@ -35,6 +35,7 @@ import { initTabata } from './ui/tabata.js';
 import { initHeartGame } from './ui/heartgame.js';
 import { initChallengeTracker } from './ui/challengeTracker.js';
 import { initChatbot } from './ui/chatbot.js';
+import { initBilling } from './ui/billing.js';
 import { ICON } from './ui/icons.js';
 import { STATIC_UI } from './data/i18n-strings.js';
 import { initUpdate } from './pwa/update.js';
@@ -108,3 +109,5 @@ hideSplash();
 // 다만 '등록' 과 '갱신' 은 다른 일이다. 등록만으로는 홈 화면에 설치한 앱이
 // 옛 판에 묶인 채 몇 주가 간다 — 그 사정은 pwa/update.js 맨 위에 적어 두었다.
 initUpdate();
+
+initBilling({ translate: t, STATIC_UI });
