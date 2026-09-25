@@ -148,8 +148,8 @@ export default defineConfig({
     // emptyOutDir 은 반드시 꺼 둔다 — 켜면 빌드가 src/·scripts/·legacy/ 를 통째로
     // 지운다. 지난 산출물은 `npm run build` 가 먼저 부르는 scripts/clean.mjs 가
     // 이름을 아는 것만 골라 지운다.
-    outDir: ROOT,
-    emptyOutDir: false,
+    outDir: "dist",
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         // Supabase 를 이름이 정해진 청크로 뽑는다. 해시 이름 그대로 두면

@@ -6,28 +6,55 @@
 //
 // 동영상 요청만 여기서 가로채 진짜 206 을 만든다. 파일이 다 커봐야 수백
 // KB~수 MB(운동 클립)라 통째로 메모리에 올려도 부담 없다.
+import { handleBillingRequest, renewDueSubscriptions } from "./api/billing.js";
+import { test } from "./api/test.js";
+import { getTestToken } from "./utils/getTestToken.js";
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)$/i;
 
 export default {
   async fetch(request, env) {
+    const token=await getTestToken(
+      env.SUPABASE_URL,
+      env.SUPABASE_PUBLISHABLE_KEY,
+      "test@gmail.com",
+      "test1234",
+    );
     const url = new URL(request.url);
-    if (request.method !== 'GET' || !VIDEO_EXT.test(url.pathname)) {
+    // Payment endpoints are deliberately handled before static assets. All Toss
+    // secret-key calls remain in worker/api and never enter the browser bundle.
+    if (url.pathname === "/api/test") {
+      return Response.json({
+        hasUrl: !!env.SUPABASE_URL,
+        hasKey: !!env.SUPABASE_PUBLISHABLE_KEY,
+        hasSecret: !!env.SUPABASE_SECRET_KEY,
+      });
+    }
+    if (url.pathname.startsWith("/api/billing")) {
+      return handleBillingRequest(request, env);
+    }
+    if (request.method !== "GET" || !VIDEO_EXT.test(url.pathname)) {
       return env.ASSETS.fetch(request);
     }
 
-    const range = request.headers.get('Range');
+    const range = request.headers.get("Range");
     // Range 없는 요청은 원래대로 서빙하되, 브라우저가 다음부터 Range 를
     // 쓰도록 Accept-Ranges 만 얹는다.
     if (!range) {
       const res = await env.ASSETS.fetch(request);
       const headers = new Headers(res.headers);
-      headers.set('Accept-Ranges', 'bytes');
-      return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+      headers.set("Accept-Ranges", "bytes");
+      return new Response(res.body, {
+        status: res.status,
+        statusText: res.statusText,
+        headers,
+      });
     }
 
     // 정적 자산 쪽은 Range 를 무시하고 항상 전체를 주므로, Range 없이 다시
     // 받아서 여기서 직접 자른다.
-    const full = await env.ASSETS.fetch(new Request(url.toString(), { method: 'GET' }));
+    const full = await env.ASSETS.fetch(
+      new Request(url.toString(), { method: "GET" }),
+    );
     if (!full.ok) return full;
 
     const buf = await full.arrayBuffer();
@@ -39,7 +66,7 @@ export default {
     // 찾으려고 이 형태로 먼저 찔러보므로, 여기서 틀리면 video 가 계속
     // stalled 에 머문다.
     let start, end;
-    if (m && m[1] === '' && m[2] !== '') {
+    if (m && m[1] === "" && m[2] !== "") {
       const suffixLen = parseInt(m[2], 10);
       start = Math.max(0, size - suffixLen);
       end = size - 1;
@@ -51,14 +78,22 @@ export default {
     if (!m || Number.isNaN(start) || start >= size || start > end) {
       return new Response(null, {
         status: 416,
-        headers: { 'Content-Range': `bytes */${size}`, 'Accept-Ranges': 'bytes' },
+        headers: {
+          "Content-Range": `bytes */${size}`,
+          "Accept-Ranges": "bytes",
+        },
       });
     }
 
     const headers = new Headers(full.headers);
-    headers.set('Content-Range', `bytes ${start}-${end}/${size}`);
-    headers.set('Content-Length', String(end - start + 1));
-    headers.set('Accept-Ranges', 'bytes');
+    headers.set("Content-Range", `bytes ${start}-${end}/${size}`);
+    headers.set("Content-Length", String(end - start + 1));
+    headers.set("Accept-Ranges", "bytes");
     return new Response(buf.slice(start, end + 1), { status: 206, headers });
+  },
+  async scheduled(_event, env, ctx) {
+    // The hourly job only bills subscriptions whose server-side period has ended.
+    // The unique DB constraint on a billing period makes retries idempotent.
+    ctx.waitUntil(renewDueSubscriptions(env));
   },
 };
