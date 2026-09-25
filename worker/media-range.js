@@ -6,11 +6,21 @@
 //
 // 동영상 요청만 여기서 가로채 진짜 206 을 만든다. 파일이 다 커봐야 수백
 // KB~수 MB(운동 클립)라 통째로 메모리에 올려도 부담 없다.
+//
+// 결제 API(worker/api/billing.js, 2026-09-25)도 이 워커가 같이 처리한다 —
+// wrangler.jsonc 의 run_worker_first 가 /api/* 를 자산보다 먼저 이 워커로
+// 보낸다. Toss 시크릿 키를 쓰는 코드가 전부 여기(서버)에만 있고 브라우저
+// 번들에는 절대 안 들어간다.
+import { handleBillingRequest, renewDueSubscriptions } from './api/billing.js';
+
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)$/i;
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname.startsWith('/api/billing')) {
+      return handleBillingRequest(request, env);
+    }
     if (request.method !== 'GET' || !VIDEO_EXT.test(url.pathname)) {
       return env.ASSETS.fetch(request);
     }
@@ -60,5 +70,10 @@ export default {
     headers.set('Content-Length', String(end - start + 1));
     headers.set('Accept-Ranges', 'bytes');
     return new Response(buf.slice(start, end + 1), { status: 206, headers });
+  },
+  // 정기결제 갱신(wrangler.jsonc 의 triggers.crons, 매시 정각). 기간이
+  // 끝난 구독을 걷어서 다시 청구한다 — worker/api/billing.js 참고.
+  async scheduled(_event, env, ctx) {
+    ctx.waitUntil(renewDueSubscriptions(env));
   },
 };

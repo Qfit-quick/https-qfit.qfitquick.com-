@@ -653,6 +653,13 @@ export const STATIC_UI = {
  premiumProcessing: {ko:'처리 중...', en:'Processing...', zh:'处理中...'},
  premiumPriceUnit: {ko:'/ 월', en:'/ mo', zh:'/ 月'},
  premiumFineprint: {ko:'테스트 모드 — 실제 결제는 아직 연결되지 않았어요', en:"Test mode — real payment isn't wired up yet", zh:'测试模式 — 尚未接入实际支付功能'},
+ // Toss 카드 등록(2026-09-25, ui/billing.js). 위 프리미엄 토글(테스트
+ // 모드)과는 아직 안 이어져 있다 — 실제 결제 연동이 끝나면 정리할 자리.
+ billingLoginRequired: {ko:'로그인 후 이용할 수 있어요', en:'Please log in first', zh:'请先登录'},
+ billingRegisterFailed: {ko:'카드 등록에 실패했어요. 다시 시도해 주세요', en:'Card registration failed. Please try again.', zh:'银行卡注册失败，请重试。'},
+ billingRegisterDone: {ko:'카드 등록 완료! 프리미엄이 시작됐어요', en:'Card registered! Premium is now active.', zh:'银行卡注册完成！高级会员已生效。'},
+ billingPending: {ko:'결제 확인 중이에요. 잠시 후 다시 확인해 주세요', en:'Confirming payment — check back in a moment.', zh:'正在确认付款，请稍后再查看。'},
+ billingButtonLabel: {ko:'카드 등록', en:'Register card', zh:'注册银行卡'},
  premiumTitleOn: {ko:'✨ 프리미엄 회원이에요', en:"✨ You're a premium member", zh:'✨ 你是高级会员'},
  premiumTitleOff: {ko:'프리미엄 전용 운동', en:'Premium-Only Exercise', zh:'仅限高级会员的动作'},
  premiumDescOn: {ko:'모든 프리미엄 운동을 이용할 수 있어요. 감사합니다!', en:'You have access to every premium exercise. Thank you!', zh:'你可以使用所有高级会员动作，感谢支持！'},

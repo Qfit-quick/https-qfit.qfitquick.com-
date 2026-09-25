@@ -2,12 +2,20 @@
   "name": "qfit-quickfitness",
   "compatibility_date": "2026-09-05",
   "main": "worker/media-range.js",
+  // 정기결제 갱신(worker/api/billing.js 의 renewDueSubscriptions)을
+  // 매시 정각에 돌린다(2026-09-25). Cron 은 wrangler.jsonc 로만 켤 수
+  // 있다 — 대시보드에서 넣어도 다음 배포 때 이 설정으로 되돌아간다.
+  "triggers": { "crons": ["0 * * * *"] },
   "assets": {
-    "directory": ".",
+    // 빌드 결과 폴더(vite.config.js 의 outDir). 예전엔 저장소 루트 전체를
+    // 가리켰다(CLAUDE.md 참고) — 이제 산출물만 담긴 별도 폴더라
+    // .assetsignore 로 소스·설정 파일을 빼낼 필요가 없어졌다.
+    "directory": "./app/dist",
     "binding": "ASSETS",
     // 기본은 자산 우선(asset-first) — 파일이 있으면 워커 스크립트를 아예
     // 안 거친다. 그러면 media/clips 의 영상도 워커를 안 타서 Range 를
-    // 못 고친다. 이 경로만 워커를 먼저 태운다.
-    "run_worker_first": ["/media/clips/*"]
+    // 못 고친다. /api/* 도 자산이 아니라 결제 API 로직이라 워커를 먼저
+    // 태워야 한다.
+    "run_worker_first": ["/media/clips/*", "/api/*"]
   }
 }

@@ -3,7 +3,8 @@
 // 추가하고 이유를 기록" 원칙 — 이 서버는 라우트가 POST /api/chat 하나뿐
 // 이라 프레임워크가 없어도 코드량 차이가 거의 없다).
 //
-// 배포는 하지 않는다. .assetsignore 가 이 폴더를 정적 자산에서 빼 둔다.
+// 배포는 하지 않는다. 이 폴더는 애초에 빌드 산출물 폴더(app/dist/) 밖에
+// 있어서 자산으로 같이 올라갈 일이 없다.
 import http from 'node:http';
 import crypto from 'node:crypto';
 import { pathToFileURL } from 'node:url';
