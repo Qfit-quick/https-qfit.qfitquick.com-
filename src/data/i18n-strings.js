@@ -656,6 +656,20 @@ export const STATIC_UI = {
  seniorModeStartBtn: {ko:'천천히 시작하기', en:'Start slowly', zh:'慢慢开始'},
  seniorDoneTitle: {ko:'오늘도 잘 하셨어요 🎉', en:'Well done today 🎉', zh:'今天做得很好 🎉'},
 
+ // Q-Mission·Q-Impact(2026-09-27) — 홈의 "오늘 두 칸"(운동·식단 체크
+ // 바로가기) 을 대신한다. src/ui/qmission.js·src/data/qmissions.js 참고.
+ // 완료해도 칭찬·평가 문구를 안 쓴다(사용자 요청) — 그냥 기록됐다는
+ // 사실과 숫자만 보여준다.
+ qmCardTitle: {ko:'Q-Mission', en:'Q-Mission', zh:'Q-Mission'},
+ qmCardStatus: {ko:'%s/%s 완료', en:'%s/%s done', zh:'完成 %s/%s'},
+ qmCardOpenBtn: {ko:'미션 보기', en:'View missions', zh:'查看任务'},
+ qmScreenTitle: {ko:'Q-Mission', en:'Q-Mission', zh:'Q-Mission'},
+ qmTodayLabel: {ko:'오늘의 미션', en:"Today's missions", zh:'今天的行动'},
+ qmImpactTitle: {ko:'이번 달 Q-Impact', en:"This month's Q-Impact", zh:'本月 Q-Impact'},
+ qmImpactNarrative: {ko:'이번 달 %s개의 행동을 실천했습니다.', en:"You've taken %s actions this month.", zh:'本月你已实践了%s次行动。'},
+ qmImpactEmpty: {ko:'아직 이번 달 기록이 없어요 — 하나만 체크해도 여기에 쌓입니다', en:'No records yet this month — check even one off and it starts showing up here.', zh:'本月还没有记录 — 只要勾选一项，这里就会开始累积。'},
+ qmPointsLabel: {ko:'누적 Q %s', en:'Total Q %s', zh:'累计 Q %s'},
+
  // 쉬운 동작 전환
  easySwapBtnLabel: {ko:'😵 힘들어요 → 쉬운 동작으로', en:'😵 Too hard → switch to an easier move', zh:'😵 太难了 → 换成简单动作'},
  easySwapBackLabel: {ko:'🔄 다시 원래 동작으로', en:'🔄 Switch back to the original move', zh:'🔄 换回原本的动作'},

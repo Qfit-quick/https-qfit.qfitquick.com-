@@ -39,7 +39,11 @@ let S = {};
 // 기존 '프로그램'(4자)보다 짧은 2자라 줄어들 폭이 없다.
 const TABS = [
   { id: 'start-screen', labelKey: 'navHome', icon: 'home', via: null },
-  { id: 'log-screen', labelKey: 'navCheck', icon: 'checklist', via: '#today-card-open' },
+  // via 가 today-card-open 이었던 것은 2026-09-27에 그 버튼이 없어지면서
+  // (홈 카드가 Q-Mission으로 바뀜, src/ui/qmission.js) null로 돌아갔다 —
+  // log.js가 screenchange 이벤트로 이미 log-screen을 다시 그리므로
+  // (renderLogScreen()), 어느 문으로 들어와도 안전하다.
+  { id: 'log-screen', labelKey: 'navCheck', icon: 'checklist', via: null },
   { id: 'programs-screen', labelKey: 'programsEyebrow', icon: 'trophy', via: null },
   { id: 'plan-screen', labelKey: 'navGoal', icon: 'plan', via: null },
   { id: 'challenge-screen', labelKey: 'challengeEyebrow', icon: 'spark', via: null },
@@ -98,6 +102,8 @@ const BELONGS_TO = {
   'tabata-run-screen': 'more-screen',
   // 어르신·재활 모드는 회복 화면(더보기 밑)에서 연다.
   'senior-run-screen': 'more-screen',
+  // Q-Mission은 홈 카드에서 연다(2026-09-27).
+  'q-mission-screen': 'start-screen',
 };
 
 let bar = null;

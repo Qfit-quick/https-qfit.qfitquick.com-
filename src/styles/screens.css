@@ -418,6 +418,10 @@
 }
 .recovery-list b { color: var(--text); font-weight: 700; }
 
+/* Q-Mission·Q-Impact(2026-09-27) — 이번 달 몇 개를 실천했는지 말하는
+   한 줄. recovery-list 바로 위, 목록 자체보다 눈에 먼저 들어와야 한다. */
+.qm-impact-lead { font-size: var(--t-md); font-weight: 700; margin-bottom: var(--s-2); }
+
 .injury-section-title {
   font-size: var(--t-md);
   font-weight: 700;

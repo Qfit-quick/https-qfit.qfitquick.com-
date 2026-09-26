@@ -5,8 +5,13 @@
 // 체크를 다 훑어서 스스로 상태를 세게 만들면 기록지가 아니라 설문이 된다.
 //
 // 상태는 네 가지뿐이다: none · diet · workout · both. 판정은 화면이 하지 않고
-// src/health/store.js 의 dayStatus() 하나가 한다 — 홈 카드와 기록지와 캘린더가
-// 같은 함수를 읽어야, 세 자리가 서로 다른 말을 하는 날이 오지 않는다.
+// src/health/store.js 의 dayStatus() 하나가 한다 — 기록지와 캘린더가
+// 같은 함수를 읽어야, 두 자리가 서로 다른 말을 하는 날이 오지 않는다.
+//
+// 홈 화면의 "오늘 두 칸" 카드(운동·식단 바로가기)는 2026-09-27 에
+// Q-Mission 으로 바뀌었다(src/ui/qmission.js) — 이 화면 자체는 그대로
+// 있고, 탭바의 "체크" 는 이제 그 카드를 거치지 않고 바로 연다
+// (src/ui/nav.js 의 log-screen via 참고).
 
 import {
   dayKey, loadDay, saveDay, dietState, dayStatus,
@@ -475,34 +480,6 @@ function paintCalendar(dateStr) {
   }
 }
 
-// ── 홈의 '오늘 두 칸' 카드 ────────────────────────────────────
-
-export function renderTodayCard() {
-  const card = el('today-card');
-  if (!card) return;
-  const date = dayKey();
-  const day = loadDay(date);
-  const status = dayStatus(day);
-  const diet = dietState(day);
-
-  const mark = (on, partial, kind) =>
-    `<span class="tc-mark ${kind}${on ? ' on' : partial ? ' partial' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span>`;
-
-  card.dataset.status = status;
-  card.innerHTML =
-    '<div class="tc-head">' +
-    `<span class="week-title">${esc(t(S.logToday))}</span>` +
-    `<span class="dim tc-status">${esc(t(S[STATUS_TEXT[status]]))}</span>` +
-    '</div>' +
-    '<div class="tc-rows">' +
-    `<span class="tc-row">${mark(!!day.workout, false, 'w')}<span>${esc(t(S.logWorkout))}</span></span>` +
-    `<span class="tc-row">${mark(diet === 'done', diet === 'partial', 'd')}<span>${esc(t(S.logDiet))}` +
-    (diet === 'partial' ? ` <em>${esc(t(S.logDietPartialShort))}</em>` : '') +
-    '</span></span>' +
-    '</div>' +
-    `<button class="sec2 tc-open" type="button" id="today-card-open">${esc(t(S.logOpen))}</button>`;
-}
-
 // ── 다시 그리기 ───────────────────────────────────────────────
 
 export function renderLogScreen(dateStr = dayKey()) {
@@ -536,7 +513,6 @@ export function initLog({ translate, STATIC_UI, onShowScreen } = {}) {
           saveDay(date, { meals: { [id]: !(day.meals || {})[id] } });
         }
         renderLogScreen(date);
-        renderTodayCard();
         return;
       }
 
@@ -600,34 +576,20 @@ export function initLog({ translate, STATIC_UI, onShowScreen } = {}) {
     console.error('log screen setup failed:', e);
   }
 
-  // 홈 카드
-  try {
-    el('start-screen')?.addEventListener('click', (e) => {
-      if (!e.target.closest('#today-card-open')) return;
-      renderLogScreen();
-      goScreen('log-screen');
-    });
-  } catch (e) {
-    console.error('today card setup failed:', e);
-  }
-
-  // 운동을 끝내면 두 자리가 같이 갱신된다. 결과 화면에서 홈으로 돌아왔을 때
-  // 기록지가 옛 상태를 들고 있으면 방금 한 운동이 없는 것처럼 보인다.
+  // 운동을 끝내면 기록지가 갱신돼야 한다 — 결과 화면에서 홈으로 돌아왔을 때
+  // 옛 상태를 들고 있으면 방금 한 운동이 없는 것처럼 보인다. 홈 카드는
+  // 이제 log.js 것이 아니다(Q-Mission 으로 대체, src/ui/qmission.js).
   document.addEventListener('qfit:completed', () => {
-    try { renderTodayCard(); renderLogScreen(); } catch (e) { console.error('log repaint failed:', e); }
-  });
-  document.addEventListener('qfit:daylog', () => {
-    try { renderTodayCard(); } catch (e) { console.error('today card repaint failed:', e); }
+    try { renderLogScreen(); } catch (e) { console.error('log repaint failed:', e); }
   });
   document.addEventListener('qfit:lang', () => {
-    try { renderTodayCard(); renderLogScreen(); } catch (e) { console.error('log repaint failed:', e); }
+    try { renderLogScreen(); } catch (e) { console.error('log repaint failed:', e); }
   });
   // 화면이 열릴 때마다 다시 그린다. 자정을 넘겨 앱을 켜 둔 채로 들어오면
   // 어제 기록지를 보게 되는데, 그게 제일 알아채기 어려운 오류다.
   document.addEventListener('screenchange', (e) => {
     if (e.detail.id === 'log-screen') renderLogScreen();
-    if (e.detail.id === 'start-screen') renderTodayCard();
   });
 
-  try { renderTodayCard(); renderLogScreen(); } catch (e) { console.error('initial log render failed:', e); }
+  try { renderLogScreen(); } catch (e) { console.error('initial log render failed:', e); }
 }

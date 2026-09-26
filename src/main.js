@@ -26,7 +26,8 @@ import { hideSplash } from './ui/splash.js';
 import { initHeaders } from './ui/header.js';
 import { initGate } from './ui/gate.js';
 import { initPlan, renderPlanScreen } from './ui/plan.js';
-import { initLog, renderLogScreen, renderTodayCard } from './ui/log.js';
+import { initLog, renderLogScreen } from './ui/log.js';
+import { initQMission, renderQMissionCard } from './ui/qmission.js';
 import { initPrograms, renderProgramsScreen, quickStartCircuit } from './ui/programs.js';
 import { initAmrap, startAmrap } from './ui/amrap.js';
 import { initCircuit, startCircuit } from './ui/circuit.js';
@@ -42,9 +43,10 @@ import { STATIC_UI } from './data/i18n-strings.js';
 import { initUpdate } from './pwa/update.js';
 import { Sound } from './audio/sound.js';
 
-// 계획과 기록지를 먼저 붙인다. 둘이 홈의 '오늘 두 칸' 카드와 계획 화면의
-// 안쪽을 만들어 넣으므로, 아이콘 칠하기(paintIcons)와 머리 만들기보다
-// 앞이어야 한다 — 나중에 붙이면 그 안의 data-icon 자리가 빈 채로 남는다.
+// 계획과 기록지를 먼저 붙인다. 계획 화면의 안쪽을 만들어 넣으므로,
+// 아이콘 칠하기(paintIcons)와 머리 만들기보다 앞이어야 한다 —
+// 나중에 붙이면 그 안의 data-icon 자리가 빈 채로 남는다. 홈의
+// '오늘 두 칸' 자리는 2026-09-27부터 Q-Mission(아래 initQMission)이 쓴다.
 initPlan({
   translate: t,
   STATIC_UI,
@@ -52,6 +54,9 @@ initPlan({
   onShowScreen: showScreenById,
 });
 initLog({ translate: t, STATIC_UI, onShowScreen: showScreenById });
+// 홈의 '오늘 두 칸' 카드(2026-09-27부터 Q-Mission) — 위와 같은 이유.
+initQMission({ translate: t, STATIC_UI, onShowScreen: showScreenById });
+renderQMissionCard();
 // 프로그램의 '시작하기' 도 계획 화면과 같은 문(startRoutine)을 쓴다 —
 // 둘 다 '동작을 미리 정해 두고 설정 화면으로 보낸다' 는 같은 일이다.
 // 다만 Cindy(amrap)·QCE(circuit) 처럼 고정 서킷인 프로그램은 그 문으로
@@ -99,7 +104,7 @@ initGate({
   STATIC_UI,
   onEnter: () => {
     try { renderPlanScreen(); } catch (e) { console.error('plan render after gate failed:', e); }
-    try { renderTodayCard(); renderLogScreen(); } catch (e) { console.error('log render after gate failed:', e); }
+    try { renderLogScreen(); } catch (e) { console.error('log render after gate failed:', e); }
   },
 });
 

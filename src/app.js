@@ -483,6 +483,11 @@ const tabataRunScreen = document.getElementById('tabata-run-screen');
 // 어르신·재활 모드(2026-09-27). 위 셋과 같은 이유 — 안쪽은
 // src/ui/seniorMode.js 가 전부 붙인다.
 const seniorRunScreen = document.getElementById('senior-run-screen');
+// Q-Mission(2026-09-27). 위와 같은 이유 — 안쪽은 src/ui/qmission.js 가
+// 전부 붙인다. 이 배열에 넣는 걸 빠뜨리면 나갈 때 active 가 안 지워져
+// 두 화면이 동시에 active 로 남는다(senior-run-screen 에서 실제로
+// 겪은 버그 — 반드시 여기 넣을 것).
+const qMissionScreen = document.getElementById('q-mission-screen');
 const openVideoGalleryBtn = document.getElementById('open-video-gallery-btn');
 const videoGalleryBackBtn = document.getElementById('video-gallery-back-btn');
 const videoGalleryGrid = document.getElementById('video-gallery-grid');
@@ -592,7 +597,7 @@ function refreshStartModeRow(){
 }
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen,quickScreen,tabataSetupScreen,tabataRunScreen,seniorRunScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen,quickScreen,tabataSetupScreen,tabataRunScreen,seniorRunScreen,qMissionScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  if(el === moreScreen){
  try{
