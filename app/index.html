@@ -890,8 +890,9 @@
       눌러도 아무 일이 없는 버튼보다 없는 버튼이 낫다. -->
  <button class="primary profile-login" id="settings-login-btn" data-i18n="loginOrSignup">로그인 / 가입</button>
 
- <!-- 프리미엄 게이팅(테스트 모드 — 실제 결제는 아직 연결 안 됨). src/ 개편
-      때 통째로 빠졌다가 프리미엄 동작 12종과 같이 되살렸다(2026-09-08). -->
+ <!-- 프리미엄 게이팅 — Toss 정기결제와 이어져 있다(2026-09-26, src/app.js
+      의 applyBillingStatus). src/ 개편 때 통째로 빠졌다가 프리미엄 동작
+      12종과 같이 되살렸다(2026-09-08). -->
  <div class="settings-group">
  <div class="settings-list">
  <button type="button" class="settings-row settings-link" id="settings-premium-row">
@@ -994,7 +995,8 @@
  <div class="kick" data-i18n="setGroupAccount">계정</div>
  <div class="settings-list">
  <!-- Toss 정기결제 카드 등록(2026-09-25, ui/billing.js·worker/api/billing.js).
-      위 프리미엄 줄(테스트 모드)과는 아직 안 이어져 있다. -->
+      위 프리미엄 줄과 여기가 이제 같은 상태(myProfile.billing)를 공유한다
+      (2026-09-26, src/app.js 의 applyBillingStatus). -->
  <button class="settings-row settings-link" id="billing-button" type="button">
  <span class="row-main"><span class="row-t" data-i18n="billingButtonLabel">카드 등록</span></span>
  </button>
@@ -1700,8 +1702,9 @@
  </div>
 </div>
 
-<!-- 프리미엄 게이팅(테스트 모드 — 실제 결제는 아직 연결 안 됨). 설정의
-     settings-premium-row와 고르기 화면의 잠긴 카드가 이걸 연다. -->
+<!-- 프리미엄 게이팅 — 설정의 settings-premium-row와 고르기 화면의 잠긴
+     카드가 이걸 연다. 버튼 클릭은 src/ui/billing.js 의 initBilling() 이
+     묶는다(실제 Toss 카드 등록/해지 API 를 그쪽만 알고 있다, 2026-09-26). -->
 <div class="pause-overlay" id="premium-overlay">
  <div class="pause-box premium-box">
  <div class="premium-icon">✨</div>
@@ -1712,7 +1715,12 @@
  <span class="premium-price-unit" data-i18n="premiumPriceUnit">/ 월</span>
  </div>
  <button class="btn-restart" id="premium-activate-btn" type="button" data-i18n="premiumStartBtn">✨ 프리미엄 시작하기</button>
- <p class="premium-fineprint" id="premium-fineprint" data-i18n="premiumFineprint">테스트 모드 — 실제 결제는 아직 연결되지 않았어요</p>
+ <p class="premium-fineprint" id="premium-fineprint" data-i18n="premiumFineprint">등록한 카드로 매달 자동 결제돼요</p>
+ <!-- 실제 구독이 있을 때만 보인다(app.js 의 refreshPremiumUI 가 채운다) -->
+ <div class="premium-cancel-box" id="premium-cancel-box" style="display:none">
+ <p class="premium-fineprint" id="premium-cancel-note"></p>
+ <button class="link-btn" id="premium-cancel-btn" type="button"></button>
+ </div>
  <button class="link-btn" id="premium-close-btn" type="button" data-i18n="closeBtn">닫기</button>
  </div>
 </div>

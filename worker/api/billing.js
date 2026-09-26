@@ -434,6 +434,28 @@ async function authorize(request, env, user) {
   );
 }
 
+async function setCancelFlag(env, user, cancel) {
+  const rows = await supabase(
+    env,
+    `subscriptions?user_id=eq.${user.id}&select=id,status`,
+  );
+  const sub = rows[0];
+  // 해지 예약은 갱신을 막을 뿐이니 active/past_due 에만 의미가 있다 —
+  // 구독 자체가 없거나 이미 끝난 사람에게는 되돌릴 것도 막을 것도 없다.
+  if (!sub || !["active", "past_due"].includes(sub.status))
+    return reply({ error: "No active subscription." }, 404);
+  const updated = await supabase(env, `subscriptions?user_id=eq.${user.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ cancel_at_period_end: !!cancel }),
+  });
+  const row = updated[0] || {};
+  return reply({
+    status: row.status,
+    current_period_end: row.current_period_end,
+    cancel_at_period_end: row.cancel_at_period_end,
+  });
+}
+
 export async function handleBillingRequest(request, env) {
   if (request.method === "OPTIONS")
     return new Response(null, { headers: { allow: "GET, POST, OPTIONS" } });
@@ -451,6 +473,10 @@ export async function handleBillingRequest(request, env) {
         `subscriptions?user_id=eq.${user.id}&select=status,current_period_end,cancel_at_period_end`,
       );
       return reply(rows[0] || { status: "none" });
+    }
+    if (request.method === "POST" && path === "/api/billing/cancel") {
+      const { cancel } = await request.json().catch(() => ({}));
+      return setCancelFlag(env, user, cancel !== false);
     }
     return reply({ error: "Not found." }, 404);
   } catch (error) {

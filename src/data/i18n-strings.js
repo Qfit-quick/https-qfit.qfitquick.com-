@@ -646,15 +646,17 @@ export const STATIC_UI = {
  restTouchCaption: {ko:'인증을 위해 첫휴식에만 화면 위 번개를 눌러주세요!', en:'For verification, tap the lightning bolt above — only on your first rest!', zh:'仅在第一次休息时，点击屏幕上方的闪电以完成验证！'},
  restTouchDone: {ko:'인증 완료!', en:'Charged!', zh:'验证完成！'},
 
- // 프리미엄 게이팅 (테스트 모드 — 실제 결제는 연결 안 됨)
+ // 프리미엄 게이팅 — Toss 정기결제(worker/api/billing.js)와 이어져 있다
+ // (2026-09-26). 카드 등록·해지 전부 실제 API 를 타고, 그 결과만이
+ // isPremium 을 바꾼다(src/app.js 의 applyBillingStatus 참고).
  settingsPremiumNotLabel: {ko:'✨ 프리미엄 아님 — 눌러서 보기', en:'✨ Not premium — tap to view', zh:'✨ 非高级会员 — 点击查看'},
  settingsPremiumOnLabel: {ko:'✨ 프리미엄 회원', en:'✨ Premium Member', zh:'✨ 高级会员'},
  premiumStartBtn: {ko:'✨ 프리미엄 시작하기', en:'✨ Start Premium', zh:'✨ 开通高级会员'},
  premiumProcessing: {ko:'처리 중...', en:'Processing...', zh:'处理中...'},
  premiumPriceUnit: {ko:'/ 월', en:'/ mo', zh:'/ 月'},
- premiumFineprint: {ko:'테스트 모드 — 실제 결제는 아직 연결되지 않았어요', en:"Test mode — real payment isn't wired up yet", zh:'测试模式 — 尚未接入实际支付功能'},
- // Toss 카드 등록(2026-09-25, ui/billing.js). 위 프리미엄 토글(테스트
- // 모드)과는 아직 안 이어져 있다 — 실제 결제 연동이 끝나면 정리할 자리.
+ premiumFineprint: {ko:'등록한 카드로 매달 자동 결제돼요', en:'Your card will be charged automatically every month.', zh:'将从已登记的银行卡每月自动扣款。'},
+ // Toss 카드 등록(2026-09-25, ui/billing.js) — 위 프리미엄 덮개도 이제
+ // 같은 흐름을 탄다(2026-09-26).
  billingLoginRequired: {ko:'로그인 후 이용할 수 있어요', en:'Please log in first', zh:'请先登录'},
  billingRegisterFailed: {ko:'카드 등록에 실패했어요. 다시 시도해 주세요', en:'Card registration failed. Please try again.', zh:'银行卡注册失败，请重试。'},
  billingRegisterDone: {ko:'카드 등록 완료! 프리미엄이 시작됐어요', en:'Card registered! Premium is now active.', zh:'银行卡注册完成！高级会员已生效。'},
@@ -664,7 +666,15 @@ export const STATIC_UI = {
  premiumTitleOff: {ko:'프리미엄 전용 운동', en:'Premium-Only Exercise', zh:'仅限高级会员的动作'},
  premiumDescOn: {ko:'모든 프리미엄 운동을 이용할 수 있어요. 감사합니다!', en:'You have access to every premium exercise. Thank you!', zh:'你可以使用所有高级会员动作，感谢支持！'},
  premiumDescOff: {ko:'프리미엄 전용 고강도 운동 %s종이 더 있어요. 같은 운동만 반복하지 않고 질리지 않게 운동할 수 있어요!', en:'Unlock %s more high-intensity premium exercises — never get stuck doing the same moves on repeat.', zh:'解锁 %s 种更多高强度高级会员动作 — 不用一直重复同样的动作，运动更有新鲜感！'},
- premiumActivatedMsg: {ko:'🎉 프리미엄이 활성화됐어요! (테스트 모드 — 실제 결제는 아직 연결 안 됨)', en:"🎉 Premium activated! (test mode — real payment isn't wired up yet)", zh:'🎉 高级会员已激活！（测试模式 — 尚未接入实际支付功能）'},
+ // 구독 해지/재개(2026-09-26) — premium-cancel-box 는 실제 구독이 있을
+ // 때만 보인다(premium-overlay 마크업 참고).
+ premiumCancelBtn: {ko:'구독 해지', en:'Cancel subscription', zh:'取消订阅'},
+ premiumResumeBtn: {ko:'해지 취소 (계속 이용)', en:'Undo cancellation', zh:'撤销取消'},
+ premiumCancelScheduledNote: {ko:'%s까지 이용할 수 있어요 — 그 뒤로는 자동 결제되지 않아요', en:'Access continues through %s — no further charge after that.', zh:'可使用至%s，之后不会再自动扣款。'},
+ premiumNextBillingNote: {ko:'다음 결제일: %s', en:'Next billing date: %s', zh:'下次扣款日期：%s'},
+ billingCancelConfirm: {ko:'정기결제를 해지할까요? 이번 결제 기간이 끝날 때까지는 계속 이용할 수 있어요', en:'Cancel your subscription? You can keep using it until the current period ends.', zh:'要取消订阅吗？在本期结束前仍可继续使用。'},
+ billingCancelScheduled: {ko:'해지 예약됐어요. 남은 기간까지는 계속 이용할 수 있어요', en:'Cancellation scheduled — you can keep using it until the period ends.', zh:'已安排取消，剩余期限内仍可继续使用。'},
+ billingCancelResumed: {ko:'정기결제를 계속 이용해요', en:"You're continuing your subscription.", zh:'已恢复自动续费。'},
 
  // 쉬운 동작 전환
  easySwapBtnLabel: {ko:'😵 힘들어요 → 쉬운 동작으로', en:'😵 Too hard → switch to an easier move', zh:'😵 太难了 → 换成简单动作'},

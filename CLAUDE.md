@@ -81,6 +81,14 @@ Pages 경로는 포기했다 — 그 주소(`qfit.github.io/...`)는 이제 갱�
 - **결제 갱신은 매시 정각 크론(`wrangler.jsonc` 의 `triggers.crons`)이
   돈다.** 대시보드에서 크론을 손으로 추가해도 다음 배포 때 이 설정으로
   되돌아간다 — 바꾸려면 여기를 고친다.
+- **프리미엄 동작 잠금(`myProfile.isPremium`)은 이 구독 상태로만 정해진다**
+  (2026-09-26, `src/app.js` 의 `window.applyBillingStatus`). 그 전에는
+  결제와 잠금이 완전히 따로 놀았다 — 카드 등록해도 잠금이 안 풀리고,
+  설정의 예전 "프리미엄 시작하기" 버튼은 결제 없이 즉시 풀어 줬다. 지금은
+  `src/ui/billing.js` 가 부팅 때·카드 등록 직후·해지 토글 직후마다
+  `/api/billing/status`(또는 그 호출의 응답)를 `applyBillingStatus` 에
+  넘기고, 그 함수만이 `isPremium` 을 바꾼다 — 프리미엄 관련 코드를 새로
+  건드릴 때 이 경로를 벗어나 `isPremium` 을 직접 켜지 않는다.
 
 ## 산출물의 줄바꿈은 LF 여야 한다
 
@@ -143,8 +151,9 @@ Pages 경로는 포기했다 — 그 주소(`qfit.github.io/...`)는 이제 갱�
 `smoke`·`flow`·`shot` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
 안 돌린다.
 
-`npm run phases` 는 브라우저 없이 돌지만 워크플로에는 아직 안 붙어 있다.
-`src/data/exercise-phases.js` 의 국면 시각이 실제 클립과 맞는지 본다.
+`npm run phases` 는 브라우저 없이 돈다(2026-09-26 부터 워크플로에도 붙어
+있다). `src/data/exercise-phases.js` 의 국면 시각이 실제 클립과 맞는지
+본다.
 
 ## 동작 국면 시각은 클립에 묶여 있다
 

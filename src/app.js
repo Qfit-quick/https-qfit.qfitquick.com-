@@ -4642,11 +4642,17 @@ try{
 // 운동 알림(FR-03).
 // 권한은 토글을 켤 때만 묻는다 — 부팅하자마자 물으면 대부분 거절하고,
 // 브라우저가 그 거절을 기억해서 나중에 켜고 싶어도 못 켜게 된다.
-// 프리미엄 게이팅(테스트 모드 — 실제 결제는 연결 안 됨). 설정 줄과 덮개
-// 안의 값을 한 곳에서 채운다 — settings-premium-row 를 열 때도, 잠긴 카드를
-// 눌러 바로 열 때도 이 함수부터 부른다.
+// 프리미엄 게이팅 — Toss 정기결제(worker/api/billing.js, src/ui/billing.js)와
+// 실제로 이어져 있다(2026-09-26). 그 전에는 이 잠금이 결제와 완전히 따로
+// 놀았다: 카드 등록해서 돈을 내도 여기 isPremium 은 안 바뀌고, 반대로
+// 아래 activateBtn 은 결제 없이 즉시 잠금을 풀어 줬다(그 흔적이 지금도
+// STATIC_UI.premiumFineprint 문구였다). 지금은 이 함수가 상태를 그리기만
+// 하고, 실제로 상태를 바꾸는 건 window.applyBillingStatus(billing.js 가
+// 서버 응답을 받을 때마다 호출)뿐이다 — 설정 줄과 덮개도 그 결과 하나만
+// 보고 채운다.
 function refreshPremiumUI(){
  const isPremium = !!myProfile.isPremium;
+ const billing = myProfile.billing || null;
  const premiumCount = EXERCISES.filter(e=> e.premium).length;
  const label = document.getElementById('settings-premium-label');
  if(label) label.textContent = t(isPremium ? STATIC_UI.settingsPremiumOnLabel : STATIC_UI.settingsPremiumNotLabel);
@@ -4667,12 +4673,57 @@ function refreshPremiumUI(){
  if(title) title.textContent = t(isPremium ? STATIC_UI.premiumTitleOn : STATIC_UI.premiumTitleOff);
  const desc = document.getElementById('premium-desc');
  if(desc) desc.textContent = isPremium ? t(STATIC_UI.premiumDescOn) : t(STATIC_UI.premiumDescOff).replace('%s', premiumCount);
+
+ // 해지/재개 줄 — 실제 구독(현재 결제 기간이 있는 경우)에만 보인다.
+ // 카드만 등록하고 아직 첫 결제가 안 끝난 경우(currentPeriodEnd 없음)는
+ // 해지할 대상 자체가 없으므로 숨긴다.
+ const cancelBox = document.getElementById('premium-cancel-box');
+ const cancelBtn = document.getElementById('premium-cancel-btn');
+ const cancelNote = document.getElementById('premium-cancel-note');
+ const showCancelRow = isPremium && billing && billing.currentPeriodEnd;
+ if(cancelBox) cancelBox.style.display = showCancelRow ? '' : 'none';
+ if(showCancelRow){
+ const willCancel = !!billing.cancelAtPeriodEnd;
+ const d = new Date(billing.currentPeriodEnd);
+ const dateLabel = t({
+ ko: (d.getMonth()+1) + '월 ' + d.getDate() + '일',
+ en: d.toLocaleDateString('en-US', { month:'short', day:'numeric' }),
+ zh: (d.getMonth()+1) + '月' + d.getDate() + '日',
+ });
+ if(cancelNote) cancelNote.textContent = t(willCancel ? STATIC_UI.premiumCancelScheduledNote : STATIC_UI.premiumNextBillingNote).replace('%s', dateLabel);
+ if(cancelBtn){
+ cancelBtn.textContent = t(willCancel ? STATIC_UI.premiumResumeBtn : STATIC_UI.premiumCancelBtn);
+ cancelBtn.dataset.cancelAtPeriodEnd = willCancel ? 'true' : 'false';
+ cancelBtn.disabled = false;
+ }
+ }
 }
 window.refreshPremiumUI = refreshPremiumUI;
 window.openPremiumUpsell = function(){
  refreshPremiumUI();
  const overlay = document.getElementById('premium-overlay');
  if(overlay) overlay.classList.add('on');
+};
+
+// billing.js 가 서버 구독 상태를 받을 때마다(부팅 · 카드 등록 직후 · 해지
+// 토글 직후) 부른다 — 여기가 isPremium 을 바꾸는 유일한 자리다.
+// status 가 'pending' 이면 결제 결과를 아직 확인 중이라는 뜻(worker 의
+// pendingResponse) 이라 지금 잠금 상태를 섣불리 껐다 켰다 하지 않는다.
+window.applyBillingStatus = function(payload){
+ if(!payload) return;
+ const status = payload.status || 'none';
+ const prevBilling = myProfile.billing || {};
+ const currentPeriodEnd = ('current_period_end' in payload) ? payload.current_period_end
+ : ('currentPeriodEnd' in payload) ? payload.currentPeriodEnd
+ : (prevBilling.currentPeriodEnd || null);
+ const cancelAtPeriodEnd = ('cancel_at_period_end' in payload) ? !!payload.cancel_at_period_end
+ : ('cancelAtPeriodEnd' in payload) ? !!payload.cancelAtPeriodEnd
+ : !!prevBilling.cancelAtPeriodEnd;
+ myProfile.billing = { status, currentPeriodEnd, cancelAtPeriodEnd };
+ if(status === 'active') myProfile.isPremium = true;
+ else if(status !== 'pending') myProfile.isPremium = false;
+ saveProfile();
+ refreshPremiumUI();
 };
 
 try{
@@ -4735,18 +4786,9 @@ try{
  document.getElementById('voice-female-btn')?.addEventListener('click', ()=> setVoicePref('female'));
  refreshPremiumUI();
  document.getElementById('settings-premium-row')?.addEventListener('click', ()=> window.openPremiumUpsell());
- document.getElementById('premium-activate-btn')?.addEventListener('click', function(){
- if(this.disabled) return;
- this.disabled = true;
- this.textContent = t(STATIC_UI.premiumProcessing);
- myProfile.isPremium = true;
- saveProfile();
- setTimeout(()=>{
- refreshPremiumUI();
- const desc = document.getElementById('premium-desc');
- if(desc) desc.textContent = t(STATIC_UI.premiumActivatedMsg);
- }, 500);
- });
+ // premium-activate-btn·premium-cancel-btn 의 클릭은 src/ui/billing.js 의
+ // initBilling() 이 묶는다 — 실제 결제/해지 API 를 부르는 쪽이 그 흐름을
+ // 전부 알고 있어야 하기 때문이다. 여기서는 상태를 그리기만 한다.
  document.getElementById('premium-close-btn')?.addEventListener('click', ()=>{
  const overlay = document.getElementById('premium-overlay');
  if(overlay) overlay.classList.remove('on');

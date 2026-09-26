@@ -663,10 +663,11 @@
 .inapp-hint b { color: var(--text); }
 .login-prompt-text { font-size: var(--t-md); color: var(--text-dim); }
 
-/* 프리미엄 게이팅(테스트 모드). .pause-box 를 그대로 쓰고 값 표시 몇 줄만
-   더한다 — 상자 자체를 새로 만들면 다른 덮개와 결이 어긋난다.
-   줄이 .pause-box 보다 많아(아이콘·가격·잔글씨) 기본 gap 이 헐렁해 보여
-   여기만 좁힌다. */
+/* 프리미엄 게이팅. .pause-box 를 그대로 쓰고 값 표시 몇 줄만 더한다 —
+   상자 자체를 새로 만들면 다른 덮개와 결이 어긋난다. 줄이 .pause-box 보다
+   많아(아이콘·가격·잔글씨·해지 줄) 기본 gap 이 헐렁해 보여 여기만 좁힌다.
+   premium-cancel-box 안의 문단·버튼은 premium-fineprint·link-btn 스타일을
+   그대로 쓰고, 이 클래스 자체는 그 둘 사이 간격만 잡는다(2026-09-26). */
 .premium-box { gap: var(--s-3); }
 .premium-icon { font-size: 40px; line-height: 1; }
 .premium-desc { font-size: var(--t-md); color: var(--text-dim); }
@@ -674,6 +675,7 @@
 .premium-price-amount { font-family: var(--font-num); font-size: var(--t-2xl); font-weight: 800; }
 .premium-price-unit { font-size: var(--t-sm); color: var(--text-dim); }
 .premium-fineprint { font-size: var(--t-xs); color: var(--text-dim); }
+.premium-cancel-box { display: flex; flex-direction: column; gap: var(--s-2); }
 
 .flash-overlay {
   position: fixed;

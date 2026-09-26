@@ -71,6 +71,7 @@ jobs:
           npm run coverage
           npm run contrast
           npm run test:chat
+          npm run phases
 
       - name: 빌드
         run: npm run build

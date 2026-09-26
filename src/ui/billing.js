@@ -15,6 +15,13 @@
 //     여기서는 앱을 새로 열 때(initBilling 호출 시점) 그 복귀 주소를
 //     읽어 authorize 를 마저 부른다.
 //
+// 2026-09-26: 여기까지 고쳐도 실제 잠금(myProfile.isPremium, src/app.js)과는
+// 아예 안 이어져 있었다 — 카드 등록해서 돈을 내도 프리미엄 동작이 안
+// 풀리고, 반대로 설정의 예전 "프리미엄 시작하기" 버튼은 결제 없이
+// 즉시 풀어 줬다. applyBillingStatus() 로 이 둘을 하나로 합친다:
+// 부팅 시·카드 등록 직후·해지 토글 직후마다 여기서 서버 구독 상태를
+// app.js 에 전달하고, app.js 가 그 상태 하나만 보고 잠금을 정한다.
+//
 // successUrl/failUrl 은 해시(#billing-return)를 쓴다 — 이 앱은 경로
 // 라우팅이 없는 SPA 라 실제 경로(/billing/success 같은)로 돌아오면
 // 정적 자산이 없어 404 가 난다(vite.config.js 의 base:'./' 주석 참고).
@@ -82,11 +89,26 @@ async function finishAuthorizeFromReturn() {
       method: 'POST',
       body: JSON.stringify({ authKey, customerKey }),
     });
+    window.applyBillingStatus?.(result);
     if (result.status === 'active') toast(t(S.billingRegisterDone));
     else toast(t(S.billingPending));
   } catch (e) {
     console.error('billing authorize failed:', e);
     toast(t(S.billingRegisterFailed));
+  }
+}
+
+// 부팅 때마다(그리고 결제/해지 직후) 서버가 아는 구독 상태를 물어 app.js
+// 에 전달한다 — 다른 기기에서 구독하거나 크론이 갱신·해지한 결과도 이걸로
+// 반영된다. 로그인 전이거나 오프라인이면 조용히 넘어간다(지금 잠금 상태를
+// 섣불리 건드리지 않는다 — NOT_LOGGED_IN 인지, 그냥 네트워크 문제인지
+// 구별할 수 없어서 둘 다 "그대로 둔다"로 처리한다).
+async function checkBillingStatus() {
+  try {
+    const status = await billingFetch('/api/billing/status');
+    window.applyBillingStatus?.(status);
+  } catch (e) {
+    // no-op — 위 주석 참고.
   }
 }
 
@@ -120,6 +142,27 @@ async function startCardRegistration(button) {
   }
 }
 
+// cancelBtn.dataset.cancelAtPeriodEnd 가 지금 상태의 유일한 출처다 —
+// app.js 의 refreshPremiumUI() 가 매번 그 값을 채워 두므로, 여기서는
+// myProfile 을 직접 몰라도 반대로 뒤집기만 하면 된다.
+async function toggleCancelSubscription(button) {
+  const willCancel = button.dataset.cancelAtPeriodEnd !== 'true';
+  if (willCancel && !confirm(t(S.billingCancelConfirm))) return;
+  button.disabled = true;
+  try {
+    const result = await billingFetch('/api/billing/cancel', {
+      method: 'POST',
+      body: JSON.stringify({ cancel: willCancel }),
+    });
+    window.applyBillingStatus?.(result);
+    toast(t(willCancel ? S.billingCancelScheduled : S.billingCancelResumed));
+  } catch (e) {
+    console.error('billing cancel toggle failed:', e);
+    toast(t(S.billingRegisterFailed));
+    button.disabled = false;
+  }
+}
+
 export function initBilling({ translate, STATIC_UI } = {}) {
   if (translate) t = translate;
   if (STATIC_UI) S = STATIC_UI;
@@ -127,8 +170,17 @@ export function initBilling({ translate, STATIC_UI } = {}) {
   // 카드 인증창에서 돌아온 직후라면(주소에 흔적이 남아 있다) 먼저 마저
   // 처리한다 — 설정 화면을 아직 안 열어도 된다.
   finishAuthorizeFromReturn();
+  checkBillingStatus();
 
   const button = document.getElementById('billing-button');
-  if (!button) return;
-  button.addEventListener('click', () => startCardRegistration(button));
+  if (button) button.addEventListener('click', () => startCardRegistration(button));
+
+  // 설정의 "카드 등록" 줄과 별개로, 프리미엄 덮개 안의 버튼도 같은 실제
+  // 결제 흐름을 탄다(2026-09-26 전에는 여기가 결제 없이 즉시 풀어 주는
+  // 가짜 버튼이었다 — src/app.js 의 refreshPremiumUI 주석 참고).
+  const premiumBtn = document.getElementById('premium-activate-btn');
+  if (premiumBtn) premiumBtn.addEventListener('click', () => startCardRegistration(premiumBtn));
+
+  const cancelBtn = document.getElementById('premium-cancel-btn');
+  if (cancelBtn) cancelBtn.addEventListener('click', () => toggleCancelSubscription(cancelBtn));
 }

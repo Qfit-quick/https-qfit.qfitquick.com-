@@ -134,6 +134,13 @@ challengeTracks(턱걸이·플란체 같은 챌린지 트랙 9개)는 원본 데
 기간이 끝난 구독을 갱신한다. 데이터베이스 스키마는
 `docs/sql/2026-09-toss-billing.sql`, API 명세는 그 옆의 문서를 본다.
 
+프리미엄 동작 잠금(`myProfile.isPremium`)은 이 구독 상태와 실제로
+이어져 있다(2026-09-26, `src/app.js` 의 `applyBillingStatus`) — 부팅
+때·카드 등록 직후·해지 토글 직후마다 서버 상태를 물어 잠금을 맞춘다.
+해지는 설정 › 프리미엄 덮개 안의 "구독 해지"에서 하고,
+`cancel_at_period_end` 만 세워 남은 기간까지는 계속 쓸 수 있게 한다
+(`/api/billing/cancel`).
+
 **`TOSS_SECRET_KEY`·`TOSS_CLIENT_KEY` 워커 시크릿을 넣어야 동작한다** —
 발급·설정 방법은 `docs/DEPLOY.md` 의 "Toss Payments 연동" 항목 참고.
 
