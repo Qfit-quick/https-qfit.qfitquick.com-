@@ -111,6 +111,37 @@ button {
   flex-direction: column;
 }
 
+/* ── 넓은 화면(태블릿·데스크톱, 2026-09-26) ────────────────
+   이 앱은 폰 폭(최대 480px) 하나로만 디자인돼 있다. 화면이 그보다 넓으면
+   #app 은 자기 최대 폭까지만 커지고 나머지는 그냥 빈 검은 공간으로
+   남았다 — 아이패드에서 확인된 문제(내용은 위쪽에, 탭바까지 사이가
+   휑하게 비어 보임). 화면마다 태블릿 전용 레이아웃을 새로 짜는 대신,
+   앱 상자 자체를 세로로도 적당한 키로 제한하고 화면 가운데 '기기 한 대'
+   처럼 띄우는 쪽을 택했다 — 모든 화면에 한 번에 적용되고, 폰 폭
+   이하에서는 이 블록이 전혀 안 걸려 지금 화면과 완전히 같다. */
+@media (min-width: 640px) {
+  body {
+    align-items: center;
+    /* 가운데 카드 위에 은은한 빛무리만 얹는다 — 통짜 배경색보다
+       "의도된 화면"으로 읽힌다. */
+    background:
+      radial-gradient(640px circle at 50% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+      var(--surface);
+  }
+  #app {
+    /* 시트·일시정지 화면 등 position:fixed 인 덮개들이 뷰포트가 아니라
+       이 상자를 기준으로 서게 만든다 — 이게 없으면(예전부터 없었다,
+       components.css 의 .sheet-backdrop 주석은 사실이 아니었다) 아래서
+       올라오는 시트가 이 카드 폭이 아니라 화면 전체 폭으로 뜬다. 폰
+       폭에서는 #app 이 이미 화면 폭과 거의 같아 차이가 안 보였을 뿐이다. */
+    transform: translateZ(0);
+    max-height: min(880px, 96%);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  }
+}
+
 /* ── 화면 ────────────────────────────────────────────────
    열여섯 개가 전부 DOM 에 상주하고 .active 하나만 보인다.
    숨은 화면도 레이아웃은 살아 있으므로(opacity 0 일 뿐) 그 안의 요소가

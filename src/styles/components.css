@@ -755,9 +755,13 @@ body.immersive .tabbar {
    화면을 통째로 바꾸지 않고 아래에서 올라온다. 뒤가 비쳐 보이니까
    "잠깐 고르는 중"이라는 게 읽히고, 취소하면 원래 자리로 돌아온다.
 
-   #app 에 transform 이 걸려 있어서 position:fixed 의 기준이 뷰포트가 아니라
-   #app 이 된다. 시트가 앱 상자 안에 딱 맞게 서는 건 그 덕이다 — 데스크톱에서
-   화면 전체 폭으로 늘어나지 않는다. */
+   좁은 화면(폰 폭)에서는 #app 이 이미 화면과 거의 같은 폭이라 이 시트가
+   position:fixed 로 뷰포트 기준으로 서든 #app 기준으로 서든 차이가 안
+   보인다. 넓은 화면(태블릿·데스크톱)에서 시트가 이 카드 폭에 맞게 서는
+   것은 base.css 의 #app 넓은 화면 규칙(transform: translateZ(0))이
+   position:fixed 의 기준을 #app 으로 바꿔 주기 때문이다(2026-09-26) —
+   그 전에는 이 주석이 있었지만 실제로 그 transform 이 없어서 사실이
+   아니었다(넓혀 본 적이 없어 아무도 눈치채지 못했을 뿐이다). */
 .sheet-backdrop {
   position: fixed;
   inset: 0;
