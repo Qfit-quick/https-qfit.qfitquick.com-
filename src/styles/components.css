@@ -83,12 +83,9 @@
 
 /* (2) 테두리만 — 나란히 놓고 고르는 것들 */
 .btn-restart,
-.mode-btn,
 .quiz-btn,
 .repeat-chip,
 .save-routine-btn,
-.jump-to-injury-btn,
-.install-action-btn,
 .auth-tab {
   display: inline-flex;
   align-items: center;
@@ -105,25 +102,19 @@
   transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) linear;
 }
 .btn-restart:active,
-.mode-btn:active,
 .quiz-btn:active,
 .repeat-chip:active,
-.save-routine-btn:active,
-.jump-to-injury-btn:active,
-.install-action-btn:active { transform: scale(0.98); background: var(--surface-2); }
+.save-routine-btn:active { transform: scale(0.98); background: var(--surface-2); }
 /* .auth-tab 는 transform 전환까지 걸어 뒀는데 정작 :active 값이 없어서
    눌러도 그대로였다(2026-09-24 발견). */
 .auth-tab:active { transform: scale(0.98); }
 
 .btn-restart,
 .save-routine-btn { width: 100%; }
-.mode-btn { flex: 1; }
 .quiz-btn { width: 100%; justify-content: flex-start; min-height: 58px; text-align: left; }
 .repeat-chip { border-radius: var(--r-full); font-size: var(--t-sm); }
 .repeat-chip { width: 100%; }
-.jump-to-injury-btn { width: 100%; color: var(--mint-text); border-color: var(--mint-text); }
 .auth-tab { flex: 1; border-radius: var(--r-full); }
-.install-action-btn { min-height: 38px; border-radius: var(--r-full); font-size: var(--t-sm); }
 
 /* 고른 칩은 노랑으로 채운다(설계 기준). 민트는 진행·완료 쪽에 남는다 —
    채워진 막대, 완주한 날, 받은 업적, 토글 켜짐. */
@@ -344,24 +335,15 @@
 
 /* ── 상자를 쓰는 몇 곳 ─────────────────────────────────
    "안쪽이 스스로 하나의 덩어리"인 것만. 늘리지 말 것. */
-.mode-card,
 .one-min-panel,
 .calendar-card,
-.injury-accordion,
-.daily-challenge-card {
+.injury-accordion {
   padding: var(--s-4);
   border-radius: var(--r-lg);
   background: var(--surface-2);
 }
 
-.setup-card,
-.mode-card { display: flex; flex-direction: column; gap: var(--s-3); }
-.mode-card-title { font-size: var(--t-sm); font-weight: 700; color: var(--text-dim); }
-.mode-card-divider { height: 1px; background: var(--line); border: none; margin: var(--s-1) 0; }
-
-.mode-grid,
 .auth-tabs { display: flex; gap: var(--s-2); }
-.mode-grid > * { flex: 1; }
 
 /* 눌러서 여는 패널. "버튼 안에 기능을 숨긴다"는 게 이것이다 —
    첫 화면에는 행동 하나만 두고, 고를 것은 누른 다음에 나온다. */
@@ -380,9 +362,7 @@
    테두리를 두르지 않고 아래 선 하나로. 화면에서 상자가 하나 줄어든다. */
 .nickname-input,
 .auth-input,
-.search-input,
-.routine-name-input,
-.weight-input-row input {
+.search-input {
   width: 100%;
   min-height: var(--tap);
   padding: var(--s-3) 0;
@@ -408,51 +388,18 @@
 .nickname-input::placeholder,
 .auth-input::placeholder,
 .search-input::placeholder,
-.ex-search-input::placeholder,
-.routine-name-input::placeholder,
-.weight-input-row input::placeholder { color: var(--text-dim); }
+.ex-search-input::placeholder { color: var(--text-dim); }
 .nickname-input:focus,
 .auth-input:focus,
 .search-input:focus,
-.routine-name-input:focus,
-.custom-duration-input:focus,
-.weight-input-row input:focus { outline: none; border-color: var(--text); }
+.custom-duration-input:focus { outline: none; border-color: var(--text); }
 
 .nickname-hint,
 .duration-hint,
-.set-note,
 .xp-bottle-hint,
 .recovery-note { font-size: var(--t-sm); color: var(--text-dim); }
 
-.weight-input-row,
-.save-routine-row,
-.custom-toggle,
 .warmup-toggle { display: flex; align-items: center; gap: var(--s-3); }
-
-/* flex 자식은 기본이 min-width:auto 라, 옆의 input 이 자리를 다 먹으면
-   글자가 세로로 쪼개진다. 실제로 '체중' 이 '체'/'중' 두 줄로 접혔다. */
-.weight-input-row > span {
-  flex: none;
-  white-space: nowrap;
-  color: var(--text-dim);
-  font-size: var(--t-sm);
-}
-.weight-input-row input { flex: 0 1 110px; min-width: 0; }
-
-.custom-toggle {
-  justify-content: space-between;
-  min-height: 56px;
-  padding: var(--s-2) 0;
-  border-bottom: 1px solid var(--line);
-  font-size: var(--t-md);
-  cursor: pointer;
-}
-.custom-toggle input[type='checkbox'] {
-  width: 22px;
-  height: 22px;
-  flex: none;
-  accent-color: var(--mint-text);
-}
 
 /* 준비운동 토글은 설계의 .sw(52×32) 를 쓴다. 진짜 체크박스는 감추지 않고
    투명하게 겹쳐 둔다 — display:none 으로 지우면 키보드 초점이 사라진다. */
@@ -474,34 +421,16 @@
 .sw-input:checked + .sw i { transform: translateX(20px); }
 .sw-input:focus-visible + .sw { outline: 3px solid var(--mint-text); outline-offset: 2px; }
 .warmup-toggle .sw { margin-left: auto; }
-.save-routine-row { flex-wrap: wrap; }
-.save-routine-msg { font-size: var(--t-sm); color: var(--success); }
 
 .auth-form { display: flex; flex-direction: column; gap: var(--s-4); }
 .auth-error { font-size: var(--t-sm); color: var(--danger); min-height: 1.4em; }
-.account-badge { font-size: var(--t-md); color: var(--text-dim); }
-.account-badge b { color: var(--text); font-weight: 700; }
-
-.or-divider {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  color: var(--text-dim);
-  font-size: var(--t-xs);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.or-divider::before,
-.or-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 
 /* ── 알림 줄 ───────────────────────────────────────────
    배너를 카드로 만들지 않는다. 왼쪽 색 막대 하나로 성격만 말한다. */
 .comeback-banner,
 .weekend-banner,
-.challenge-invite,
 .reco-banner,
 .chuseok-banner,
-.install-banner,
 .result-recovery-tip {
   display: flex;
   flex-direction: column;
@@ -513,13 +442,11 @@
   text-align: left;
 }
 .comeback-banner { border-left-color: var(--mint-text); }
-.challenge-invite,
 .reco-banner { border-left-color: var(--hot); }
 .result-recovery-tip { border-left-color: var(--mint-text); }
 .comeback-banner b,
 .result-recovery-tip b { color: var(--text); font-weight: 700; }
 .ci-title { font-weight: 700; font-size: var(--t-md); color: var(--text); }
-.challenge-invite button,
 .reco-banner button,
 .chuseok-banner button {
   align-self: flex-start;
@@ -534,29 +461,8 @@
 .chuseok-banner button { background: var(--accent); color: var(--on-accent); }
 /* 이 셋만 눌러도 반응이 없었다(2026-09-24) — .primary·.sec2 등 다른 버튼과
    같은 눌림 효과를 준다. */
-.challenge-invite button:active,
 .reco-banner button:active,
 .chuseok-banner button:active { transform: scale(0.98); }
-
-.install-banner-main { display: flex; align-items: center; gap: var(--s-3); }
-.install-banner-text { flex: 1; min-width: 0; color: var(--text); }
-.install-banner-detail { font-size: var(--t-xs); }
-.install-dismiss-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--tap);
-  height: var(--tap);
-  flex: none;
-  border-radius: var(--r-full);
-  color: var(--text-dim);
-}
-
-.daily-challenge-card { display: flex; align-items: center; gap: var(--s-3); }
-.daily-challenge-card.done { opacity: 0.6; }
-.dc-text { flex: 1; min-width: 0; }
-.dc-title { font-weight: 700; }
-.dc-sub { font-size: var(--t-sm); color: var(--text-dim); }
 
 /* ── 화면 모서리 조작 버튼 ─────────────────────────────
    테두리 없는 아이콘 버튼. 동그란 상자를 두르면 그것부터 눈에 들어온다. */
@@ -829,17 +735,6 @@ body.immersive .tabbar {
 /* 시트가 열려 있으면 뒤 화면은 안 움직인다 */
 body.sheet-open .screen { overflow: hidden; }
 
-/* 운동 화면 상단 줄 안에 있는 것은 flex 가 자리를 잡는다.
-   기본 규칙은 화면 모서리 고정(absolute)인데, 줄 안에 들어간 것까지 그러면
-   좌표계가 둘이 되어 나란히 놓아도 높이가 안 맞는다. */
-.game-top-row .mute-btn,
-.game-top-row .pause-btn {
-  position: static;
-  top: auto;
-  left: auto;
-  right: auto;
-}
-
 /* 범위를 벗어난 입력. 잘라 버리기 전에 눈에 보이게 한다. */
 .custom-duration-input.out-of-range { border-color: var(--danger); color: var(--danger); }
 .range-note {
@@ -869,15 +764,6 @@ body.sheet-open .screen { overflow: hidden; }
 /* 검색 결과 없음. 친 말을 그대로 인용하고 지우는 길을 같이 준다 —
    '결과 없음' 만 뜨면 자기가 뭘 쳤는지 다시 확인해야 한다. */
 .search-empty { grid-column: 1 / -1; }
-.clear-filter {
-  min-height: var(--tap);
-  padding: 0 var(--s-2);
-  color: var(--mint-text);
-  font-size: var(--t-sm);
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 
 /* 못 누르는 버튼. 흐리게만 두지 않고 라벨이 이유를 말한다. */
 .primary:disabled {

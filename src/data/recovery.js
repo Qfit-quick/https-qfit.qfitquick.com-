@@ -239,6 +239,10 @@ export const INJURY_GUIDES = [
 // 무엇이 부위이고 무엇이 대상인지 구별이 안 된다(2026-09-06 지적).
 export const SPECIAL_GUIDES = [
  { part:{ko:'노인을 위한 운동', en:'For older adults', zh:'老年人训练'},
+  // 이 항목만 진짜 운동 모드로 이어진다(2026-09-27, src/ui/seniorMode.js) —
+  // 아래 groups 는 그 모드를 열기 전 훑어보는 요약이고, 실제로 느린
+  // 템포·의자 동작 픽트그램·큰 글씨가 적용되는 곳은 그 모드 화면이다.
+  startSeniorMode: true,
   groups:[
    { h:{ko:'추천 동작', en:'Suggested moves', zh:'推荐动作'}, items:[
     {ko:'<b>의자 잡고 앉았다 일어나기</b> 8~10회 — 무릎 강화에 좋고 낙상 예방에 직접 도움이 돼요', en:'<b>Sit-to-stand holding a chair</b> 8–10 reps — builds knee strength and directly helps prevent falls', zh:'<b>扶椅起坐</b> 8~10次 — 增强膝盖力量，直接有助于预防跌倒'},

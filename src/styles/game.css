@@ -87,7 +87,6 @@
   border-color: var(--mint);
   color: var(--on-mint);
 }
-.wod-preview-item .wpi-icon { flex: none; }
 .wod-preview-item.boss { border-color: var(--hot); }
 .wod-preview-item.boss .wpi-name { color: var(--hot); }
 

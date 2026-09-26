@@ -12,6 +12,7 @@ import { showScreenById, isWorkoutRunning } from '../app.js';
 import { isAmrapRunning, isAmrapPaused, pauseAmrap } from './amrap.js';
 import { isCircuitRunning, isCircuitPaused, pauseCircuit } from './circuit.js';
 import { isQuickRunning, isQuickPaused, pauseQuick } from './quickStart.js';
+import { isSeniorModeRunning, isSeniorModePaused, pauseSeniorMode } from './seniorMode.js';
 import { isTabataRunning, isTabataPaused, pauseTabata } from './tabata.js';
 import { isViewingProgramDetail, backToProgramList } from './programs.js';
 import { closeSheet, isSheetOpen } from './sheet.js';
@@ -59,6 +60,8 @@ const IMMERSIVE = new Set([
   // 타바타 타이머(2026-09-24 되살림) — 위와 같은 이유. 설정 화면
   // (tabata-setup-screen)은 고르는 중이라 안 넣는다.
   'tabata-run-screen',
+  // 어르신·재활 모드(2026-09-27) — 위와 같은 이유.
+  'senior-run-screen',
 ]);
 
 // 탭이 아닌 화면에 있을 때 어느 탭을 켜 둘지. 없으면 아무것도 안 켠다.
@@ -93,6 +96,8 @@ const BELONGS_TO = {
   // IMMERSIVE 라 실제로는 안 보이지만 명시해 둔다.
   'tabata-setup-screen': 'more-screen',
   'tabata-run-screen': 'more-screen',
+  // 어르신·재활 모드는 회복 화면(더보기 밑)에서 연다.
+  'senior-run-screen': 'more-screen',
 };
 
 let bar = null;
@@ -245,6 +250,13 @@ export function initNav({ translate, STATIC_UI } = {}) {
     if (current === 'quick-screen' && isQuickRunning() && !isQuickPaused()) {
       history.pushState({ s: 'quick-screen' }, '', '#quick-screen');
       pauseQuick();
+      return;
+    }
+
+    // 어르신·재활 모드도 같은 이유로 멈춘다.
+    if (current === 'senior-run-screen' && isSeniorModeRunning() && !isSeniorModePaused()) {
+      history.pushState({ s: 'senior-run-screen' }, '', '#senior-run-screen');
+      pauseSeniorMode();
       return;
     }
 

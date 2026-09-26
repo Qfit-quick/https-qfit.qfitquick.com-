@@ -560,6 +560,51 @@
  </div>
  </div>
 
+ <!-- 어르신·재활 모드(2026-09-27) — recovery-screen 의 "노인을 위한 운동"
+      카드 안 시작 버튼이 연다(src/ui/seniorMode.js). 영상이 없어(새로
+      촬영 없이는 못 만든다) 픽트그램(seniorPictograms.js)을 대신 쓴다.
+      난이도·성장·휴식 인증 없이 고정 시간만 도는, quick-screen보다
+      단순한 판이다 — 글씨도 이 화면만 더 크다(screens.css 의 .senior-mode
+      규칙 참고). -->
+ <div class="screen senior-mode" id="senior-run-screen">
+ <div class="amrap-head">
+ <button class="hd-back" type="button" id="senior-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <h2 class="hd-title" data-i18n="seniorModeTitle">어르신·재활 모드</h2>
+ </div>
+ <div id="senior-run" hidden>
+ <div class="amrap-stats">
+ <div class="amrap-stat">
+ <span class="dim" data-i18n="circuitStationLabel">스테이션</span>
+ <b class="amrap-round-num" id="senior-progress">1/9</b>
+ </div>
+ <div class="amrap-stat">
+ <span class="dim" data-i18n="circuitClockLabel">경과 시간</span>
+ <b class="big amrap-clock" id="senior-clock">00:00</b>
+ </div>
+ </div>
+ <div id="senior-move-group">
+ <div class="amrap-move-shot" id="senior-pictogram"></div>
+ <h3 class="amrap-move-name" id="senior-move-name">동작</h3>
+ <p class="senior-move-cue" id="senior-move-cue"></p>
+ <p class="amrap-move-reps" id="senior-move-timer">30초</p>
+ <button type="button" class="primary amrap-next-btn" id="senior-next-btn" data-i18n="circuitNextBtn">다음 스테이션</button>
+ </div>
+ <div class="rest-wrap" id="senior-rest-group" hidden role="button" tabindex="0">
+ <span class="rest-logo" aria-hidden="true">Q-fit<i class="logo-dot">.</i></span>
+ <b class="rest-num" id="senior-rest-num">15</b>
+ </div>
+ <div class="amrap-foot">
+ <button type="button" class="sec2" id="senior-pause-btn" data-i18n="amrapPauseBtn">일시정지</button>
+ <button type="button" class="sec2 sec2-danger" id="senior-quit-btn" data-i18n="amrapQuitBtn">종료</button>
+ </div>
+ </div>
+ <div class="card amrap-done" id="senior-done" hidden>
+ <div class="program-card-name" data-i18n="seniorDoneTitle">오늘도 잘 하셨어요 🎉</div>
+ <p class="dim" id="senior-done-time">완주 기록 12:34</p>
+ <button type="button" class="primary" id="senior-done-ok-btn" data-i18n="amrapConfirmBtn">확인</button>
+ </div>
+ </div>
+
  <!-- 타바타 타이머 설정(2026-09-24 되살림 — src/ 개편 때 소스 없이
       빌드 번들에만 남아 있다가 조용히 사라졌던 기능. 옛 번들을 읽어
       그대로 복원했다). 운동 목록과 무관한 순수 운동·휴식 반복

@@ -83,6 +83,8 @@ const FILLED_BY_JS = new Set([
   'quick-move-timer',
   // 타바타 타이머(src/ui/tabata.js, 2026-09-24 되살림) — 위와 같은 이유.
   'tabata-phase-label',
+  // 어르신·재활 모드(src/ui/seniorMode.js, 2026-09-27) — 위와 같은 이유.
+  'senior-move-name', 'senior-move-timer', 'senior-done-time',
 ]);
 
 for (const m of html.matchAll(/<([a-z][\w-]*)([^>]*)>([^<>{}]*[가-힣][^<>]*)</g)) {

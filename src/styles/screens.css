@@ -380,7 +380,6 @@
 }
 
 /* ── 회복 · SOS ──────────────────────────────────────── */
-.recovery-intro,
 .injury-intro { font-size: var(--t-md); color: var(--text-dim); }
 /* 회복 습관 카드도 접힌다(설계 14). 배지가 왼쪽, 제목이 그 옆. */
 #recovery-cards { display: flex; flex-direction: column; gap: var(--s-2); }
@@ -1055,6 +1054,22 @@
 .amrap-move-name { text-align: center; font-size: var(--t-lg); font-weight: 800; margin: 0; }
 .amrap-move-reps { text-align: center; font-size: var(--t-display); font-weight: 700; margin: 0 0 var(--s-3); }
 .amrap-sub-btn, .amrap-next-btn { width: 100%; margin-bottom: var(--s-3); }
+
+/* ── 어르신·재활 모드(2026-09-27) ─────────────────────────────
+   요청한 "큰 글씨"를 여기 글로벌 --font-scale(설정의 글자 크기, 최대
+   1.2배)이 아니라 이 화면 안에서만 더 키우는 값으로 만든다 — 사용자의
+   평소 글자 크기 설정을 이 한 번의 진입 때문에 바꿨다가 나갈 때 되돌리는
+   여분의 상태를 안 만든다. */
+.senior-mode .hd-title,
+.senior-mode .amrap-move-name { font-size: var(--t-xl); }
+.senior-mode .amrap-move-reps { font-size: var(--t-logo); }
+.senior-move-cue {
+  text-align: center;
+  font-size: var(--t-lg);
+  line-height: 1.5;
+  color: var(--text-dim);
+  margin: 0 0 var(--s-3);
+}
 
 /* Cindy 의 세 동작을 한 번에 보여주는 삼각형(2026-09-24 요청). 위 꼭짓점
    하나 + 아래 둘, 딱 세 동작(풀업·푸쉬업·스쿼트)에 맞춘 모양이라 절대
