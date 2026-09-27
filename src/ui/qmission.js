@@ -143,14 +143,22 @@ export function renderQMissionCard() {
   const today = loadToday();
   const picks = picksForDate(today.date);
   const doneCount = picks.filter((m) => today.done.includes(m.key)).length;
-  const preview = picks.map((m) => esc(t(m.label))).join(' · ');
+  // "A · B · C" 한 줄로 이어붙이던 것을(2026-09-27 가독성 요청으로 바꿈)
+  // 세로 목록으로 바꿨다 — 회색 글자를 가운뎃점으로 이은 한 문장은 눈이
+  // 어디서 끊어 읽어야 할지 매번 다시 찾아야 한다.
+  const previewRows = picks.map((m) => {
+    const on = today.done.includes(m.key);
+    return `<li class="qm-card-row${on ? ' on' : ''}">` +
+      `<span class="qm-card-mark" aria-hidden="true">${on ? ICON.check : ''}</span>` +
+      `<span>${esc(t(m.label))}</span></li>`;
+  }).join('');
 
   card.innerHTML =
     '<div class="tc-head">' +
     `<span class="week-title">${esc(t(S.qmCardTitle))}</span>` +
     `<span class="dim tc-status">${esc(t(S.qmCardStatus).replace('%s', doneCount).replace('%s', picks.length))}</span>` +
     '</div>' +
-    `<p class="dim">${preview}</p>` +
+    `<ul class="qm-card-list">${previewRows}</ul>` +
     `<button class="sec2 tc-open" type="button" id="qmission-card-open">${esc(t(S.qmCardOpenBtn))}</button>`;
 }
 
