@@ -83,13 +83,19 @@ function loadToday() {
   // 완료 표시만 새로 비운다 — 추천 자체는 picksForDate() 가 날짜로부터
   // 다시 계산하므로 따로 저장할 게 없다.
   if (!saved || saved.date !== today) return { date: today, done: [] };
+  if (!Array.isArray(saved.done)) saved.done = [];
   return saved;
 }
 function saveToday(next) { write(TODAY_KEY, next); }
 
 function monthKeyOf(dateStr) { return dateStr.slice(0, 7); }
 
-function loadImpact() { return read(IMPACT_KEY, { totalQ: 0, monthly: {} }); }
+function loadImpact() {
+  const impact = read(IMPACT_KEY, { totalQ: 0, monthly: {} });
+  if (typeof impact.totalQ !== 'number') impact.totalQ = 0;
+  if (!impact.monthly || typeof impact.monthly !== 'object') impact.monthly = {};
+  return impact;
+}
 function saveImpact(next) { write(IMPACT_KEY, next); }
 
 /** 체크·체크해제 — 완료 쪽으로 바뀔 때만 이번 달 집계·누적 Q 를 올리고,

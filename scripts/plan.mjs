@@ -264,15 +264,12 @@ console.log('\n--- 신체정보 → 계획 → 기록지 (실제 화면) ---');
   await page.waitForTimeout(250);
   ok((await status()) === 'workout', '식단 한 칸을 빼면 workout', await statusLine());
 
-  // 홈 카드가 같은 말을 하는가
-  await page.click('.tab[data-screen="start-screen"]');
-  await page.waitForTimeout(400);
-  ok(await page.evaluate(() => document.getElementById('today-card')?.dataset.status === 'workout'),
-    '홈 카드도 같은 상태를 말한다',
-    await page.evaluate(() => document.querySelector('#today-card .tc-status')?.textContent));
-
-  // 체중을 기록지에 적으면 신체정보도 따라 바뀌는가
-  await page.click('#today-card-open');
+  // 홈 카드는 2026-09-27부터 Q-Mission 이라 운동/식단 상태를 말하지
+  // 않는다(src/ui/qmission.js) — 그 대조는 여기서 더 안 한다.
+  //
+  // 체중을 기록지에 적으면 신체정보도 따라 바뀌는가. 탭바의 "체크"
+  // 로 연다(via 가 today-card-open 에서 null 로 바뀌었다, nav.js).
+  await page.click('.tab[data-screen="log-screen"]');
   await page.waitForTimeout(400);
   await page.fill('#log-weight-input', '76.5');
   await page.dispatchEvent('#log-weight-input', 'change');

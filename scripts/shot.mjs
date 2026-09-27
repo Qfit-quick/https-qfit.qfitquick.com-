@@ -28,7 +28,16 @@ const PATHS = {
   'ai-quiz-screen': ['#one-min-start-btn', '#mode-ai-btn'],
   'plan-screen': ['#open-more-btn', '#open-body-btn', '#body-save-btn'],
   'body-screen': ['#open-more-btn', '#open-body-btn'],
-  'log-screen': ['#today-card-open'],
+  // today-card-open 은 2026-09-27에 없어졌다(홈 카드가 Q-Mission으로
+  // 바뀜) — 탭바의 "체크" 로 연다.
+  'log-screen': ['.tab[data-screen="log-screen"]'],
+  'q-mission-screen': ['#qmission-card-open'],
+  // 어르신·재활 모드(2026-09-27) — recovery-screen 의 대상별 가이드
+  // 첫 항목(SPECIAL_GUIDES[0], "노인을 위한 운동") 안에 있다. 그 카드는
+  // 아코디언이라 펼치기 전엔 시작 버튼이 display:none 이다 — 펼치는
+  // 클릭을 빼먹으면 다음 클릭이 조용히 실패하고 스크린샷은 대체(가짜)
+  // 렌더로 찍힌다(2026-09-27 발견).
+  'senior-run-screen': ['#open-recovery-btn', '#special-list .injury-accordion:first-child .injury-summary', '#senior-mode-start-btn'],
   // 운동·결과는 한 판을 돌려야 나온다. scripts/flow.mjs 가 그 길을 간다.
   'game-screen': null,
   'result-screen': null,
