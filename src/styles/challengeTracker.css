@@ -63,10 +63,31 @@
 
 /* 자유 타이머. #challenge-start-row 와 같은 모양(어두운 패널 한 줄)을
    쓴다 — 이 화면에 새 카드 모양을 늘리지 않는다. */
+/* 스크롤해도 위에 고정한다(2026-09-27 요청) — #challenge-screen 자체가
+   스크롤 상자다(base.css 의 .screen 설명 참고).
+   sticky 의 top 오프셋은 "안 붙어 있을 때(보통 흐름)" 위치에는 영향을
+   안 준다 — top 은 오직 "얼마나 스크롤해야 붙잡히는가"만 정한다. 그래서
+   둘을 같이 써야 한다:
+     margin-top 음수  → 안 붙어 있을 때(화면 맨 위, 스크롤 전) 모양이
+                         스크롤 전과 똑같이 보이게(패딩을 늘린 만큼 상쇄).
+     top 음수         → 실제로 붙잡히는 위치를 화면(.screen)의 padding
+                         안쪽(그 패딩만큼 아래)이 아니라 진짜 맨 위로
+                         끌어올린다. 이걸 안 하면 padding-top(노치 대응
+                         safe-area 포함) 만큼 위에 24px 짜리 빈틈이 생겨
+                         그 뒤로 스크롤되는 카드(예: 요약 표)가 그 틈으로
+                         비쳐 보인다 — 실기로 확인한 문제.
+   background 를 두 겹으로 쌓은 건 --challenge-panel 이 반투명(rgba)이라
+   그대로 두면 스크롤되는 아래 카드들이 비쳐 보이기 때문이다 — 불투명한
+   화면 배경색을 먼저 깔고 그 위에 원래 색을 얹는다. */
 #challenge-timer {
+  position: sticky;
+  top: calc(-1 * (var(--s-6) + env(safe-area-inset-top)));
+  z-index: 2;
   display: flex; align-items: center; justify-content: space-between;
-  background: var(--challenge-panel); border-radius: var(--r-lg);
-  padding: var(--s-3) var(--s-4); margin-bottom: var(--s-3);
+  background: linear-gradient(var(--challenge-panel), var(--challenge-panel)), var(--challenge-bg-1);
+  border-radius: var(--r-lg);
+  margin: calc(-1 * (var(--s-6) + env(safe-area-inset-top))) 0 var(--s-3);
+  padding: calc(var(--s-3) + var(--s-6) + env(safe-area-inset-top)) var(--s-4) var(--s-3);
 }
 #challenge-timer-display {
   font-family: var(--font-num); font-variant-numeric: tabular-nums;
