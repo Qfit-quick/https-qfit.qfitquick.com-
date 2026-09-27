@@ -4,19 +4,24 @@
 // 건너뛰면, 껍데기만 있는 화면이 뜨는데 그건 스크린샷으로도 잘 안 보인다.
 // (실제로 캡처 도구가 그 상태를 찍어서 멀쩡한 것을 고칠 뻔했다.)
 // 그래서 화면마다 "채워졌으면 있어야 하는 것"을 같이 확인한다.
-import { launch, context, DEFAULT_URL } from './_browser.mjs';
+import { launch, context, DEFAULT_URL, dismissGate } from './_browser.mjs';
 
 const URL = process.env.NAV_URL || DEFAULT_URL;
 
 // [탭 라벨, 화면 id, 채워졌는지 보는 방법]
+//
+// src/ui/nav.js 의 TABS 순서와 맞춘다(2026-09-27 재확인 — 예전엔 탭에
+// '기록'이 직접 있었는데, 지금은 더보기 메뉴 밑으로 들어가 탭이 아니다.
+// 그걸 모르고 예전 순서 그대로 두면 '기록' 단계에서 탭 자체를 못 찾아
+// 조용히 타임아웃만 난다).
 const TABS = [
   ['홈', 'start-screen', () => document.querySelectorAll('.week-strip .week-day').length === 7],
-  // 계획은 신체정보가 없으면 빈 안내만 나온다. 검사는 정보를 안 넣은 상태로
-  // 도는 것이 맞다 — 처음 켠 사람이 보는 것이 그 화면이기 때문이다.
-  ['계획', 'plan-screen', () => !document.getElementById('plan-empty')?.hidden],
   ['체크', 'log-screen', () => document.querySelectorAll('#log-check .log-row').length === 5],
-  ['기록', 'records-screen', () => document.getElementById('rec-total')?.textContent.trim().length > 0],
-  // 챌린지 카드로 판정하던 것을 바꿨다 — 그 기능을 지웠기 때문이다(FR-05).
+  ['프로그램', 'programs-screen', () => document.getElementById('programs-body')?.children.length > 0],
+  // 목표(구 계획)는 신체정보가 없으면 빈 안내만 나온다. 검사는 정보를 안 넣은
+  // 상태로 도는 것이 맞다 — 처음 켠 사람이 보는 것이 그 화면이기 때문이다.
+  ['목표', 'plan-screen', () => !document.getElementById('plan-empty')?.hidden],
+  ['도전', 'challenge-screen', () => document.getElementById('challenge-tabs')?.children.length > 0],
   // 더보기는 메뉴가 채워지는 화면이라 그걸 본다.
   ['더보기', 'more-screen', () => document.querySelectorAll('#more-screen .menu-btn').length >= 2],
 ];
@@ -29,6 +34,7 @@ page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
 
 await page.goto(URL, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(800);
+await dismissGate(page);
 
 let fail = 0;
 const active = () => page.evaluate(() => document.querySelector('.screen.active')?.id);
@@ -47,18 +53,19 @@ for (const [label, id, filled] of TABS) {
 }
 
 console.log('\n--- 뒤로가기 ---');
-// 지금 '더보기'. 탭을 누른 순서대로 되짚어 나와야 한다.
+// 지금 '더보기'. 탭을 누른 순서대로 되짚어 나와야 한다(위 TABS 순서의
+// 마지막 두 칸 — 도전 → 목표).
 await page.goBack();
 await page.waitForTimeout(400);
 let now = await active();
-console.log(`  ${now === 'records-screen' ? '통과' : '실패'}  한 번 뒤로 → ${now}  (기대 records-screen)`);
-if (now !== 'records-screen') fail++;
+console.log(`  ${now === 'challenge-screen' ? '통과' : '실패'}  한 번 뒤로 → ${now}  (기대 challenge-screen)`);
+if (now !== 'challenge-screen') fail++;
 
 await page.goBack();
 await page.waitForTimeout(400);
 now = await active();
-console.log(`  ${now === 'log-screen' ? '통과' : '실패'}  두 번 뒤로 → ${now}  (기대 log-screen)`);
-if (now !== 'log-screen') fail++;
+console.log(`  ${now === 'plan-screen' ? '통과' : '실패'}  두 번 뒤로 → ${now}  (기대 plan-screen)`);
+if (now !== 'plan-screen') fail++;
 
 console.log('\n--- 운동 중 ---');
 await page.click('.tab[data-screen="start-screen"]');

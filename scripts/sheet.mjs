@@ -2,7 +2,7 @@
 //
 // 닫는 길이 여럿인 게 중요하다. 예전 모드 패널은 닫는 길이 **하나도 없어서**
 // 한 번 열면 시작 버튼이 사라진 채 홈으로 되돌릴 수가 없었다.
-import { launch, context, DEFAULT_URL } from './_browser.mjs';
+import { launch, context, DEFAULT_URL, dismissGate } from './_browser.mjs';
 
 const URL = process.env.SHEET_URL || DEFAULT_URL;
 const browser = await launch();
@@ -15,6 +15,7 @@ page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
 
 await page.goto(URL, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(700);
+await dismissGate(page);
 
 let fail = 0;
 const check = (label, ok, extra = '') => {

@@ -2,7 +2,7 @@
 //
 // 스모크는 "홈이 뜬다"까지고, 모듈로 쪼갠 뒤 실제로 깨지는 건 화면을 넘어가는 자리다.
 // 참조가 하나 끊겨도 홈은 멀쩡히 뜨기 때문에 여기까지 와야 알 수 있다.
-import { launch, context, DEFAULT_URL } from './_browser.mjs';
+import { launch, context, DEFAULT_URL, dismissGate } from './_browser.mjs';
 import fs from 'node:fs';
 
 const URL = process.env.FLOW_URL || DEFAULT_URL;
@@ -32,6 +32,7 @@ const step = async (label, fn) => {
 
 await page.goto(URL, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(600);
+await dismissGate(page);
 
 console.log('--- 화면 이동 ---');
 await step('시작', async () => {});

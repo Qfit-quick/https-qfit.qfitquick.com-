@@ -28,6 +28,13 @@ export const IPHONE_12 = {
 //
 // 답을 지어 넣는 것이라 관문 자체는 이 길로 검사할 수 없다. 관문을 보려면
 // skipGate: false 로 열면 된다(scripts/shot.mjs 가 그렇게 한 장 찍는다).
+//
+// **이것만으로는 관문이 안 없어진다.** 명언 카드는 mood·drive 를 미리
+// 채워도 매번 새로 뽑혀 뜬다("하루에 한 번"이 아니라 "열 때마다") — 그
+// 카드를 실제로 눌러야 관문이 걷힌다. 안 그러면 `#one-min-start-btn` 같은
+// 첫 버튼조차 관문에 가려 클릭이 조용히 실패하고, 검사는 "화면을 못
+// 찾았다"가 아니라 그냥 아무 일도 안 일어난 것처럼 보인다 — 아래
+// dismissGate 를 goto 직후에 반드시 같이 부른다.
 export const seedCheckin = () => {
   try {
     const d = new Date();
@@ -48,4 +55,16 @@ export const context = async (browser, over = {}) => {
   const ctx = await browser.newContext({ ...IPHONE_12, ...rest });
   if (skipGate) await ctx.addInitScript(seedCheckin);
   return ctx;
+};
+
+// seedCheckin 이 채운 mood·drive 뒤에 뜨는 명언 카드를 눌러 관문을 마저
+// 걷는다. goto 로 페이지를 새로 열 때마다(스크립트 안에서 여러 번 열 수도
+// 있다) 호출한다. 카드가 없으면(이미 걷혔거나, 관문 자체를 검사하는
+// 스크립트라 seedCheckin 을 안 썼거나) 조용히 넘어간다.
+export const dismissGate = async (page) => {
+  try {
+    await page.click('#gate-quote-card', { timeout: 1500 });
+  } catch (e) {
+    // 없으면 그걸로 된 것 — 이 함수가 실패해야 할 이유가 아니다.
+  }
 };
