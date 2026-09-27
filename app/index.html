@@ -181,13 +181,14 @@
  <span class="dim" id="pain-area-sub" data-i18n="painAreaOff">선택 안 함</span>
  </button>
  <div class="sheet-rows">
- <button class="row44 card" id="mode-manual" type="button">
+ <!-- 직접선택·랜덤선택 두 줄을 한 줄로 합쳤다(2026-09-27 요청) — 누르면
+      '3초 후 시작'과 같은 모양으로 아래 mode-pick-panel 이 겹쳐 열리고,
+      실제 두 선택지는 거기 그대로 있다. 안쪽 동작(pickModeAndGo 등)은
+      안 바꿨다 — DOM 위치만 옮겨도 이벤트는 그대로 따라온다(ui/sheet.js
+      의 openSheet 주석 참고). -->
+ <button class="row44 card" id="mode-pick-btn" type="button">
  <span class="row-ic" data-icon="grid"></span>
- <span class="row-main"><span class="row-t" data-i18n="modeManual">직접 선택</span><span class="row-d dim" data-i18n="modeManualSub">동작 12개에서 고르기</span></span>
- </button>
- <button class="row44 card" id="mode-random" type="button">
- <span class="row-ic" data-icon="dice"></span>
- <span class="row-main"><span class="row-t" data-i18n="modeRandom">랜덤 선택</span><span class="row-d dim" data-i18n="modeRandomSub">고민 없이 4개 뽑기</span></span>
+ <span class="row-main"><span class="row-t" data-i18n="modeLabel">바로 고르기</span><span class="row-d dim" data-i18n="modePickSub">직접 고르거나 무작위로</span></span>
  </button>
  <button class="row44 row-accent" id="mode-quick-btn" type="button">
  <span class="row-ic" data-icon="spark"></span>
@@ -230,6 +231,22 @@
  <button class="row44 card" id="quick-level-veryHard" type="button" data-level="veryHard">
  <span class="premium-lock" id="quick-level-veryHard-lock" hidden>✨</span>
  <span class="row-main"><span class="row-t" data-i18n="quickLevelVeryHard">가능?</span></span>
+ </button>
+ </div>
+ </div>
+
+ <!-- '바로 고르기' 를 누르면 여는 시트(2026-09-27) — quick-level-panel 과
+      같은 모양이다. 안쪽 두 줄은 예전 mode-pick-btn 자리에 있던 것을
+      그대로 옮겨 왔다(id·클릭 동작 그대로). -->
+ <div class="quick-level-panel" id="mode-pick-panel" style="display:none;">
+ <div class="sheet-rows">
+ <button class="row44 card" id="mode-manual" type="button">
+ <span class="row-ic" data-icon="grid"></span>
+ <span class="row-main"><span class="row-t" data-i18n="modeManual">직접 선택</span><span class="row-d dim" data-i18n="modeManualSub">동작 12개에서 고르기</span></span>
+ </button>
+ <button class="row44 card" id="mode-random" type="button">
+ <span class="row-ic" data-icon="dice"></span>
+ <span class="row-main"><span class="row-t" data-i18n="modeRandom">랜덤 선택</span><span class="row-d dim" data-i18n="modeRandomSub">고민 없이 4개 뽑기</span></span>
  </button>
  </div>
  </div>

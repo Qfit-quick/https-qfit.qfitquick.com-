@@ -172,7 +172,7 @@ function renderMissionList() {
   box.innerHTML = picks.map((m) => {
     const on = today.done.includes(m.key);
     const cat = categoryByKey(m.category);
-    return `<button class="log-row card${on ? ' on' : ''}" type="button" data-mission="${m.key}">` +
+    return `<button class="log-row card${on ? ' on' : ''}" type="button" data-mission="${esc(m.key)}">` +
       `<span class="log-box" aria-hidden="true">${on ? ICON.check : ''}</span>` +
       '<span class="row-main">' +
       `<span class="row-t">${esc(t(m.label))}</span>` +

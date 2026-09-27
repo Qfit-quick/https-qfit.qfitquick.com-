@@ -33,7 +33,7 @@ const state = () =>
       panelInSheet: !!panel?.closest('.sheet-body'),
       startVisible: !!start && getComputedStyle(start).display !== 'none',
       title: document.querySelector('.sheet-title')?.textContent ?? '',
-      modeBtnClickable: !!document.getElementById('mode-random')?.offsetParent,
+      modeBtnClickable: !!document.getElementById('mode-pick-btn')?.offsetParent,
     };
   });
 
@@ -97,6 +97,8 @@ check('시작 버튼이 그대로다', s.startVisible);
 
 console.log('\n--- 골라서 넘어가기 ---');
 await open();
+await page.click('#mode-pick-btn');
+await page.waitForTimeout(420);
 await page.click('#mode-random');
 await page.waitForTimeout(500);
 s = await state();

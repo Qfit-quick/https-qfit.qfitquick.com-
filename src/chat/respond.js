@@ -22,7 +22,7 @@ const COPY = {
   // 개인 기록 — 연결 전이라는 안내로만 처리한다(PDF: "개인 기록 요청은
   // 연결 전이라는 안내로 처리해 줘"). 누구 기록인지는 안 갈라도 된다 —
   // 본인이든 타인이든 지금은 아무 기록도 못 준다.
-  personal: { ko: '아직 개인 기록(신체 정보·운동 기록)과는 연결돼 있지 않아요. 연결되면 로그인한 본인 기록만, 권한을 확인하고 보여드릴게요.', en: "I'm not connected to personal records (body info, workout history) yet. Once that's wired up, I'll only show the logged-in user's own data after checking permission.", zh: '目前还没有连接个人记录（身体信息、运动记录）。连接后，会在确认权限的前提下，只显示登录用户本人的数据。' },
+  personal: { ko: '아직 개인 기록과는 연결돼 있지 않아요. 연결되면 본인 기록만 확인해서 보여드릴게요.', en: "Not connected to personal records yet. Once it is, I'll only show your own data.", zh: '目前还没有连接个人记录。连接后，只会显示你本人的数据。' },
   // 통증 — PDF 15번은 이 문구를 의료 전문가 검수 전에는 "검수 전 초안"
   // 표시로 감춰 두라고 했다. 저장소 소유자가 2026-09-21 직접 검토하고
   // 공개를 승인했다(전문 의료 검수는 아니다 — 그 차이를 감추지 않으려고

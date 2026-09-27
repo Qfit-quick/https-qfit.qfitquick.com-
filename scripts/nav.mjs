@@ -65,6 +65,8 @@ await page.click('.tab[data-screen="start-screen"]');
 await page.waitForTimeout(300);
 await page.click('#one-min-start-btn');
 await page.waitForTimeout(300);
+await page.click('#mode-pick-btn');
+await page.waitForTimeout(300);
 await page.click('#mode-random');
 await page.waitForTimeout(300);
 await page.evaluate(() => {

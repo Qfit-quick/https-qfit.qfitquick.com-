@@ -39,7 +39,7 @@ export const CHATBOT_FAQ = [
   },
   {
     keywords: ['만보기', '걸음', 'steps', 'pedometer', '만보'],
-    answer: { ko: '체크(기록지) 화면에서 걸음 수를 직접 적거나, "측정 시작"을 눌러 이 화면이 열려 있는 동안 대략 셀 수 있어요. 화면을 벗어나면 측정이 멈춰요.', en: 'On the Check-in screen you can type your step count, or tap "Start" to count steps while that screen stays open — it stops if you leave.', zh:'在打卡页面可以直接输入步数，也可以点"开始测量"在页面打开时计步，离开页面会停止。' },
+    answer: { ko: '체크 화면에서 걸음 수를 직접 적거나, "측정 시작"으로 화면이 열린 동안만 셀 수 있어요.', en: 'On the Check-in screen, type your step count or tap "Start" to count while that screen stays open.', zh: '在打卡页面可直接输入步数，或点"开始测量"在页面打开时计步。' },
   },
   {
     keywords: ['물', '수분', 'water'],
@@ -103,7 +103,7 @@ export const CHATBOT_FAQ = [
   },
   {
     keywords: ['도전', '챌린지', 'challenge'],
-    answer: { ko: '"도전" 탭에서 턱걸이 · 플란체 · 핸드스탠드 · 머슬업 · 프론트레버 · 딥스 · 사이드스플릿, 7개 장기 챌린지의 진행 상황을 주차별로 기록할 수 있어요.', en: 'The "Challenge" tab tracks weekly progress on 7 long-term skill goals: pull-up, planche, handstand, muscle-up, front lever, dips, and side split.', zh:'"挑战"标签可以按周记录7项长期目标的进度：引体向上、俯卧撑支撑(Planche)、倒立、双力臂、前水平、双杠臂屈伸、横叉。' },
+    answer: { ko: '"도전" 탭에서 턱걸이·플란체 등 장기 챌린지 진행 상황을 주차별로 기록할 수 있어요.', en: 'The "Challenge" tab tracks weekly progress on long-term goals like pull-up and planche.', zh: '"挑战"标签可以按周记录引体向上、俯卧撑支撑等长期目标的进度。' },
   },
   {
     keywords: ['신체정보', '키체중'],

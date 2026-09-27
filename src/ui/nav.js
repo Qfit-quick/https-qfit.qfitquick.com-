@@ -8,7 +8,7 @@
 // 채우는 렌더까지 들고 있기 때문이다 — 건너뛰면 뱃지 막대가 꽉 차 있고
 // 아바타가 비어 있는, 껍데기만 있는 화면이 뜬다.
 import { ICON } from './icons.js';
-import { showScreenById, isWorkoutRunning } from '../app.js';
+import { showScreenById, isWorkoutRunning, stopCountdown } from '../app.js';
 import { isAmrapRunning, isAmrapPaused, pauseAmrap } from './amrap.js';
 import { isCircuitRunning, isCircuitPaused, pauseCircuit } from './circuit.js';
 import { isQuickRunning, isQuickPaused, pauseQuick } from './quickStart.js';
@@ -86,6 +86,9 @@ const BELONGS_TO = {
   'ai-quiz-screen': 'start-screen',
   // 큐피드 하트 슈팅은 더보기 줄에서 연다.
   'heartgame-screen': 'more-screen',
+  // 챗봇도 더보기 줄에서 연다(2026-09-27 재검토에서 빠진 것을 발견 —
+  // 여기 없으면 챗봇을 보는 동안 탭바 어느 칸도 안 켜진다).
+  'chatbot-screen': 'more-screen',
   // Cindy AMRAP·QCE 서킷은 프로그램 탭에서 시작한다.
   'amrap-screen': 'programs-screen',
   'circuit-screen': 'programs-screen',
@@ -283,6 +286,12 @@ export function initNav({ translate, STATIC_UI } = {}) {
       backToProgramList();
       return;
     }
+
+    // 카운트다운 중 뒤로가기는(2026-09-27 재검토에서 발견) 막을 필요는
+    // 없다 — 어차피 미리보기로 자연스럽게 돌아간다. 다만 타이머는 반드시
+    // 꺼야 한다. 안 끄면 다른 화면으로 넘어간 뒤에도 계속 돌다가 3초 뒤
+    // 혼자 운동이 시작된다(app.js 의 stopCountdown() 머리 주석 참고).
+    if (current === 'countdown-screen') stopCountdown();
 
     const target = e.state?.s || 'start-screen';
     if (target === current) return;

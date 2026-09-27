@@ -46,14 +46,14 @@ function paintMoveOrRest() {
   if (restGroup) restGroup.hidden = !resting;
 }
 
-function render() {
-  const clockEl = el('senior-clock');
-  if (clockEl) clockEl.textContent = fmtClock(elapsedSec);
-  const progEl = el('senior-progress');
-  if (progEl) progEl.textContent = t(S.circuitProgressFmt).replace('%s', idx + 1).replace('%s', SENIOR_EXERCISES.length);
-
+// 동작/휴식이 바뀔 때 한 번만 그리면 되는 것들 — 픽토그램·이름·안내
+// 문구·다음 버튼 라벨은 그 동작이 끝날 때까지(30초) 안 바뀐다. 예전엔
+// 이걸 매초 tick() 이 부르는 render() 안에 같이 두어서, 똑같은 내용을
+// 30번씩 다시 그렸다(SVG 를 innerHTML 로 매초 새로 만드는 것 포함) —
+// 눈에는 안 보여도 불필요한 작업이라 초에 한 번(render())과 전환마다
+// 한 번(renderStatic())으로 나눴다(2026-09-27 재검토에서 발견).
+function renderStatic() {
   paintMoveOrRest();
-
   if (!resting) {
     const ex = current();
     if (ex) {
@@ -63,13 +63,23 @@ function render() {
       if (nameEl) nameEl.textContent = t(ex.name);
       const cueEl = el('senior-move-cue');
       if (cueEl) cueEl.textContent = t(ex.cue);
-      const remain = Math.max(0, SENIOR_EXERCISE_DURATION_SEC - phaseElapsed);
-      const timerEl = el('senior-move-timer');
-      if (timerEl) timerEl.textContent = remain + t(S.secUnit);
     }
     const isLast = idx >= SENIOR_EXERCISES.length - 1;
     const nextBtn = el('senior-next-btn');
     if (nextBtn) nextBtn.textContent = t(isLast ? S.circuitFinishBtn : S.circuitNextBtn);
+  }
+}
+
+function render() {
+  const clockEl = el('senior-clock');
+  if (clockEl) clockEl.textContent = fmtClock(elapsedSec);
+  const progEl = el('senior-progress');
+  if (progEl) progEl.textContent = t(S.circuitProgressFmt).replace('%s', idx + 1).replace('%s', SENIOR_EXERCISES.length);
+
+  if (!resting) {
+    const remain = Math.max(0, SENIOR_EXERCISE_DURATION_SEC - phaseElapsed);
+    const timerEl = el('senior-move-timer');
+    if (timerEl) timerEl.textContent = remain + t(S.secUnit);
   } else {
     const remain = Math.max(0, SENIOR_REST_DURATION_SEC - phaseElapsed);
     const restEl = el('senior-rest-num');
@@ -83,6 +93,7 @@ function render() {
 function beginExercise() {
   resting = false;
   phaseElapsed = 0;
+  renderStatic();
   render();
   const ex = current();
   if (ex) speakExercise(t(ex.name), null);
@@ -91,6 +102,7 @@ function beginExercise() {
 function beginRest() {
   resting = true;
   phaseElapsed = 0;
+  renderStatic();
   render();
 }
 
@@ -223,5 +235,12 @@ export function initSeniorMode({ translate, STATIC_UI, onShowScreen: showFn } = 
     stopTimer();
     running = false;
     onShowScreen('recovery-screen');
+  });
+
+  // 운동 중에 언어를 바꾸면 픽토그램 옆 이름·안내 문구도 다시 번역돼야
+  // 한다 — renderStatic() 이 30초에 한 번만 불리게 바꾼 뒤로(위 설명
+  // 참고) 언어 전환 자체가 그 트리거 중 하나가 돼야 한다(2026-09-27).
+  document.addEventListener('qfit:lang', () => {
+    if (running && !finished) { renderStatic(); render(); }
   });
 }

@@ -36,6 +36,7 @@ await page.waitForTimeout(600);
 console.log('--- 화면 이동 ---');
 await step('시작', async () => {});
 await step('▶ 1분 시작', () => page.click('#one-min-start-btn'));
+await step('바로 고르기', () => page.click('#mode-pick-btn'));
 await step('🎲 랜덤 선택', () => page.click('#mode-random'));
 
 // 준비운동은 끄고 간다 — 8.6MB 영상을 받을 이유가 없다

@@ -5,6 +5,9 @@ export const STATIC_UI = {
  wodLabel: {ko:'오늘의 WOD 구성', en:"Today's WOD", zh:'今天的训练安排'},
  groupLabel: {ko:'세트 운동 (부위별 빠른 선택)', en:'Quick sets (by muscle group)', zh:'快速选组（按部位）'},
  modeLabel: {ko:'바로 고르기', en:'Pick Now', zh:'直接选择'},
+ // 직접선택·랜덤선택을 한 줄로 합친 자리(2026-09-27)의 부제 —
+ // modeLabel 은 이미 있던(안 쓰이던) 키를 그대로 재사용했다.
+ modePickSub: {ko:'직접 고르거나 무작위로', en:'Manual or random', zh:'手动选择或随机'},
  modeRandom: {ko:'랜덤 선택', en:'Random', zh:'随机'},
  modeManual: {ko:'직접 선택', en:'Manual', zh:'手动选择'},
  modeQce: {ko:'QCE 서킷', en:'QCE Circuit', zh:'QCE 循环'},

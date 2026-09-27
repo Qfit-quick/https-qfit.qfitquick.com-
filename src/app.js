@@ -1640,9 +1640,15 @@ function exportHistoryCsv(){
 
 // 되돌릴 수 없는 일이라 두 번 묻는다. 한 번만 물으면 목록을 훑다가
 // 잘못 눌러 그대로 지워지는 일이 실제로 일어난다.
-function wipeAllData(){
+async function wipeAllData(){
  if(!confirm(t(STATIC_UI.wipeConfirm1))) return;
  if(!confirm(t(STATIC_UI.wipeConfirm2))) return;
+ // Supabase 세션은 이 함수가 지우는 localStorage 키 밖에 자기만의 이름으로
+ // 따로 저장된다(supabase-js 기본값, qfit_·wodrush_ 어느 쪽도 아니다) —
+ // 그래서 훑기로는 안 걸리고, 로그인한 채로 지워도 계정은 그대로 로그인
+ // 상태로 남는다(2026-09-27 재검토에서 발견). 로그아웃 버튼과 같은 문으로
+ // 먼저 로그아웃한다.
+ try{ if(isSupabaseReady()){ const sb = await getSupabase(); await sb.auth.signOut(); } }catch(e){ console.error('wipe signout failed:', e); }
  try{
  // wodrush_ 는 이 파일(프로필·설정)이 쓰는 접두어고, qfit_ 는 신체정보·
  // 기록지·프로그램(health/store.js)·챌린지(challengeTracks.js)·
@@ -2588,6 +2594,19 @@ try{
  showScreen(manualSelectScreen);
  });
 }catch(e){ console.error('mode buttons failed:', e); }
+
+// 직접선택·랜덤선택을 한 줄로 합친 '바로 고르기'(2026-09-27) — 누르면
+// 그 둘을 담은 시트를 연다. quick-level-panel 과 같은 문(openSheet).
+try{
+ const modePickBtn = document.getElementById('mode-pick-btn');
+ const modePickPanel = document.getElementById('mode-pick-panel');
+ if(modePickBtn && modePickPanel){
+ modePickBtn.addEventListener('click', ()=>{
+ Sound.unlock();
+ openSheet(modePickPanel, { title: t(STATIC_UI.modeLabel), from: modePickBtn });
+ });
+ }
+}catch(e){ console.error('mode pick sheet failed:', e); }
 
 // 아픈 부위 고르기(2026-09-10). 시트는 직접 입력 시트와 같은 열고 닫는
 // 방식(openSheet/closeSheet)을 쓴다. 부위 목록은 회복 화면의 INJURY_GUIDES
@@ -3546,7 +3565,7 @@ function vibrate(pattern){
 // 카운트다운이 도는 동안의 타이머. 취소가 이걸 꺼야 한다 —
 // 안 끄면 화면만 돌아가고 3초 뒤에 운동이 혼자 시작된다.
 let countdownIv = null;
-function stopCountdown(){
+export function stopCountdown(){
  clearInterval(countdownIv);
  countdownIv = null;
 }
