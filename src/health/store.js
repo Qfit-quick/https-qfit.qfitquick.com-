@@ -353,15 +353,3 @@ export function clearAllProgramProgress() {
   }
 }
 
-/** 신체정보와 기록지를 지운다. 설정의 '모든 데이터 지우기' 가 부른다. */
-export function wipeHealthData() {
-  try {
-    localStorage.removeItem(BODY_KEY);
-    localStorage.removeItem(LOG_KEY);
-    localStorage.removeItem(PROGRAM_KEY);
-    localStorage.removeItem(PROGRAM_HISTORY_KEY);
-    localStorage.removeItem(DIET_SWAP_KEY);
-  } catch (e) {
-    console.error('wipe health data failed:', e);
-  }
-}

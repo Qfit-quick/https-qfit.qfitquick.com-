@@ -665,7 +665,7 @@ export const STATIC_UI = {
  qmScreenTitle: {ko:'Q-Mission', en:'Q-Mission', zh:'Q-Mission'},
  qmTodayLabel: {ko:'오늘의 미션', en:"Today's missions", zh:'今天的行动'},
  qmImpactTitle: {ko:'이번 달 Q-Impact', en:"This month's Q-Impact", zh:'本月 Q-Impact'},
- qmImpactNarrative: {ko:'이번 달 %s개의 행동을 실천했습니다.', en:"You've taken %s actions this month.", zh:'本月你已实践了%s次行动。'},
+ qmImpactNarrative: {ko:'이번 달 %s개의 행동을 실천했습니다.', en:'%s action(s) taken this month.', zh:'本月你已实践了%s次行动。'},
  qmImpactEmpty: {ko:'아직 이번 달 기록이 없어요 — 하나만 체크해도 여기에 쌓입니다', en:'No records yet this month — check even one off and it starts showing up here.', zh:'本月还没有记录 — 只要勾选一项，这里就会开始累积。'},
  qmPointsLabel: {ko:'누적 Q %s', en:'Total Q %s', zh:'累计 Q %s'},
 

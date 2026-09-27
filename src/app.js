@@ -24,7 +24,7 @@ import { phasesFor } from './data/exercise-phases.js';
 import { AI_GOAL_POOLS } from './data/ai-goals.js';
 import { photoUrl, clipUrl, petUrl } from './core/assets.js';
 import { clipThumb, disposeClipThumbs } from './ui/clip-thumb.js';
-import { markWorkoutDone, wipeHealthData, loadProgramProgress } from './health/store.js';
+import { markWorkoutDone, loadProgramProgress } from './health/store.js';
 import { CHALLENGE_TRACK_ORDER, CHALLENGE_TRACKS } from './data/challengeTracks.js';
 
 // ---------- DATA ----------
@@ -1644,14 +1644,23 @@ function wipeAllData(){
  if(!confirm(t(STATIC_UI.wipeConfirm1))) return;
  if(!confirm(t(STATIC_UI.wipeConfirm2))) return;
  try{
+ // wodrush_ 는 이 파일(프로필·설정)이 쓰는 접두어고, qfit_ 는 신체정보·
+ // 기록지·프로그램(health/store.js)·챌린지(challengeTracks.js)·
+ // 하트게임·리마인더·Q-Mission(qmission.js) 등 다른 여러 파일이 각자
+ // 따로 쓴다. 예전엔 qfit_ 쪽을 wipeHealthData() 하나가 자기가 아는
+ // 5개 키만 지웠는데, 그 뒤로 늘어난 챌린지·하트게임·Q-Mission 등의
+ // qfit_ 키는 하나도 안 걸려서 '모든 데이터 지우기'가 실제로는 다
+ // 안 지우고 있었다(2026-09-27 발견). 파일마다 자기 키 이름을 여기
+ // app.js 에 등록하게 하는 대신, 접두어로 훑어 지운다 — 새 파일이
+ // qfit_ 로 뭔가를 저장하기 시작해도 이 줄을 안 고쳐도 된다.
+ //
+ // qfit_device_id_v1 만 남긴다 — 개인 데이터가 아니라 "몇 대가 쓰나"를
+ // 세는 익명 기기 식별자라(src/core/device.js), 지워도 다음 실행에
+ // 새로 만들어질 뿐 얻는 게 없고 알림 구독만 끊어진다.
  Object.keys(localStorage)
-  .filter(k=> k.startsWith('wodrush_'))
+  .filter(k=> (k.startsWith('wodrush_') || k.startsWith('qfit_')) && k !== 'qfit_device_id_v1')
   .forEach(k=> localStorage.removeItem(k));
  }catch(e){ console.error('wipe failed:', e); }
- // 신체정보와 기록지는 접두어가 'qfit_' 다. 위의 'wodrush_' 훑기로는 안
- // 걸리므로 따로 지운다 — '모든 데이터 지우기' 가 일부만 지우면
- // 남은 쪽이 다음에 되살아나고, 그건 지웠다는 말이 거짓이 된다.
- try{ wipeHealthData(); }catch(e){ console.error('wipe health failed:', e); }
  location.reload();
 }
 
