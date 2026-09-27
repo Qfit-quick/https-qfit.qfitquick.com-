@@ -751,12 +751,31 @@
  </label>
  <div id="challenge-search-results"></div>
 
+ <!-- 자유 타이머(2026-09-27 요청 "쉬는시간이라도 내가 시작하고 끝낼 수
+      있게") — 특정 트랙에 안 묶인다. 쉬는 시간이든 세트 사이든 눌러서
+      직접 재는 스톱워치일 뿐이다. -->
+ <div id="challenge-timer">
+ <div id="challenge-timer-display">00:00</div>
+ <div id="challenge-timer-btns">
+ <button type="button" id="challenge-timer-toggle-btn" data-i18n="challengeTimerStart">시작</button>
+ <button type="button" id="challenge-timer-reset-btn" data-i18n="challengeTimerReset">초기화</button>
+ </div>
+ </div>
+
  <div id="challenge-tabs"></div>
  <div id="challenge-summary"></div>
 
  <div id="challenge-start-row">
  <span data-i18n="challengeStartLabel">시작일</span>
  <input type="date" id="challenge-start-date">
+ </div>
+
+ <!-- 오늘 체크(2026-09-27 요청) — 주차별 성공/실패·숫자 기록과 별개로,
+      "오늘 이 챌린지를 실천했다"를 하루 단위로 바로 누를 수 있게 한다.
+      누르면 기록지의 오늘 운동 칸도 같이 켜진다(markWorkoutDone). -->
+ <div id="challenge-daily-check">
+ <span id="challenge-daily-check-note"></span>
+ <button type="button" id="challenge-daily-check-btn"></button>
  </div>
 
  <div id="challenge-progress-wrap">

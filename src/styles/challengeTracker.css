@@ -61,6 +61,42 @@
 .challenge-search-result-name { font-size: var(--t-sm); font-weight: 700; }
 .challenge-search-result-meta { font-size: 10.5px; color: var(--challenge-text-dim); margin-top: 2px; }
 
+/* 자유 타이머. #challenge-start-row 와 같은 모양(어두운 패널 한 줄)을
+   쓴다 — 이 화면에 새 카드 모양을 늘리지 않는다. */
+#challenge-timer {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--challenge-panel); border-radius: var(--r-lg);
+  padding: var(--s-3) var(--s-4); margin-bottom: var(--s-3);
+}
+#challenge-timer-display {
+  font-family: var(--font-num); font-variant-numeric: tabular-nums;
+  font-size: var(--t-2xl); font-weight: 800;
+}
+#challenge-timer-btns { display: flex; gap: var(--s-2); }
+#challenge-timer-toggle-btn,
+#challenge-timer-reset-btn {
+  flex: none; border: none; border-radius: var(--r-full);
+  padding: var(--s-2) var(--s-4); font-size: var(--t-sm); font-weight: 700;
+  cursor: pointer; min-height: var(--tap); font-family: inherit;
+}
+#challenge-timer-toggle-btn { background: var(--mint); color: var(--on-mint); }
+#challenge-timer-toggle-btn.running { background: var(--danger); color: #fff; }
+#challenge-timer-reset-btn { background: var(--challenge-panel-strong); color: var(--challenge-text-dim); }
+
+/* 오늘 체크. #challenge-start-row 와 같은 줄 모양. */
+#challenge-daily-check {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  background: var(--challenge-panel); border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4); margin-bottom: var(--s-3);
+}
+#challenge-daily-check-note { font-size: var(--t-xs); color: var(--challenge-text-dim); flex: 1; }
+#challenge-daily-check-btn {
+  flex: none; border: 1px solid var(--mint); background: transparent; color: var(--mint);
+  border-radius: var(--r-full); padding: var(--s-2) var(--s-4); font-size: var(--t-sm);
+  font-weight: 700; cursor: pointer; min-height: var(--tap); font-family: inherit;
+}
+#challenge-daily-check-btn.done { background: var(--mint); color: var(--on-mint); }
+
 /* 트랙 탭. flex:none 이 없으면 세로 flex 인 .screen 안에서 이 줄이
    눌려 사라진다(.chip-row 와 같은 문제 — components.css 참고). */
 #challenge-tabs {

@@ -14,6 +14,7 @@
 import { CHALLENGE_TRACK_ORDER, CHALLENGE_TRACKS } from '../data/challengeTracks.js';
 import { getChallengeIcon } from '../data/challengeIcons.js';
 import { getChallengeGloss } from '../data/challengeGloss.js';
+import { dayKey, markWorkoutDone } from '../health/store.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -42,6 +43,82 @@ function saveStart(key, v) {
   try { localStorage.setItem(key, v); } catch (e) { /* 무시 */ }
 }
 function getLogs(track) { return loadJSON(track.logsKey, {}); }
+
+// ── 오늘 체크(2026-09-27) ──────────────────────────────────────
+// 주차별 성공/실패·숫자 기록(challenge-week-log-row)과는 다른 자리다 —
+// 저건 "몇 주째 어땠나"를 나중에 훑어보는 표고, 이건 "오늘 했다"를
+// 그 자리에서 바로 누르는 하루 단위 체크다. 트랙마다 logsKey 옆에
+// ':days' 를 붙인 새 키 하나만 쓴다 — challengeTracks.js 의 9개 트랙
+// 항목을 전부 고칠 필요가 없다.
+function dailyKey(track) { return track.logsKey + ':days'; }
+function getDailyChecks(track) { return loadJSON(dailyKey(track), {}); }
+
+function renderDailyCheck(track) {
+  const btn = document.getElementById('challenge-daily-check-btn');
+  const note = document.getElementById('challenge-daily-check-note');
+  if (!btn || !note) return;
+  const today = dayKey();
+  const done = !!getDailyChecks(track)[today];
+  btn.textContent = t(done ? S.challengeDailyCheckedBtn : S.challengeDailyCheckBtn);
+  btn.classList.toggle('done', done);
+  note.textContent = t(done ? S.challengeDailyCheckedNote : S.challengeDailyCheckNote);
+}
+
+function toggleDailyCheck(track) {
+  const today = dayKey();
+  const days = getDailyChecks(track);
+  if (days[today]) {
+    delete days[today];
+  } else {
+    days[today] = true;
+    // 도전도 운동이다(2026-09-27 요청) — 기록지의 오늘 운동 칸을 같이 켠다.
+    try { markWorkoutDone(); } catch (e) { console.error('challenge markWorkoutDone failed:', e); }
+  }
+  saveJSON(dailyKey(track), days);
+  renderDailyCheck(track);
+}
+
+// ── 자유 타이머(2026-09-27) ────────────────────────────────────
+// 특정 트랙·동작에 안 묶인 스톱워치다 — 쉬는 시간이든 세트 사이든
+// 사용자가 직접 시작·종료한다. 화면을 나가도 계속 흐른다(실제
+// 스톱워치가 그렇듯 — 여기서 멈추면 "쟀는데 안 잰 셈"이 된다).
+let timerSec = 0;
+let timerRunning = false;
+let timerIntervalId = null;
+
+function fmtTimer(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function renderTimer() {
+  const display = document.getElementById('challenge-timer-display');
+  if (display) display.textContent = fmtTimer(timerSec);
+  const toggleBtn = document.getElementById('challenge-timer-toggle-btn');
+  if (toggleBtn) {
+    toggleBtn.textContent = t(timerRunning ? S.challengeTimerPause : S.challengeTimerStart);
+    toggleBtn.classList.toggle('running', timerRunning);
+  }
+}
+
+function toggleTimer() {
+  timerRunning = !timerRunning;
+  if (timerRunning) {
+    timerIntervalId = setInterval(() => { timerSec++; renderTimer(); }, 1000);
+  } else if (timerIntervalId) {
+    clearInterval(timerIntervalId);
+    timerIntervalId = null;
+  }
+  renderTimer();
+}
+
+function resetTimer() {
+  if (timerIntervalId) { clearInterval(timerIntervalId); timerIntervalId = null; }
+  timerRunning = false;
+  timerSec = 0;
+  renderTimer();
+}
 
 function computeCalendarWeek(startDateStr, totalWeeks) {
   if (!startDateStr) return null;
@@ -282,6 +359,7 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
     const logs = getLogs(track);
     renderSummary();
     renderProgress(track, logs);
+    renderDailyCheck(track);
 
     if (forcedPhaseIdx !== undefined) {
       openPhaseIdx = forcedPhaseIdx;
@@ -345,14 +423,23 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
     if (!ok) return;
     saveStart(track.startKey, '');
     saveJSON(track.logsKey, {});
+    saveJSON(dailyKey(track), {});
     renderTrack();
   });
+
+  document.getElementById('challenge-timer-toggle-btn')?.addEventListener('click', toggleTimer);
+  document.getElementById('challenge-timer-reset-btn')?.addEventListener('click', resetTimer);
+  document.getElementById('challenge-daily-check-btn')?.addEventListener('click', () => {
+    toggleDailyCheck(CHALLENGE_TRACKS[currentTrackKey]);
+  });
+  renderTimer();
 
   // 언어를 바꾸면 탭 라벨·진행 문구 등 이 화면이 직접 t() 로 지은 글자도
   // 다시 그려야 한다 — 그대로 두면 홈 화면의 옛 버그(연속기록 줄 미갱신)
   // 와 같은 문제가 된다.
   document.addEventListener('qfit:lang', () => {
     if (document.getElementById('challenge-screen')?.classList.contains('active')) renderTrack();
+    renderTimer();
   });
 
   renderTrack();
