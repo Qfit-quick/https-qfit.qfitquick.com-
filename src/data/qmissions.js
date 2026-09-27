@@ -6,20 +6,27 @@
 // QM_CATEGORIES 에 먼저 있어야 한다(미션 쪽에서 category 오타가 나도
 // 조용히 안 보이는 대신 눈에 띄게 하려면 여기 목록과 대조해서 검사할
 // 자리가 필요한데, 지금은 항목 수가 적어 손으로 맞춘다).
+// 이모티콘은 안 쓴다(2026-09-27 요청) — 이 앱은 이미 한 번 이모지를
+// 걷어낸 적이 있다(커밋 18479d2, "화면 CSS 전면 재작성: 이모지 제거").
+// 카테고리는 아이콘 대신 이름표(.qm-cat-tag, screens.css)로만 구분한다.
 export const QM_CATEGORIES = [
-  { key: 'env', icon: '🌱', label: { ko: '환경', en: 'Environment', zh: '环境' } },
-  { key: 'people', icon: '🤝', label: { ko: '사람', en: 'People', zh: '人际' } },
-  { key: 'community', icon: '🏘️', label: { ko: '지역사회', en: 'Community', zh: '社区' } },
-  { key: 'health', icon: '❤️', label: { ko: '건강', en: 'Health', zh: '健康' } },
-  { key: 'growth', icon: '📚', label: { ko: '성장·나눔', en: 'Growth & sharing', zh: '成长与分享' } },
+  { key: 'env', label: { ko: '환경', en: 'Environment', zh: '环境' } },
+  { key: 'people', label: { ko: '사람', en: 'People', zh: '人际' } },
+  { key: 'community', label: { ko: '지역사회', en: 'Community', zh: '社区' } },
+  { key: 'health', label: { ko: '건강', en: 'Health', zh: '健康' } },
+  { key: 'growth', label: { ko: '성장·나눔', en: 'Growth & sharing', zh: '成长与分享' } },
 ];
 
 // 하루 완료당 +Q. 값 자체보다 "기록됐다"가 중요하다는 게 이 기능의
 // 원래 취지라 하나로 통일한다 — 미션마다 배점을 다르게 매기면 그 순간부터
 // "어떤 선행이 더 가치있나"를 매기는 것이 된다.
 export const QM_POINTS_PER_MISSION = 10;
-// 하루에 추천하는 미션 개수.
+// 하루에 추천하는 미션 개수 — 운동 관련(health) 1개 + 그 밖의 카테고리에서
+// 일반 2개(2026-09-27 요청 "운동 관련 하나 일반 하나"). 이 앱은 운동 앱이라
+// 매일 최소 하나는 몸을 직접 움직이는 미션이 끼게 한다 — 나머지 자리는
+// 순수하게 무작위라 다양성을 잃지 않는다.
 export const QM_DAILY_PICK_COUNT = 3;
+export const QM_DAILY_HEALTH_PICK_COUNT = 1;
 
 export const QM_MISSIONS = [
   // 🌱 환경

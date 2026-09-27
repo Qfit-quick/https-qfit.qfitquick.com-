@@ -9,7 +9,7 @@
 // 나 myProfile(app.js, 운동 XP·완주)에 안 얹는다. 둘 다 이미 클라우드
 // 동기화·병합 로직을 지고 있어서, 평가하지 않기로 한 이 점수를 거기
 // 섞으면 그 복잡도를 그대로 물려받는다.
-import { QM_CATEGORIES, QM_MISSIONS, QM_POINTS_PER_MISSION, QM_DAILY_PICK_COUNT } from '../data/qmissions.js';
+import { QM_CATEGORIES, QM_MISSIONS, QM_POINTS_PER_MISSION, QM_DAILY_PICK_COUNT, QM_DAILY_HEALTH_PICK_COUNT } from '../data/qmissions.js';
 import { dayKey } from '../health/store.js';
 import { ICON } from './icons.js';
 
@@ -61,16 +61,25 @@ function seededRandom(seedStr) {
   };
 }
 
-/** 그 날짜에 추천할 미션(항상 같은 결과) — QM_MISSIONS 안에서 서로 다른 count 개. */
-function picksForDate(dateStr) {
-  const rand = seededRandom(dateStr);
-  const pool = [...QM_MISSIONS];
+function takeRandom(pool, rand, count) {
   const picked = [];
-  for (let i = 0; i < QM_DAILY_PICK_COUNT && pool.length; i++) {
+  for (let i = 0; i < count && pool.length; i++) {
     const idx = Math.floor(rand() * pool.length);
     picked.push(pool.splice(idx, 1)[0]);
   }
   return picked;
+}
+
+/** 그 날짜에 추천할 미션(항상 같은 결과) — 운동 관련(health) 을 먼저
+ * QM_DAILY_HEALTH_PICK_COUNT 개 뽑고, 나머지는 다른 카테고리에서 채운다
+ * (2026-09-27 요청 "운동 관련 하나 일반 하나"). */
+function picksForDate(dateStr) {
+  const rand = seededRandom(dateStr);
+  const healthPool = QM_MISSIONS.filter((m) => m.category === 'health');
+  const generalPool = QM_MISSIONS.filter((m) => m.category !== 'health');
+  const health = takeRandom(healthPool, rand, QM_DAILY_HEALTH_PICK_COUNT);
+  const general = takeRandom(generalPool, rand, Math.max(0, QM_DAILY_PICK_COUNT - health.length));
+  return [...health, ...general];
 }
 
 function missionByKey(key) { return QM_MISSIONS.find((m) => m.key === key); }
@@ -134,9 +143,7 @@ export function renderQMissionCard() {
   const today = loadToday();
   const picks = picksForDate(today.date);
   const doneCount = picks.filter((m) => today.done.includes(m.key)).length;
-  const preview = picks
-    .map((m) => `${categoryByKey(m.category)?.icon || ''} ${esc(t(m.label))}`)
-    .join(' · ');
+  const preview = picks.map((m) => esc(t(m.label))).join(' · ');
 
   card.innerHTML =
     '<div class="tc-head">' +
@@ -161,7 +168,7 @@ function renderMissionList() {
       `<span class="log-box" aria-hidden="true">${on ? ICON.check : ''}</span>` +
       '<span class="row-main">' +
       `<span class="row-t">${esc(t(m.label))}</span>` +
-      `<span class="row-d dim">${cat ? cat.icon + ' ' + esc(t(cat.label)) : ''}</span>` +
+      (cat ? `<span class="qm-cat-tag">${esc(t(cat.label))}</span>` : '') +
       '</span></button>';
   }).join('');
 }
@@ -178,7 +185,7 @@ function renderImpactSection() {
     `<p class="qm-impact-lead">${esc(t(S.qmImpactNarrative).replace('%s', total))}</p>` +
     '<ul class="recovery-list">' +
     rows.filter((r) => r.count > 0).map((r) =>
-      `<li>${r.icon} ${esc(t(r.label))} — ${r.count}</li>`
+      `<li>${esc(t(r.label))} — ${r.count}</li>`
     ).join('') +
     '</ul>' +
     `<p class="dim">${esc(t(S.qmPointsLabel).replace('%s', totalQ))}</p>`;
