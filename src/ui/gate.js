@@ -92,16 +92,34 @@ function optionButton(opt, onPick, urlFn) {
   return b;
 }
 
-// 직전에 봤던 명언 id — 순수 난수라 바로 다음 번에도 같은 문장이 다시
-// 뽑힐 수 있는데, 특히 결(tone)마다 문장 수가 다르다 보니(gentle 은 16개뿐)
-// 자주 겹쳐 보인다는 피드백(2026-09-18)이 있었다. "매번 다르게"라는 원래
-// 요청의 취지를 지키면서 "방금 그거 또"만 없애려고, 직전 id 만 후보에서
-// 뺀다 — 그 이상(최근 5개 등) 기억하지는 않는다, 결 하나가 16개뿐이라
-// 너무 많이 빼면 사실상 못 나오는 문장이 생긴다.
-const LAST_QUOTE_KEY = 'qfit_last_quote_id';
+// 직전 id 하나만 후보에서 빼는 방식(2026-09-18)을 썼었는데, 그래도
+// "같은 것만 자주 보인다"는 피드백(2026-09-27)이 다시 나왔다 — 당연하다,
+// 순수 난수는 직전 한 번만 피해도 몇 번 안에 또 나올 수 있고, 결(tone)
+// 하나를 20번쯤 열면 같은 문장을 여러 번 보게 되는 게 확률상 정상이다.
+// 그렇다고 "최근 N개는 절대 안 나옴" 식으로 기억을 늘리면, 결 하나가
+// 16~18개뿐이라(gentle) 못 나오는 문장이 생긴다.
+//
+// 그래서 "카드 뽑기 셔플백" 방식으로 바꾼다 — 결마다 "이번 판에서 이미
+// 나온 것" 목록을 저장해 두고, 다음 뽑기는 그 목록에 없는 것 중에서만
+// 고른다. 결 안의 문장을 전부 한 번씩 다 보고 나서야(목록이 풀을 다
+// 채우면) 목록을 비우고 새 판을 시작한다 — "매번 다르게"라는 원래 요청도
+// 지키면서, 한 바퀴를 다 돌기 전에는 같은 문장이 두 번 나올 수 없다.
+const QUOTE_SHUFFLE_KEY = 'qfit_quote_shuffle_v1';
+
+function loadShuffleSeen() {
+  try {
+    const raw = localStorage.getItem(QUOTE_SHUFFLE_KEY);
+    const v = raw ? JSON.parse(raw) : null;
+    return v && typeof v === 'object' ? v : {};
+  } catch (e) { return {}; }
+}
+function saveShuffleSeen(seen) {
+  try { localStorage.setItem(QUOTE_SHUFFLE_KEY, JSON.stringify(seen)); } catch (e) { /* 시크릿 모드 등 — 이번 판만 못 기억할 뿐, 매번 새로 뽑는 것 자체는 그대로다 */ }
+}
 
 /**
- * 결(tone) 안에서 명언 하나를 무작위로 뽑는다. 직전에 본 것과는 다르게.
+ * 결(tone) 안에서 명언 하나를 무작위로 뽑는다. 이번 판에서 이미 본 것은
+ * 다시 안 뽑는다(위 셔플백 설명 참고).
  *
  * 앱을 열 때마다 다른 문장을 보고 싶다는 요청(2026-09-15)이라 순수 난수를
  * 쓴다. 부를 때마다 다른 값이 나오므로, 이 앱 열기 안에서 명언을 두 번
@@ -110,11 +128,21 @@ const LAST_QUOTE_KEY = 'qfit_last_quote_id';
  */
 function randomQuote(tone) {
   const pool = QUOTES_BY_TONE[tone] || QUOTES;
-  let lastId = null;
-  try { lastId = localStorage.getItem(LAST_QUOTE_KEY); } catch (e) { /* 시크릿 모드 등 — 그냥 매번 새로 뽑은 셈 친다 */ }
-  const candidates = pool.length > 1 ? pool.filter((q) => q.id !== lastId) : pool;
+  const key = QUOTES_BY_TONE[tone] ? tone : '_all';
+  const seen = loadShuffleSeen();
+  let seenIds = new Set(seen[key] || []);
+  let candidates = pool.filter((q) => !seenIds.has(q.id));
+  // 이번 판에서 풀을 이미 다 봤다(또는 처음 쓰는 풀이라 아직 못 채웠는데
+  // 우연히 다 걸렀다) — 새 판을 시작한다. 방금 뽑았던 것과 바로 또
+  // 겹치지 않게, 직전 한 개만 이번 새 판에서도 계속 제외한다.
+  if (candidates.length === 0) {
+    const lastId = seen[key]?.[seen[key].length - 1];
+    seenIds = new Set();
+    candidates = pool.length > 1 ? pool.filter((q) => q.id !== lastId) : pool;
+  }
   const picked = candidates[Math.floor(Math.random() * candidates.length)];
-  try { localStorage.setItem(LAST_QUOTE_KEY, picked.id); } catch (e) { /* 위와 같음 */ }
+  seen[key] = [...seenIds, picked.id];
+  saveShuffleSeen(seen);
   return picked;
 }
 
