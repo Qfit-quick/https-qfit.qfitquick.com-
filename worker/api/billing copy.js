@@ -9,9 +9,9 @@ import {
   getCustomer,
   markPastDue,
   calculateNextPeriod,
-} from "../utils/billingUtils.js";
+} from "./utils/billingUtils.js";
 
-// billing.js 내부에서는 토스페이먼츠(tossPay) 및 카카오페이(kakaoPay)
+// billing.js 내부에서는 토스페이먼츠(tossPay) 및 카카오페이(kakaoPay) 
 // 전용 API 호출 모듈 및 핸들러 로직에만 집중할 수 있게 됩니다.
 // SUPABASE_SECRET_KEY, SUPABASE_PUBLISHABLE_KEY.
 const PLAN = Object.freeze({
@@ -20,8 +20,60 @@ const PLAN = Object.freeze({
   amount: 2400,
 });
 const TOSS = "https://api.tosspayments.com";
+const reply = (body, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+    },
+  });
 const tossAuthorization = (secret) => `Basic ${btoa(`${secret}:`)}`;
 const orderId = () => `sub_${crypto.randomUUID().replaceAll("-", "")}`;
+
+async function requireUser(request, env) {
+  const authorization = request.headers.get("authorization");
+  // let authorization = await getTestToken(
+  //   env.SUPABASE_URL,
+  //   env.SUPABASE_PUBLISHABLE_KEY,
+  //   "test@gmail.com",
+  //   "test1234",
+  // );
+  authorization = String(authorization);
+  if (!authorization?.startsWith("Bearer ")) return null;
+  const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+    headers: { authorization, apikey: env.SUPABASE_PUBLISHABLE_KEY },
+  });
+  return res.ok ? res.json() : null;
+}
+
+async function supabase(env, path, init = {}) {
+  const headers = new Headers(init.headers);
+  headers.set("apikey", env.SUPABASE_SECRET_KEY);
+  headers.set("authorization", `Bearer ${env.SUPABASE_SECRET_KEY}`);
+  headers.set("content-type", "application/json");
+  headers.set("prefer", headers.get("prefer") || "return=representation");
+  const response = await fetch(`${env.SUPABASE_URL}/rest/v1/${path}`, {
+    ...init,
+    headers,
+  });
+  const raw = await response.text();
+  let body = null;
+  try {
+    body = raw ? JSON.parse(raw) : null;
+  } catch {
+    body = raw;
+  }
+  if (!response.ok) {
+    const error = new Error(
+      `Supabase ${response.status}: ${JSON.stringify(body)}`,
+    );
+    error.status = response.status;
+    error.code = body && typeof body === "object" ? body.code : undefined;
+    throw error;
+  }
+  return body;
+}
 
 async function toss(path, secret, body, method = "POST") {
   const response = await fetch(`${TOSS}${path}`, {
@@ -36,6 +88,14 @@ async function toss(path, secret, body, method = "POST") {
   });
   const json = await response.json().catch(() => ({}));
   return { response, json };
+}
+
+async function getCustomer(env, userId) {
+  const rows = await supabase(
+    env,
+    `billing_customers?user_id=eq.${userId}&select=customer_key,billing_key`,
+  );
+  return rows[0] || null;
 }
 
 async function prepare(env, user) {
@@ -126,6 +186,24 @@ async function reconcileTossOrder(env, order) {
   } catch {
     return { uncertain: true };
   }
+}
+
+async function markPastDue(env, userId, currentCount = 0) {
+  const retryCount = currentCount + 1;
+  // Retry after 1, 2, 4, and 8 hours; stop automatic attempts after 5 failures.
+  const delayHours =
+    retryCount >= 5 ? null : Math.min(24, 2 ** (retryCount - 1));
+  await supabase(env, `subscriptions?user_id=eq.${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      status: "past_due",
+      payment_retry_count: retryCount,
+      next_retry_at:
+        delayHours == null
+          ? null
+          : new Date(Date.now() + delayHours * 3600_000).toISOString(),
+    }),
+  });
 }
 
 async function settlePayment(
@@ -382,11 +460,11 @@ export async function handleBillingRequest(request, env) {
   if (!user) return reply({ error: "Authentication required." }, 401);
   try {
     const path = new URL(request.url).pathname;
-    if (request.method === "POST" && path === "/api/billing/toss/prepare")
+    if (request.method === "POST" && path === "/api/billing/prepare")
       return prepare(env, user);
-    if (request.method === "POST" && path === "/api/billing/toss/authorize")
+    if (request.method === "POST" && path === "/api/billing/authorize")
       return authorize(request, env, user);
-    if (request.method === "GET" && path === "/api/billing/toss/status") {
+    if (request.method === "GET" && path === "/api/billing/status") {
       const rows = await supabase(
         env,
         `subscriptions?user_id=eq.${user.id}&select=status,current_period_end,cancel_at_period_end`,

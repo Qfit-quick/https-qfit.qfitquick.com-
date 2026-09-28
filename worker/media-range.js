@@ -7,13 +7,14 @@
 // 동영상 요청만 여기서 가로채 진짜 206 을 만든다. 파일이 다 커봐야 수백
 // KB~수 MB(운동 클립)라 통째로 메모리에 올려도 부담 없다.
 import { handleBillingRequest, renewDueSubscriptions } from "./api/billing.js";
+import { handleBillingRequestKakao } from "./api/kakaoBilling.js";
 import { test } from "./api/test.js";
 import { getTestToken } from "./utils/getTestToken.js";
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)$/i;
 
 export default {
   async fetch(request, env) {
-    const token=await getTestToken(
+    const token = await getTestToken(
       env.SUPABASE_URL,
       env.SUPABASE_PUBLISHABLE_KEY,
       "test@gmail.com",
@@ -29,8 +30,11 @@ export default {
         hasSecret: !!env.SUPABASE_SECRET_KEY,
       });
     }
-    if (url.pathname.startsWith("/api/billing")) {
+    if (url.pathname.startsWith("/api/billing/toss")) {
       return handleBillingRequest(request, env);
+    }
+    if (url.pathname.startsWith("/api/billing/kakao")) {
+      return handleBillingRequestKakao(request, env);
     }
     if (request.method !== "GET" || !VIDEO_EXT.test(url.pathname)) {
       return env.ASSETS.fetch(request);
