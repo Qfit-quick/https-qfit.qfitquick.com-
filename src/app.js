@@ -213,7 +213,14 @@ function applyStaticTranslations(){
  try{ renderRecovery(); }catch(e){ console.error('renderRecovery failed:', e); }
  document.querySelectorAll('[data-i18n]').forEach(el => {
  const entry = STATIC_UI[el.dataset.i18n];
- if(entry) el.textContent = t(entry);
+ // innerHTML 로 쓴다 — STATIC_UI 는 개발자가 직접 쓴 고정 문구라
+ // 사용자 입력이 섞일 일이 없고, bodyActivityHint 같은 몇몇 문구는
+ // <b> 를 일부러 품고 있다. textContent 로 쓰면 그 태그가 화면에
+ // 글자 그대로("<b>...</b>") 찍힌다 — 처음 로드된 정적 마크업에서는
+ // 진짜 굵은 글씨로 보이다가, 이 훑기가 한 번이라도 돌면(부팅 시
+ // 또는 언어 전환 시) 그제서야 깨진다(2026-09-28 경진대회 재검토에서
+ // 발견 — 신체정보 화면의 활동량 설명 글).
+ if(entry) el.innerHTML = t(entry);
  });
  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
  const entry = STATIC_UI[el.dataset.i18nPlaceholder];
@@ -436,6 +443,7 @@ const manualSelectScreen = document.getElementById('manual-select-screen');
 const aiQuizScreen = document.getElementById('ai-quiz-screen');
 const routinesScreen = document.getElementById('routines-screen');
 const settingsScreen = document.getElementById('settings-screen');
+const legalScreen = document.getElementById('legal-screen');
 const setupBackBtn = document.getElementById('setup-back-btn');
 const countdownNum = document.getElementById('countdown-num');
 const nicknameInput = document.getElementById('nickname-input');
@@ -597,7 +605,7 @@ function refreshStartModeRow(){
 }
 
 function showScreen(el){
- [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen,quickScreen,tabataSetupScreen,tabataRunScreen,seniorRunScreen,qMissionScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
+ [startScreen,accountScreen,manualSelectScreen,aiQuizScreen,routinesScreen,settingsScreen,legalScreen,setupScreen,wodPreviewScreen,warmupScreen,countdownScreen,gameScreen,resultScreen,recordsScreen,recoveryScreen,videoGalleryScreen,moreScreen,planScreen,bodyScreen,logScreen,programsScreen,amrapScreen,circuitScreen,qceRulebookScreen,heartgameScreen,challengeScreen,chatbotScreen,quickScreen,tabataSetupScreen,tabataRunScreen,seniorRunScreen,qMissionScreen].filter(Boolean).forEach(s=>s.classList.remove('active'));
  el.classList.add('active');
  if(el === moreScreen){
  try{
@@ -3980,11 +3988,10 @@ function runRest(){
  }, 1000);
 }
 
-// ---------- AD TIMING (usage counter only — no real ad network wired up) ----------
-// This tracks how many completed sessions the user has had, so that when
-// an actual ad SDK (AdMob, etc.) is added later, it's easy to gate ad
-// display behind "after workout" + "every 5th use" rules instead of
-// showing ads immediately on open.
+// ---------- 광고 타이밍(사용 횟수만 센다 — 실제 광고 네트워크는 아직 안 붙었다) ----------
+// 완주 횟수를 세어 두면, 나중에 실제 광고 SDK(AdMob 등)를 붙일 때 "운동 끝난
+// 뒤" + "5번째마다" 규칙으로 바로 걸 수 있다 — 붙이자마자 열자마자 광고부터
+// 뜨는 것보다 낫다.
 function checkAndMaybeShowAd(){
  let usageCount = 0;
  try{
@@ -3992,10 +3999,11 @@ function checkAndMaybeShowAd(){
  localStorage.setItem('wodrush_usage_count', String(usageCount));
  }catch(e){}
  if(usageCount % 5 === 0){
- // Placeholder hook: this is where a rewarded/interstitial ad call
- // would go once a real ad network SDK is integrated. Left as a
- // no-op for now — never shows anything fake to the user.
- console.log('[ad-timing] usage #' + usageCount + ' — would trigger ad here once a real network is connected');
+ // 자리만 잡아 둔다 — 실제 광고 네트워크 SDK 를 붙이면 여기서
+ // 리워드/전면 광고를 부르면 된다. 지금은 아무 것도 안 띄우는
+ // 빈 자리다(가짜 광고를 보여주지 않는다). 콘솔에도 안 남긴다 —
+ // 사용자가 개발자도구를 열었을 때 "광고" 라는 단어가 무료 앱에서
+ // 뜨면 괜한 오해를 산다(2026-09-28 경진대회 재검토에서 발견).
  }
 }
 
@@ -4834,6 +4842,8 @@ try{
  });
  document.getElementById('settings-export-btn')?.addEventListener('click', exportHistoryCsv);
  document.getElementById('settings-wipe-btn')?.addEventListener('click', wipeAllData);
+ document.getElementById('settings-legal-btn')?.addEventListener('click', ()=> showScreen(legalScreen));
+ document.getElementById('legal-back-btn')?.addEventListener('click', ()=> showScreen(settingsScreen));
 
  // 화면 맨 아래 판 번호. 무언가 이상할 때 "어느 판을 보고 있나" 를
  // 물어볼 수 있는 유일한 자리다.

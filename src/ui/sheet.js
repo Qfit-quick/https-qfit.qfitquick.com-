@@ -170,6 +170,19 @@ export function closeSheet({ keepHistory = false } = {}) {
   if (!openEl) return;
   const el = openEl;
   openEl = null;
+  // homeParent·homeNext 를 여기서 지역 변수로 떼어 둔다. 안 떼어 두면
+  // (이전엔 restore() 가 바깥의 let homeParent/homeNext 를 직접 읽었다)
+  // 이 시트가 닫히는 240ms 사이에 다른 시트가 열려서 같은 변수를
+  // 덮어쓰는 순간 사고가 난다 — '바로 고르기'(mode-pick-panel)처럼
+  // 시트 안에서 또 시트를 여는 경우, 안쪽 시트의 원래 자리가 바깥
+  // 시트(el) 안이라, 뒤늦게 도착한 restore() 가 el 을 el 자기 자신의
+  // 후손 안에 넣으려다 DOMException 을 던지고 조용히 죽는다 — 그러면
+  // 그 뒤의 openEl = null 등 정리 코드가 하나도 안 돌아 시트가
+  // 영영 안 닫히는 것처럼 보인다(2026-09-28 경진대회 재검토에서 발견).
+  const restoreParent = homeParent;
+  const restoreNext = homeNext;
+  homeParent = null;
+  homeNext = null;
 
   sheet.classList.remove('on');
   backdrop.classList.remove('on');
@@ -178,10 +191,14 @@ export function closeSheet({ keepHistory = false } = {}) {
 
   // 애니메이션이 끝난 뒤 원래 자리로 돌려놓는다. 바로 옮기면 사라지는 모습이 안 보인다.
   const restore = () => {
-    if (homeParent) homeParent.insertBefore(el, homeNext);
+    try {
+      if (restoreParent) restoreParent.insertBefore(el, restoreNext);
+    } catch (e) {
+      // el 이 restoreParent 의 조상이 되어 버린 경우(중첩 시트 타이밍) 등 —
+      // 자리를 못 돌려놔도 el 은 이미 시트 밖에서 숨겨지므로 화면엔 안 보인다.
+      console.error('sheet restore failed:', e);
+    }
     el.style.display = 'none';
-    homeParent = null;
-    homeNext = null;
   };
   setTimeout(restore, 240);
 

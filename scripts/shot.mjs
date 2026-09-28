@@ -17,6 +17,7 @@ fs.mkdirSync(OUT, { recursive: true });
 const PATHS = {
   'start-screen': [],
   'settings-screen': ['#open-settings-btn'],
+  'legal-screen': ['#open-settings-btn', '#settings-legal-btn'],
   'account-screen': ['#open-account-btn'],
   // 회복·영상 도감·기록·루틴·계획·신체정보는 전부 더보기 메뉴 안이다
   // (설정·계정과 달리 홈 헤더에 없다). 더보기로 들어가는 문은

@@ -4,7 +4,7 @@ export const STATIC_UI = {
  setNote: {ko:'· 총 8세트 (4세트 후 휴식)', en:'· 8 sets total (rest after 4)', zh:'· 共8组（第4组后休息）'},
  wodLabel: {ko:'오늘의 WOD 구성', en:"Today's WOD", zh:'今天的训练安排'},
  groupLabel: {ko:'세트 운동 (부위별 빠른 선택)', en:'Quick sets (by muscle group)', zh:'快速选组（按部位）'},
- modeLabel: {ko:'바로 고르기', en:'Pick Now', zh:'直接选择'},
+ modeLabel: {ko:'바로 고르기', en:'Pick Now', zh:'马上开始'},
  // 직접선택·랜덤선택을 한 줄로 합친 자리(2026-09-27)의 부제 —
  // modeLabel 은 이미 있던(안 쓰이던) 키를 그대로 재사용했다.
  modePickSub: {ko:'직접 고르거나 무작위로', en:'Manual or random', zh:'手动选择或随机'},
@@ -139,7 +139,7 @@ export const STATIC_UI = {
  heartgameExitBtn: {ko:'나가기', en:'Exit', zh:'退出'},
  heartgameBest: {ko:'BEST %s', en:'BEST %s', zh:'最高 %s'},
  heartgameCombo: {ko:'COMBO x%s!', en:'COMBO x%s!', zh:'连击 x%s！'},
- // 챌린지 트래커(2026-09-13). 턱걸이·플란체 등 7개 트랙의 화면 뼈대
+ // 챌린지 트래커(2026-09-13, 2026-09-28 기준 9개 트랙). 턱걸이·플란체 등의 화면 뼈대
  // 문구만 여기 있다 — 운동 이름·목표·비고·쉬운 설명(GLOSS) 104개+@는
  // src/data/challengeTracks.js·challengeGloss.js 에 한국어 전용으로
  // 그대로 뒀다(칼리스테닉스 전문 용어라 오역 위험 없이 옮기려면 별도
@@ -443,6 +443,7 @@ export const STATIC_UI = {
  setExport: {ko:'기록 내보내기', en:'Export records', zh:'导出记录'},
  setWipe: {ko:'데이터 삭제', en:'Delete all data', zh:'删除数据'},
  setWipeSub: {ko:'되돌릴 수 없습니다', en:"This can't be undone", zh:'无法撤销'},
+ setLegal: {ko:'개인정보처리방침 · 이용약관', en:'Privacy Policy · Terms of Service', zh:'隐私政策 · 使用条款'},
  loginOrSignup: {ko:'로그인 / 가입', en:'Log in / Sign up', zh:'登录 / 注册'},
  syncBlurb: {ko:'로그인하면 기록이 기기 간 동기화됩니다', en:'Log in to sync records across devices', zh:'登录后记录会在设备间同步'},
  nothingToExport: {ko:'내보낼 기록이 없어요', en:'Nothing to export yet', zh:'还没有可导出的记录'},
@@ -718,4 +719,46 @@ export const STATIC_UI = {
  // 알 성장 창
  petNext: {ko:'다음 진화까지 %s XP', en:'%s XP to the next evolution', zh:'距离下次进化还需 %s XP'},
  petMax: {ko:'마지막 단계까지 키웠습니다', en:'Fully grown — this is the last stage', zh:'已经养到最后一个阶段'},
+
+ // 개인정보처리방침·이용약관(2026-09-28, 경진대회 재검토에서 추가) —
+ // 실제 이메일 회원가입(Supabase)과 정기결제(Toss Payments)를 쓰는
+ // 앱인데 이 페이지가 아예 없었다. 소제목·본문을 따로 키로 나눈다 —
+ // installDetail1/2 처럼 이 파일의 기존 관례를 따른 것이기도 하고,
+ // 한 키 안에 <b>·<br> 를 섞으면 scripts/i18n.mjs 의 "마크업 안의
+ // data-i18n 없는 한글" 검사가 그 안쪽 태그를 별도 원소로 오인해
+ // 걸린다(안쪽 태그엔 data-i18n 이 없으니까) — 처음엔 한 키로 합쳐서
+ // 썼다가 검사에서 걸려 이렇게 쪼갰다.
+ legalPrivacyTitle: {ko:'개인정보처리방침', en:'Privacy Policy', zh:'隐私政策'},
+ legalPrivacyIntro: {ko:'Q-fit(이하 "이 서비스")은 이용자의 개인정보를 소중히 다룹니다. 이 서비스는 개인 프로젝트로 시작해 아직 별도 사업자 등록 없이 테스트 결제 환경으로 운영되지만, 그렇다고 개인정보를 가볍게 다루지는 않습니다.', en:'Q-fit ("the Service") takes your personal information seriously. The Service began as an individual project and currently runs on a test payment setup without a separate registered business — that does not lower how carefully personal information is handled.', zh:'Q-fit（以下称"本服务"）重视用户的个人信息。本服务目前以个人项目形式运营，尚未单独注册营业执照，支付环境也处于测试阶段，但这并不意味着可以轻率对待个人信息。'},
+ legalPrivacyCollectHead: {ko:'수집하는 개인정보', en:'Personal information collected', zh:'收集的个人信息'},
+ legalPrivacyCollectBody: {ko:'이메일(회원가입·로그인), 신체정보(키·몸무게·나이·활동량·목표 — 입력한 경우에만), 운동·챌린지 기록. 정기결제 시에는 Toss Payments가 발급하는 빌링키만 저장하며, 카드번호 자체는 이 서비스 서버에 저장되지 않습니다.', en:'Email (for signup and login), body info such as height/weight/age/activity level/goal (only if you enter it), and workout/challenge records. For recurring payments, only the billing key issued by Toss Payments is stored — the card number itself is never stored on this Service\'s servers.', zh:'邮箱（用于注册和登录）、身高体重年龄活动量目标等身体信息（仅在你填写时）、运动与挑战记录。使用定期付款时，仅保存 Toss Payments 签发的支付密钥，卡号本身不会存储在本服务的服务器上。'},
+ legalPrivacyPurposeHead: {ko:'이용 목적', en:'Purpose of use', zh:'使用目的'},
+ legalPrivacyPurposeBody: {ko:'로그인과 기기 간 기록 동기화, 정기결제 처리, Q-Impact 같은 통계 기능 제공, 서비스 개선을 위해서만 씁니다. 광고나 다른 목적으로 팔거나 제공하지 않습니다.', en:'Used only for login and cross-device record syncing, processing recurring payments, features like Q-Impact statistics, and improving the Service. Never sold or provided to others for advertising or any other purpose.', zh:'仅用于登录与跨设备记录同步、处理定期付款、提供 Q-Impact 等统计功能，以及改进服务，不会以广告或其他目的出售或提供给第三方。'},
+ legalPrivacyRetentionHead: {ko:'보유·이용 기간', en:'Retention period', zh:'保留期限'},
+ legalPrivacyRetentionBody: {ko:'회원 탈퇴 시 지체 없이 파기됩니다 — 설정의 "데이터 삭제"로 이용자가 직접, 즉시 할 수 있습니다. 결제 기록은 전자상거래법 등 관련 법령이 정한 기간 동안 별도 보관될 수 있습니다.', en:'Deleted without delay when you leave — you can do this yourself, instantly, via "Delete all data" in Settings. Payment records may be kept separately for the period required by applicable law (e.g. e-commerce consumer protection law).', zh:'注销账户后会立即删除 — 你可以在设置的"删除数据"中自行立即操作。支付记录可能会依据电子商务相关法规单独保留一段时间。'},
+ legalPrivacyThirdPartyHead: {ko:'처리위탁 및 제3자 제공', en:'Data processors and third parties', zh:'委托处理与第三方提供'},
+ legalPrivacyThirdPartyBody: {ko:'서비스 운영을 위해 다음에 처리를 위탁합니다 — Supabase Inc.(계정 인증, 데이터 저장), Toss Payments(정기결제 처리). 그 밖의 목적으로 제3자에게 제공하지 않습니다.', en:'To operate the Service, processing is delegated to Supabase Inc. (account authentication, data storage) and Toss Payments (recurring payment processing). Not provided to any other third party for any other purpose.', zh:'为运营本服务，将处理工作委托给 Supabase Inc.（账户认证、数据存储）与 Toss Payments（定期付款处理），不会为其他目的向其他第三方提供。'},
+ legalPrivacyRightsHead: {ko:'이용자의 권리', en:'Your rights', zh:'用户权利'},
+ legalPrivacyRightsBody: {ko:'언제든 자신의 개인정보 열람·정정·삭제를 요구할 수 있습니다. 설정 화면의 "데이터 삭제"가 가장 빠른 길이고, 그 밖의 요청은 아래 연락처로 문의해 주십시오.', en:'You may request to view, correct, or delete your personal information at any time. "Delete all data" in Settings is the fastest way; for anything else, contact us at the address below.', zh:'你可以随时要求查看、更正或删除自己的个人信息。设置中的"删除数据"是最快的方式，其他请求请通过下方联系方式联系我们。'},
+ legalPrivacySecurityHead: {ko:'안전성 확보조치', en:'Security measures', zh:'安全措施'},
+ legalPrivacySecurityBody: {ko:'모든 통신은 HTTPS로 암호화되며, 데이터베이스는 행 단위 접근 제어(RLS)로 본인 데이터만 조회·수정할 수 있도록 제한합니다.', en:'All communication is encrypted over HTTPS, and the database uses row-level security (RLS) so each account can only read or change its own data.', zh:'所有通信均通过 HTTPS 加密，数据库采用行级安全策略（RLS），确保每个账户只能查看和修改自己的数据。'},
+ legalPrivacyStorageHead: {ko:'로컬 저장소·쿠키', en:'Local storage and cache', zh:'本地存储与缓存'},
+ legalPrivacyStorageBody: {ko:'로그인 유지와 오프라인 사용(PWA)을 위해 브라우저의 로컬 저장소와 서비스워커 캐시를 씁니다. 이 정보는 이용자의 기기에만 남고, "데이터 삭제"로 함께 지워집니다.', en:'Browser local storage and the service worker cache are used to keep you logged in and to let the app work offline (PWA). This stays on your device only, and is cleared together by "Delete all data".', zh:'为保持登录状态并支持离线使用（PWA），会使用浏览器本地存储与 Service Worker 缓存。这些信息只留在你的设备上，会随"删除数据"一起清除。'},
+ legalPrivacyContactHead: {ko:'문의', en:'Contact', zh:'联系方式'},
+ legalPrivacyContactBody: {ko:'개인정보 관련 문의: jjunoo6070@gmail.com. 이 방침은 서비스 변경에 따라 수정될 수 있으며, 중요한 변경은 이 화면에 반영해 알립니다. 시행일: 2026-09-28', en:'For privacy-related questions: jjunoo6070@gmail.com. This policy may be revised as the Service changes; material changes will be reflected on this page. Effective: 2026-09-28', zh:'隐私相关咨询：jjunoo6070@gmail.com。本政策可能随服务变化而修订，重大变更会在此页面体现。生效日期：2026-09-28'},
+
+ legalTermsTitle: {ko:'이용약관', en:'Terms of Service', zh:'使用条款'},
+ legalTermsPurpose: {ko:'이 약관은 Q-fit(이하 "이 서비스")의 이용 조건과 절차, 이용자와 서비스 제공자의 권리·의무를 정합니다.', en:'These Terms set out the conditions and procedures for using Q-fit ("the Service"), and the rights and obligations of users and the Service provider.', zh:'本条款规定使用 Q-fit（以下称"本服务"）的条件与流程，以及用户与服务提供方各自的权利义务。'},
+ legalTermsServiceHead: {ko:'서비스 내용', en:'Service description', zh:'服务内容'},
+ legalTermsServiceBody: {ko:'짧은 운동 세션 기록, 챌린지·프로그램 진행, 신체정보 기반 계획 제안, 선택적 유료 구독(프리미엄)을 제공합니다.', en:'The Service provides short workout session tracking, challenge/program progress, body-info-based plan suggestions, and an optional paid subscription (Premium).', zh:'本服务提供短时运动记录、挑战与训练计划进度管理、基于身体信息的计划建议，以及可选的付费订阅（高级版）。'},
+ legalTermsAccountHead: {ko:'회원가입 및 탈퇴', en:'Signup and withdrawal', zh:'注册与退出'},
+ legalTermsAccountBody: {ko:'이메일로 회원가입하며, 별도 절차 없이 설정 화면에서 언제든 탈퇴(데이터 삭제)할 수 있습니다.', en:'You sign up with an email address, and may leave (delete your data) at any time from Settings with no separate procedure.', zh:'使用邮箱注册，可随时在设置中退出（删除数据），无需额外流程。'},
+ legalTermsBillingHead: {ko:'유료 구독', en:'Paid subscription', zh:'付费订阅'},
+ legalTermsBillingBody: {ko:'프리미엄은 월 단위 정기결제이며, 결제는 Toss Payments를 통해 처리됩니다. 해지는 설정 화면에서 즉시 가능하고, 해지 후에는 다음 결제일부터 청구되지 않습니다. 이미 결제된 기간의 환불은 전자상거래 등에서의 소비자보호에 관한 법률 등 관련 법령을 따릅니다.', en:'Premium is billed monthly, processed through Toss Payments. You can cancel instantly from Settings; after cancelling, you will not be charged from the next billing date. Refunds for an already-paid period follow applicable consumer protection law (e.g. the Act on Consumer Protection in Electronic Commerce).', zh:'高级版为按月定期付款，通过 Toss Payments 处理。可在设置中立即解约，解约后从下一个扣款日起不再收费。已付款期间的退款依照电子商务消费者保护相关法律执行。'},
+ legalTermsDutyHead: {ko:'이용자의 의무', en:'User obligations', zh:'用户义务'},
+ legalTermsDutyBody: {ko:'정확한 정보를 입력하고, 계정을 본인 외의 사람과 공유하거나 부정한 방법으로 서비스를 이용하지 않습니다.', en:'Enter accurate information, and do not share your account with others or use the Service through improper means.', zh:'应填写准确信息，不与他人共享账户，不以不正当方式使用本服务。'},
+ legalTermsDisclaimerHead: {ko:'면책조항', en:'Disclaimer', zh:'免责声明'},
+ legalTermsDisclaimerBody: {ko:'이 서비스가 제공하는 운동·식단 정보는 일반적인 안내이며 의학적 진단이나 처방이 아닙니다. 건강 상태에 따라 운동 전 전문가와 상담하는 것을 권장합니다.', en:'Workout and nutrition information provided by the Service is general guidance, not medical diagnosis or prescription. Depending on your health condition, consulting a professional before exercising is recommended.', zh:'本服务提供的运动与饮食信息为一般性指导，并非医学诊断或处方。根据自身健康状况，建议在运动前咨询专业人士。'},
+ legalTermsChangeHead: {ko:'서비스 변경·중단, 약관 개정', en:'Changes, discontinuation, and revisions', zh:'服务变更、终止与条款修订'},
+ legalTermsChangeBody: {ko:'서비스 내용은 예고 없이 변경되거나 중단될 수 있습니다 — 다만 유료 구독 중인 이용자에게는 사전에 알리도록 노력합니다. 이 약관은 필요에 따라 수정될 수 있으며, 변경 시 이 화면에 반영합니다. 시행일: 2026-09-28', en:'The Service may change or be discontinued without notice — though for paid subscribers, advance notice will be attempted. These Terms may be revised as needed, and changes will be reflected on this page. Effective: 2026-09-28', zh:'服务内容可能在不另行通知的情况下变更或终止 — 但会尽量提前告知付费订阅用户。本条款可能视需要修订，变更会在此页面体现。生效日期：2026-09-28'},
 };

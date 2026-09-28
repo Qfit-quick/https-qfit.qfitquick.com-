@@ -72,6 +72,8 @@ const IMMERSIVE = new Set([
 const BELONGS_TO = {
   'settings-screen': 'more-screen',
   'routines-screen': 'more-screen',
+  // 개인정보처리방침·이용약관(2026-09-28) — 설정 화면 밑이라 같은 문으로 묶는다.
+  'legal-screen': 'more-screen',
   'account-screen': 'more-screen',
   // 회복·동작 소개·기록은 탭에서 내려왔다. 탭을 하나도 안 켜 두면 지금 어디에
   // 있는지 알려 주는 것이 없어지므로, 들어온 문인 '더보기' 를 켜 둔다.

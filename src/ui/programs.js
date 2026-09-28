@@ -242,7 +242,7 @@ function renderProgramCards(term) {
       ${history ? `<p class="dim program-history-note">${esc(t(S.programHistoryNote).replace('%s', history.completedDays).replace('%s', history.totalDays).replace('%s', formatDate(history.quitDate)))}</p>` : ''}
       ${progress
         ? `<p class="dim program-card-progress">${esc(t(S.programProgress).replace('%s', progress.completedDays.length).replace('%s', totalDays))}</p>
-           <button type="button" class="primary program-continue-btn" data-program="${p.id}">${esc(t(S.programContinueBtn))}</button>`
+           <button type="button" class="primary program-continue-btn" data-program="${p.id}">${esc(t(progress.completedDays.length ? S.programContinueBtn : S.programStartBtn))}</button>`
         // amrap(Cindy)·circuit(QCE) 은 초보/중수/고수로 나뉘지 않는다 —
         // 정해진 서킷 하나뿐이다. 난이도 세 칸을 그대로 두면 고르는
         // 순간부터 거짓말이 된다.

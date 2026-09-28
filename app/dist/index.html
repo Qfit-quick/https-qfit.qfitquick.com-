@@ -50,7 +50,7 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-BxbDablA.js"></script>
+  <script type="module" crossorigin src="./assets/index-X5SH2eZn.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-as1qHrhd.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -1113,8 +1113,58 @@
  </div>
  </div>
 
+ <!-- 법적 정보(2026-09-28, 경진대회 재검토 — 실제 결제·계정을 쓰는 앱인데
+      개인정보처리방침·이용약관이 아예 없었다). legal-screen 하나에 두
+      절을 세로로 이어 붙인다 — 화면 관리 자리를 하나만 늘리려고 시트나
+      탭 대신 제일 단순한 구조를 골랐다. -->
+ <div class="settings-group">
+ <div class="settings-list">
+ <button class="settings-row settings-link" id="settings-legal-btn" type="button">
+ <span class="row-main"><span class="row-t" data-i18n="setLegal">개인정보처리방침 · 이용약관</span></span>
+ <span class="settings-val">›</span>
+ </button>
+ </div>
+ </div>
+
  <p class="dim settings-foot" id="settings-version"></p>
  <button class="btn-restart" id="settings-back-btn" data-i18n="lbBackBtn">닫기</button>
+ </div>
+
+ <div class="screen" id="legal-screen">
+ <div class="eyebrow" data-i18n="setLegal">개인정보처리방침 · 이용약관</div>
+ <h2 class="lb-title" data-i18n="legalPrivacyTitle">개인정보처리방침</h2>
+ <p class="dim" data-i18n="legalPrivacyIntro">Q-fit(이하 "이 서비스")은 이용자의 개인정보를 소중히 다룹니다. 이 서비스는 개인 프로젝트로 시작해 아직 별도 사업자 등록 없이 테스트 결제 환경으로 운영되지만, 그렇다고 개인정보를 가볍게 다루지는 않습니다.</p>
+ <h3 class="dim-note" data-i18n="legalPrivacyCollectHead">수집하는 개인정보</h3>
+ <p class="dim" data-i18n="legalPrivacyCollectBody">이메일(회원가입·로그인), 신체정보(키·몸무게·나이·활동량·목표 — 입력한 경우에만), 운동·챌린지 기록. 정기결제 시에는 Toss Payments가 발급하는 빌링키만 저장하며, 카드번호 자체는 이 서비스 서버에 저장되지 않습니다.</p>
+ <h3 class="dim-note" data-i18n="legalPrivacyPurposeHead">이용 목적</h3>
+ <p class="dim" data-i18n="legalPrivacyPurposeBody">로그인과 기기 간 기록 동기화, 정기결제 처리, Q-Impact 같은 통계 기능 제공, 서비스 개선을 위해서만 씁니다. 광고나 다른 목적으로 팔거나 제공하지 않습니다.</p>
+ <h3 class="dim-note" data-i18n="legalPrivacyRetentionHead">보유·이용 기간</h3>
+ <p class="dim" data-i18n="legalPrivacyRetentionBody">회원 탈퇴 시 지체 없이 파기됩니다 — 설정의 "데이터 삭제"로 이용자가 직접, 즉시 할 수 있습니다. 결제 기록은 전자상거래법 등 관련 법령이 정한 기간 동안 별도 보관될 수 있습니다.</p>
+ <h3 class="dim-note" data-i18n="legalPrivacyThirdPartyHead">처리위탁 및 제3자 제공</h3>
+ <p class="dim" data-i18n="legalPrivacyThirdPartyBody">서비스 운영을 위해 다음에 처리를 위탁합니다 — Supabase Inc.(계정 인증, 데이터 저장), Toss Payments(정기결제 처리). 그 밖의 목적으로 제3자에게 제공하지 않습니다.</p>
+ <h3 class="dim-note" data-i18n="legalPrivacyRightsHead">이용자의 권리</h3>
+ <p class="dim" data-i18n="legalPrivacyRightsBody">언제든 자신의 개인정보 열람·정정·삭제를 요구할 수 있습니다. 설정 화면의 "데이터 삭제"가 가장 빠른 길이고, 그 밖의 요청은 아래 연락처로 문의해 주십시오.</p>
+ <h3 class="dim-note" data-i18n="legalPrivacySecurityHead">안전성 확보조치</h3>
+ <p class="dim" data-i18n="legalPrivacySecurityBody">모든 통신은 HTTPS로 암호화되며, 데이터베이스는 행 단위 접근 제어(RLS)로 본인 데이터만 조회·수정할 수 있도록 제한합니다.</p>
+ <h3 class="dim-note" data-i18n="legalPrivacyStorageHead">로컬 저장소·쿠키</h3>
+ <p class="dim" data-i18n="legalPrivacyStorageBody">로그인 유지와 오프라인 사용(PWA)을 위해 브라우저의 로컬 저장소와 서비스워커 캐시를 씁니다. 이 정보는 이용자의 기기에만 남고, "데이터 삭제"로 함께 지워집니다.</p>
+ <h3 class="dim-note" data-i18n="legalPrivacyContactHead">문의</h3>
+ <p class="dim" data-i18n="legalPrivacyContactBody">개인정보 관련 문의: jjunoo6070@gmail.com. 이 방침은 서비스 변경에 따라 수정될 수 있으며, 중요한 변경은 이 화면에 반영해 알립니다. 시행일: 2026-09-28</p>
+ <h2 class="lb-title" data-i18n="legalTermsTitle">이용약관</h2>
+ <p class="dim" data-i18n="legalTermsPurpose">이 약관은 Q-fit(이하 "이 서비스")의 이용 조건과 절차, 이용자와 서비스 제공자의 권리·의무를 정합니다.</p>
+ <h3 class="dim-note" data-i18n="legalTermsServiceHead">서비스 내용</h3>
+ <p class="dim" data-i18n="legalTermsServiceBody">짧은 운동 세션 기록, 챌린지·프로그램 진행, 신체정보 기반 계획 제안, 선택적 유료 구독(프리미엄)을 제공합니다.</p>
+ <h3 class="dim-note" data-i18n="legalTermsAccountHead">회원가입 및 탈퇴</h3>
+ <p class="dim" data-i18n="legalTermsAccountBody">이메일로 회원가입하며, 별도 절차 없이 설정 화면에서 언제든 탈퇴(데이터 삭제)할 수 있습니다.</p>
+ <h3 class="dim-note" data-i18n="legalTermsBillingHead">유료 구독</h3>
+ <p class="dim" data-i18n="legalTermsBillingBody">프리미엄은 월 단위 정기결제이며, 결제는 Toss Payments를 통해 처리됩니다. 해지는 설정 화면에서 즉시 가능하고, 해지 후에는 다음 결제일부터 청구되지 않습니다. 이미 결제된 기간의 환불은 전자상거래 등에서의 소비자보호에 관한 법률 등 관련 법령을 따릅니다.</p>
+ <h3 class="dim-note" data-i18n="legalTermsDutyHead">이용자의 의무</h3>
+ <p class="dim" data-i18n="legalTermsDutyBody">정확한 정보를 입력하고, 계정을 본인 외의 사람과 공유하거나 부정한 방법으로 서비스를 이용하지 않습니다.</p>
+ <h3 class="dim-note" data-i18n="legalTermsDisclaimerHead">면책조항</h3>
+ <p class="dim" data-i18n="legalTermsDisclaimerBody">이 서비스가 제공하는 운동·식단 정보는 일반적인 안내이며 의학적 진단이나 처방이 아닙니다. 건강 상태에 따라 운동 전 전문가와 상담하는 것을 권장합니다.</p>
+ <h3 class="dim-note" data-i18n="legalTermsChangeHead">서비스 변경·중단, 약관 개정</h3>
+ <p class="dim" data-i18n="legalTermsChangeBody">서비스 내용은 예고 없이 변경되거나 중단될 수 있습니다 — 다만 유료 구독 중인 이용자에게는 사전에 알리도록 노력합니다. 이 약관은 필요에 따라 수정될 수 있으며, 변경 시 이 화면에 반영합니다. 시행일: 2026-09-28</p>
+ <button class="btn-restart" id="legal-back-btn" data-i18n="lbBackBtn">닫기</button>
  </div>
 
  <div class="screen" id="routines-screen">
@@ -1875,6 +1925,6 @@
  </div>
  </div>
 </div>
-
+
 </body>
 </html>

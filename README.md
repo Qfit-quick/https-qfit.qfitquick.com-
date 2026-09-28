@@ -10,9 +10,9 @@
 
 | 어디 | 무엇 |
 | --- | --- |
-| https://qfit.qfitquick.com | 사람이 보는 주소 |
-| https://qfit-quickfitness.monster-rpg.workers.dev | 클라우드플레어 워커. 배포하면 여기가 먼저 바뀐다 |
-| https://qfit.github.io/https-qfit.qfitquick.com- | GitHub Pages. push 마다 자동 갱신 |
+| https://qfit.qfitquick.com | 사람이 보는 주소. 실제 최신 배포는 여기로 확인한다 |
+| https://qfit-quickfitness.monster-rpg.workers.dev | 같은 워커의 기본 주소지만, 2026-09-28 확인 시점 기준 위 주소보다 오래된 빌드를 내보내고 있었다(자산 해시가 다름, 캐시 문제 아님) — 클라우드플레어 대시보드에서 이 워커의 배포 버전이 workers.dev 경로에 그대로 고정돼 있는지 확인이 필요하다 |
+| https://qfit.github.io/https-qfit.qfitquick.com- | GitHub Pages. **2026-09-25 부터 더는 갱신되지 않는다**(저장소 관리자만 바꿀 수 있는 Pages 설정 때문 — `docs/DEPLOY.md` 참고). 옛 판이나 404가 나올 수 있다 |
 
 ## 띄우기
 
