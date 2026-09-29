@@ -7,7 +7,13 @@ const PLAN = Object.freeze({
   amount: 2400,
 });
 const TOSS = "https://api.tosspayments.com";
-const reply = (body, status = 200) =>
+// reply/requireUser/supabase/getCustomer/markPastDue 는 Toss 전용이 아니라
+// 결제 제공자 공통 배관이다(인증·DB 접근). 카카오페이(worker/api/
+// kakaoBilling.js, 2026-09-29)가 이 파일에서 그대로 가져다 쓴다 — 따로
+// 복사해 두면 한쪽만 고치고 한쪽은 안 고치는 사고가 난다(실제로 dev
+// 브랜치의 초기 카카오 버전이 requireUser 를 따로 복사해 두었다가, 진짜
+// 로그인 토큰 대신 테스트 계정으로 항상 로그인해 버리는 채로 남아 있었다).
+export const reply = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -18,7 +24,7 @@ const reply = (body, status = 200) =>
 const tossAuthorization = (secret) => `Basic ${btoa(`${secret}:`)}`;
 const orderId = () => `sub_${crypto.randomUUID().replaceAll("-", "")}`;
 
-async function requireUser(request, env) {
+export async function requireUser(request, env) {
   let authorization = request.headers.get("authorization");
   authorization = String(authorization);
   if (!authorization?.startsWith("Bearer ")) return null;
@@ -28,7 +34,7 @@ async function requireUser(request, env) {
   return res.ok ? res.json() : null;
 }
 
-async function supabase(env, path, init = {}) {
+export async function supabase(env, path, init = {}) {
   const headers = new Headers(init.headers);
   headers.set("apikey", env.SUPABASE_SECRET_KEY);
   headers.set("authorization", `Bearer ${env.SUPABASE_SECRET_KEY}`);
@@ -71,10 +77,10 @@ async function toss(path, secret, body, method = "POST") {
   return { response, json };
 }
 
-async function getCustomer(env, userId) {
+export async function getCustomer(env, userId) {
   const rows = await supabase(
     env,
-    `billing_customers?user_id=eq.${userId}&select=customer_key,billing_key`,
+    `billing_customers?user_id=eq.${userId}&select=customer_key,billing_key,provider,kakao_sid`,
   );
   return rows[0] || null;
 }
@@ -169,7 +175,7 @@ async function reconcileTossOrder(env, order) {
   }
 }
 
-async function markPastDue(env, userId, currentCount = 0) {
+export async function markPastDue(env, userId, currentCount = 0) {
   const retryCount = currentCount + 1;
   // Retry after 1, 2, 4, and 8 hours; stop automatic attempts after 5 failures.
   const delayHours =
@@ -245,7 +251,7 @@ async function settlePayment(
   return reply({ status: "active", currentPeriodEnd: end.toISOString() });
 }
 
-async function charge(env, userId, customer, periodStart, isInitial = false) {
+export async function charge(env, userId, customer, periodStart, isInitial = false) {
   const subscription = await ensureSubscription(env, userId);
   if (isInitial && subscription.status === "active")
     return reply({ status: "active", duplicate: true });
@@ -505,6 +511,15 @@ export async function renewDueSubscriptions(env) {
   for (const subscription of due) {
     try {
       const customer = await getCustomer(env, subscription.user_id);
+      // 결제 수단이 카카오면 그쪽 재결제로 넘긴다. 정적 import 로 두 파일이
+      // 서로를 가리키면 순환 참조가 생기므로 여기서만 동적으로 불러온다 —
+      // kakaoBilling.js 는 이미 이 파일의 requireUser·supabase 등을 정적
+      // import 로 쓰고 있어서, 반대 방향은 지연 평가로 끊는다.
+      if (customer?.provider === "kakao" && customer.kakao_sid) {
+        const { chargeKakao } = await import("./kakaoBilling.js");
+        await chargeKakao(env, subscription.user_id, customer.kakao_sid);
+        continue;
+      }
       if (!customer?.billing_key) {
         await markPastDue(
           env,

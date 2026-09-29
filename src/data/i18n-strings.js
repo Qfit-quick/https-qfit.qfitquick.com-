@@ -645,6 +645,12 @@ export const STATIC_UI = {
  billingRegisterDone: {ko:'카드 등록 완료! 프리미엄이 시작됐어요', en:'Card registered! Premium is now active.', zh:'银行卡注册完成！高级会员已生效。'},
  billingPending: {ko:'결제 확인 중이에요. 잠시 후 다시 확인해 주세요', en:'Confirming payment — check back in a moment.', zh:'正在确认付款，请稍后再查看。'},
  billingButtonLabel: {ko:'카드 등록', en:'Register card', zh:'注册银行卡'},
+ // 카카오페이(2026-09-29) — 토스는 "카드 등록"이지만 카카오는 카드가
+ // 아니라 카카오페이 계정을 연결하는 것이라 문구를 따로 둔다. 실패·완료
+ // 토스트에 "카드"라고 잘못 말하면 안 된다.
+ kakaoBillingButtonLabel: {ko:'카카오페이로 결제', en:'Pay with Kakao Pay', zh:'使用Kakao Pay支付'},
+ billingRegisterFailedKakao: {ko:'카카오페이 연결에 실패했어요. 다시 시도해 주세요', en:'Kakao Pay connection failed. Please try again.', zh:'连接Kakao Pay失败，请重试。'},
+ billingRegisterDoneKakao: {ko:'카카오페이 연결 완료! 프리미엄이 시작됐어요', en:'Kakao Pay connected! Premium is now active.', zh:'Kakao Pay连接完成！高级会员已生效。'},
  premiumTitleOn: {ko:'✨ 프리미엄 회원이에요', en:"✨ You're a premium member", zh:'✨ 你是高级会员'},
  premiumTitleOff: {ko:'프리미엄 전용 운동', en:'Premium-Only Exercise', zh:'仅限高级会员的动作'},
  premiumDescOn: {ko:'모든 프리미엄 운동을 이용할 수 있어요. 감사합니다!', en:'You have access to every premium exercise. Thank you!', zh:'你可以使用所有高级会员动作，感谢支持！'},

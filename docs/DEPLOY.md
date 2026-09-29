@@ -135,7 +135,51 @@ Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-toss-billing.sql`
 
 `wrangler.jsonc` 의 `triggers.crons: ["0 * * * *"]` 가 매시 정각에
 `renewDueSubscriptions()` 를 돌린다 — 별도 설정 없이 배포하면 자동으로
-등록된다.
+등록된다. 이 함수는 2026-09-29 부터 토스·카카오 둘 다 처리한다(아래).
+
+## 카카오페이 연동 (2026-09-29)
+
+같은 구독(`subscriptions` 테이블)에 결제 수단 하나를 더 얹은 것이다 —
+새 결제 시스템이 아니라 Toss 옆에 나란히 놓인 선택지다.
+`worker/api/kakaoBilling.js` + `src/ui/billing.js`(같은 파일, Toss 함수
+옆에 추가) + `docs/sql/2026-09-kakao-billing.sql`(`billing_customers` 에
+`provider`·`kakao_sid` 두 컬럼만 더한다, 기존 Toss 행은 안 건드린다).
+
+동료 개발자(soooonho)가 `dev` 브랜치에 먼저 올린 판을 그대로 가져오지
+않고 다시 짰다 — 원본은 서버의 `requireUser()` 가 요청의 실제 로그인
+토큰을 안 읽고 테스트 계정(`test@gmail.com`)으로 항상 로그인해 버리는
+채로 남아 있었다(로컬 테스트용 지름길이 실수로 커밋된 것으로 보인다).
+그 상태로 나가면 누가 결제하든 전부 그 테스트 계정 앞으로 처리된다.
+지금 판은 `worker/api/billing.js` 의 이미 검증된 `requireUser`·
+`supabase`·`getCustomer`·`markPastDue` 를 그대로 가져다 쓴다(두 파일이
+따로 복사해 두면 한쪽만 고치고 한쪽은 안 고치는 사고가 또 난다).
+
+**지금 상태: 카카오 시크릿이 아직 안 들어가 있어서 실제 결제는 안 된다**
+(Toss 와 같은 이유, 같은 증상 — 500).
+
+### 1. 카카오 키 발급
+
+1. [카카오페이 파트너 어드민](https://admin-pay.kakao.com) 가입 후
+   "정기결제(구독)" 서비스 신청. 사업자 등록 없이 **테스트 CID**로 먼저
+   붙일 수 있다(`worker/api/kakaoBilling.js` 의 `KAKAO_CID` 가 지금
+   테스트 값 `"TCSUBSCRIP"`로 박혀 있다 — 실 서비스로 가면 발급받은
+   진짜 CID 로 바꾼다).
+2. "결제 연동" 메뉴에서 **어드민 키**(시크릿 키) 확인.
+
+### 2. 워커 시크릿 등록
+
+    npx wrangler secret put KAKAO_SECRET_KEY
+
+Toss 절의 `SUPABASE_*` 세 개는 이미 등록돼 있으면 다시 안 넣어도 된다 —
+`kakaoBilling.js` 는 `billing.js` 의 같은 Supabase 접속 코드를 그대로
+가져다 쓴다.
+
+### 3. 데이터베이스 준비
+
+Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-kakao-billing.sql`
+을 한 번 실행한다. `billing_customers` 에 컬럼 두 개(`provider` 기본값
+`'toss'`, `kakao_sid`)만 더하는 것이라, 실행해도 기존 Toss 구독자에게는
+아무 영향이 없다.
 
 ## 워크플로가 하는 일
 

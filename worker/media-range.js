@@ -7,17 +7,24 @@
 // 동영상 요청만 여기서 가로채 진짜 206 을 만든다. 파일이 다 커봐야 수백
 // KB~수 MB(운동 클립)라 통째로 메모리에 올려도 부담 없다.
 //
-// 결제 API(worker/api/billing.js, 2026-09-25)도 이 워커가 같이 처리한다 —
-// wrangler.jsonc 의 run_worker_first 가 /api/* 를 자산보다 먼저 이 워커로
-// 보낸다. Toss 시크릿 키를 쓰는 코드가 전부 여기(서버)에만 있고 브라우저
-// 번들에는 절대 안 들어간다.
+// 결제 API(worker/api/billing.js, 2026-09-25 / worker/api/kakaoBilling.js,
+// 2026-09-29)도 이 워커가 같이 처리한다 — wrangler.jsonc 의 run_worker_first
+// 가 /api/* 를 자산보다 먼저 이 워커로 보낸다. Toss·카카오 시크릿 키를
+// 쓰는 코드가 전부 여기(서버)에만 있고 브라우저 번들에는 절대 안 들어간다.
 import { handleBillingRequest, renewDueSubscriptions } from './api/billing.js';
+import { handleBillingRequestKakao } from './api/kakaoBilling.js';
 
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)$/i;
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // /api/billing/kakao/* 가 /api/billing 으로도 걸리므로, 카카오 쪽을
+    // 먼저 봐야 한다 — 순서를 바꾸면 카카오 요청이 전부 Toss 핸들러로
+    // 가서 404 가 난다.
+    if (url.pathname.startsWith('/api/billing/kakao')) {
+      return handleBillingRequestKakao(request, env);
+    }
     if (url.pathname.startsWith('/api/billing')) {
       return handleBillingRequest(request, env);
     }

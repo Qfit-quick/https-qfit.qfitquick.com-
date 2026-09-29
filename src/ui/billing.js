@@ -33,6 +33,11 @@ let t = (o) => (o && o.ko) || '';
 let S = {};
 
 const RETURN_HASH = '#billing-return';
+// 카카오 결제 준비(prepare) 응답의 tid 는 승인(approve) 호출에 다시
+// 필요한데, 카카오 결제는 Toss 와 달리 페이지 전체가 카카오 사이트로
+// 넘어갔다가 돌아온다 — 그 사이 JS 메모리는 전부 사라진다. sessionStorage
+// 에 잠깐 적어 뒀다가 돌아온 직후 한 번만 읽고 지운다.
+const KAKAO_TID_KEY = 'qfit_kakao_tid_v1';
 
 async function authHeader() {
   const supabase = await getSupabase();
@@ -98,6 +103,38 @@ async function finishAuthorizeFromReturn() {
   }
 }
 
+// 카카오페이는 pg_token(성공)·partner_order_id 를 주소에 실어 돌아온다.
+// Toss 는 authKey·customerKey 로 오므로, 어느 쪽이 왔는지는 파라미터
+// 이름으로 가른다(같은 #billing-return 을 같이 쓴다).
+async function finishKakaoApproveFromReturn() {
+  const params = readReturnParams();
+  const pgToken = params.get('pg_token');
+  if (!pgToken) return; // 카카오가 아니거나(예: Toss), 그냥 새로 들어온 것이다.
+  const partnerOrderId = params.get('partner_order_id');
+  clearReturnUrl();
+
+  let tid = null;
+  try { tid = sessionStorage.getItem(KAKAO_TID_KEY); } catch (e) {}
+  try { sessionStorage.removeItem(KAKAO_TID_KEY); } catch (e) {}
+
+  if (!tid || !partnerOrderId) {
+    toast(t(S.billingRegisterFailedKakao));
+    return;
+  }
+  try {
+    const result = await billingFetch('/api/billing/kakao/approve', {
+      method: 'POST',
+      body: JSON.stringify({ pgToken, tid, partnerOrderId }),
+    });
+    window.applyBillingStatus?.(result);
+    if (result.status === 'active') toast(t(S.billingRegisterDoneKakao));
+    else toast(t(S.billingPending));
+  } catch (e) {
+    console.error('kakao billing approve failed:', e);
+    toast(t(S.billingRegisterFailedKakao));
+  }
+}
+
 // 부팅 때마다(그리고 결제/해지 직후) 서버가 아는 구독 상태를 물어 app.js
 // 에 전달한다 — 다른 기기에서 구독하거나 크론이 갱신·해지한 결과도 이걸로
 // 반영된다. 로그인 전이거나 오프라인이면 조용히 넘어간다(지금 잠금 상태를
@@ -142,6 +179,42 @@ async function startCardRegistration(button) {
   }
 }
 
+// 카카오페이는 Toss 처럼 팝업 SDK 가 아니라, 카카오 결제 페이지로 화면
+// 전체가 넘어갔다 돌아오는 방식이다(리다이렉트형). tid 는 승인 호출에
+// 다시 필요한데 그 사이 페이지가 통째로 새로 열리므로 sessionStorage 에
+// 잠깐 맡겨 둔다 — finishKakaoApproveFromReturn() 이 돌아온 직후 읽는다.
+function isLikelyMobile() {
+  return /iphone|ipad|ipod|android/i.test(navigator.userAgent || '');
+}
+
+async function startKakaoRegistration(button) {
+  button.disabled = true;
+  try {
+    const auth = await authHeader();
+    if (!auth) {
+      toast(t(S.billingLoginRequired));
+      return;
+    }
+    const prepared = await billingFetch('/api/billing/kakao/prepare', { method: 'POST' });
+    const { tid, partnerOrderId, nextRedirectPcUrl, nextRedirectMobileUrl } = prepared;
+    const redirectUrl = isLikelyMobile() ? nextRedirectMobileUrl : nextRedirectPcUrl;
+    if (!tid || !partnerOrderId || !redirectUrl) throw new Error('kakao prepare response missing fields');
+
+    try { sessionStorage.setItem(KAKAO_TID_KEY, tid); } catch (e) {}
+    // 성공하면 페이지가 카카오 결제 페이지로 완전히 넘어가므로 여기 이후
+    // 코드는 실행되지 않는다.
+    location.href = redirectUrl;
+  } catch (e) {
+    console.error('kakao billing register failed:', e);
+    toast(e?.message === 'NOT_LOGGED_IN' ? t(S.billingLoginRequired) : t(S.billingRegisterFailedKakao));
+  } finally {
+    // 로그인 안 된 경우(위의 이른 return)에도 여기까지 온다 — catch 안에서만
+    // 풀어 주면 그 길에서는 버튼이 영영 disabled 로 남는다(2026-09-29
+    // 발견 — 토스 쪽 startCardRegistration 은 처음부터 finally 를 썼다).
+    button.disabled = false;
+  }
+}
+
 // cancelBtn.dataset.cancelAtPeriodEnd 가 지금 상태의 유일한 출처다 —
 // app.js 의 refreshPremiumUI() 가 매번 그 값을 채워 두므로, 여기서는
 // myProfile 을 직접 몰라도 반대로 뒤집기만 하면 된다.
@@ -170,10 +243,14 @@ export function initBilling({ translate, STATIC_UI } = {}) {
   // 카드 인증창에서 돌아온 직후라면(주소에 흔적이 남아 있다) 먼저 마저
   // 처리한다 — 설정 화면을 아직 안 열어도 된다.
   finishAuthorizeFromReturn();
+  finishKakaoApproveFromReturn();
   checkBillingStatus();
 
   const button = document.getElementById('billing-button');
   if (button) button.addEventListener('click', () => startCardRegistration(button));
+
+  const kakaoButton = document.getElementById('kakao-billing-button');
+  if (kakaoButton) kakaoButton.addEventListener('click', () => startKakaoRegistration(kakaoButton));
 
   // 설정의 "카드 등록" 줄과 별개로, 프리미엄 덮개 안의 버튼도 같은 실제
   // 결제 흐름을 탄다(2026-09-26 전에는 여기가 결제 없이 즉시 풀어 주는

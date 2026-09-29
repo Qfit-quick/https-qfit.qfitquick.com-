@@ -1076,7 +1076,12 @@ button.card:active { background: var(--surface-2); }
   background: var(--surface);
   color: var(--text);
   font: inherit;
-  font-size: var(--t-md);
+  /* max(16px, …) — 사파리는 포커스 시 글자 크기가 16px 밑이면 페이지를
+     확대해 버린다. --t-md 는 기본 15px(글자 크기 설정에 따라 더 작아질
+     수도 있다) — 신체정보 입력칸(나이·키·체중)에서 그대로 걸렸다
+     (2026-09-29 경진대회 2차 재검토, 실측 15.9px로 확인). 입력칸만
+     16px 밑으로 안 내려가게 막는다 — 본문 글자 크기 설정 자체는 그대로 둔다. */
+  font-size: max(16px, var(--t-md));
 }
 .inp::placeholder { color: var(--text-dim); }
 .inp:focus {
