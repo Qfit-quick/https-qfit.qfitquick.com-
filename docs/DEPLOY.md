@@ -91,13 +91,32 @@ push 마다 다시 빌드해서 산출물이 다르면 되커밋하고, 그 다�
 
 ## Toss Payments 연동 (2026-09-25)
 
-정기결제(프리미엄 월 구독, 월 1,900원 — 2026-09-30 에 2,400원에서 내림)가
-`worker/api/billing.js` + `src/ui/billing.js` + Supabase 세 테이블로 붙어
-있다. API 동작·DB 스키마 자세한 내용은 `docs/sql/2026-09-toss-billing.sql`
-과 그 옆 명세서를 본다.
+정기결제(프리미엄 구독)가 `worker/api/billing.js` + `src/ui/billing.js` +
+Supabase 세 테이블로 붙어 있다. API 동작·DB 스키마 자세한 내용은
+`docs/sql/2026-09-toss-billing.sql` 과 그 옆 명세서를 본다.
 
-카카오페이(`worker/api/kakaoBilling.js`)도 같은 가격·같은 구독 하나를
-공유한다 — 가격을 바꿀 땐 두 파일의 `PLAN.amount` 를 같이 바꿔야 한다.
+카카오페이(`worker/api/kakaoBilling.js`)도 같은 요금제를 공유한다 —
+`worker/api/billing.js` 의 `PLANS` 맵(월간 `premium_monthly`, 연간
+`premium_annual`) 하나를 두 파일이 같이 `import` 해서 쓴다. 요금제를
+추가·변경할 땐 이 맵만 고치면 된다 — `plan_id` 컬럼엔 CHECK 제약이
+없어서 새 SQL 마이그레이션도 필요 없다.
+
+### 월간·연간 두 상품 (2026-09-30)
+
+네이버페이가 가맹점 등록에 "상품 3개 이상"을 요구해서, 프리미엄 결제
+하나뿐이던 것을 월간(₩1,900/월)·연간(₩19,000/년, 월 결제 대비 2개월치
+절약) 두 상품으로 늘렸다. 프리미엄 덮개(`#premium-overlay`)의
+`#premium-plan-tabs` 로 고르고, `src/ui/billing.js` 의
+`window.getSelectedPlanId()` 가 그 상태의 유일한 출처다 — 결제 준비
+요청(Toss `/api/billing/prepare`, 카카오 `/api/billing/kakao/prepare`)
+모두 이 값을 `planId` 로 실어 보낸다. Toss 는 카드 인증창에서 돌아오며
+페이지가 새로 뜨므로 고른 요금제를 sessionStorage 에 잠깐 맡겼다가
+`/api/billing/authorize` 호출 때 같이 보내고, 카카오는 `prepareKakao` 가
+`approval_url` 자체에 `plan_id` 를 실어 둬서 돌아온 주소에서 바로 읽는다.
+
+**세 번째 상품은 아직 없다** — 결정하지 않은 채 억지로 채우면 사용자
+눈에 뻔한 끼워맞추기로 보인다는 판단으로 미뤘다. 나중에 실제로 쓸모
+있는 것이 정해지면 그때 추가한다.
 
 ## 무료 체험 (2026-09-30)
 

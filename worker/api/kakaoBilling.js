@@ -9,14 +9,10 @@
 // 결제해도 전부 그 테스트 계정 앞으로 처리된다 — 그래서 인증·DB 배관은
 // 새로 만들지 않고 이미 실제 사용자로 검증된 worker/api/billing.js 의
 // 것을 그대로 가져다 쓴다.
-import { reply, requireUser, supabase, getCustomer, markPastDue } from "./billing.js";
+import { reply, requireUser, supabase, getCustomer, markPastDue, ensureSubscription, ensureBillingCustomer, PLANS } from "./billing.js";
 
-// worker/api/billing.js 의 PLAN 과 같은 값으로 맞춘다(2026-09-30, 1,900원).
-const PLAN = Object.freeze({
-  id: "premium_monthly",
-  name: "Q-fit Premium (monthly)",
-  amount: 1900,
-});
+const DEFAULT_PLAN_ID = "premium_monthly";
+const planFor = (planId) => PLANS[planId] || PLANS[DEFAULT_PLAN_ID];
 
 // 테스트용 CID. 카카오 가맹점 심사가 끝나면 실제 CID 로 바꾼다(대시보드
 // 발급값 — 시크릿은 아니지만 환경마다 다르므로 env.KAKAO_CID 로 옮겨도 된다).
@@ -39,6 +35,8 @@ async function kakaoPay(path, secretKey, body) {
 
 // 1. 결제 준비 (KakaoPay Ready)
 async function prepareKakao(request, env, user) {
+  const { planId } = await request.json().catch(() => ({}));
+  const plan = planFor(planId);
   const origin = new URL(request.url).origin;
   const partnerOrderId = `sub_init_${crypto.randomUUID().replaceAll("-", "")}`;
 
@@ -49,16 +47,17 @@ async function prepareKakao(request, env, user) {
       cid: KAKAO_CID,
       partner_order_id: partnerOrderId,
       partner_user_id: user.id,
-      item_name: PLAN.name,
+      item_name: plan.name,
       quantity: 1,
-      total_amount: PLAN.amount,
+      total_amount: plan.amount,
       tax_free_amount: 0,
       // 이 앱은 경로 라우팅이 없는 SPA 라 실제 경로로 돌아오면 404 가 난다
       // (src/ui/billing.js 의 같은 설명 참고) — 해시(#billing-return)로
-      // 돌아오게 한다. partner_order_id 를 여기 실어 두면, 카카오가 그
-      // 주소 뒤에 pg_token 만 붙여 돌려줘도 승인 호출에 필요한 나머지 하나
-      // (tid)만 클라이언트가 따로 기억해 두면 된다.
-      approval_url: `${origin}/#billing-return?partner_order_id=${partnerOrderId}`,
+      // 돌아오게 한다. partner_order_id·plan_id 를 여기 실어 두면, 카카오가
+      // 그 주소 뒤에 pg_token 만 붙여 돌려줘도 승인 호출에 필요한 나머지
+      // 정보(tid 제외)를 클라이언트가 다시 안 물어도 된다 — tid 만
+      // sessionStorage 로 따로 넘긴다(client.js 의 KAKAO_TID_KEY).
+      approval_url: `${origin}/#billing-return?partner_order_id=${partnerOrderId}&plan_id=${plan.id}`,
       cancel_url: `${origin}/#billing-return`,
       fail_url: `${origin}/#billing-return`,
     },
@@ -79,7 +78,7 @@ async function prepareKakao(request, env, user) {
 
 // 2. 최초 승인 및 SID 발급 (KakaoPay Approve)
 async function approveKakao(request, env, user) {
-  const { pgToken, tid, partnerOrderId } = await request
+  const { pgToken, tid, partnerOrderId, planId } = await request
     .json()
     .catch(() => ({}));
   if (!pgToken || !tid || !partnerOrderId) {
@@ -88,6 +87,7 @@ async function approveKakao(request, env, user) {
       400,
     );
   }
+  const plan = planFor(planId);
 
   const { response, json } = await kakaoPay(
     "/online/v1/payment/approve",
@@ -109,6 +109,13 @@ async function approveKakao(request, env, user) {
   const sid = json.sid;
   if (!sid) return reply({ error: "SID was not issued" }, 500);
 
+  // 두 테이블 다 Toss 를 한 번도 안 거친 사람에게는 행이 없을 수 있다 —
+  // 없으면 만들고 나서 PATCH 한다(2026-09-30 발견 — 원래는 존재를 확인
+  // 안 하고 바로 PATCH 해서, 카카오로 처음 가입하는 사람은 조용히
+  // 0건 업데이트로 실패했다).
+  await ensureBillingCustomer(env, user.id);
+  await ensureSubscription(env, user.id, plan.id);
+
   await supabase(env, `billing_customers?user_id=eq.${user.id}`, {
     method: "PATCH",
     body: JSON.stringify({
@@ -120,12 +127,13 @@ async function approveKakao(request, env, user) {
 
   const start = new Date();
   const end = new Date(start);
-  end.setUTCMonth(end.getUTCMonth() + 1);
+  end.setUTCMonth(end.getUTCMonth() + plan.months);
 
   await supabase(env, `subscriptions?user_id=eq.${user.id}`, {
     method: "PATCH",
     body: JSON.stringify({
       status: "active",
+      plan_id: plan.id,
       current_period_start: start.toISOString(),
       current_period_end: end.toISOString(),
       payment_retry_count: 0,
@@ -137,8 +145,11 @@ async function approveKakao(request, env, user) {
   return reply({ status: "active", currentPeriodEnd: end.toISOString() });
 }
 
-// 3. 정기 재결제 (worker/api/billing.js 의 renewDueSubscriptions 가 부른다)
-export async function chargeKakao(env, userId, sid) {
+// 3. 정기 재결제 (worker/api/billing.js 의 renewDueSubscriptions 가 부른다.
+//    planId 는 subscription.plan_id — 최초 가입 때 고른 요금제를 그대로
+//    이어 쓴다.)
+export async function chargeKakao(env, userId, sid, planId) {
+  const plan = planFor(planId);
   const partnerOrderId = `sub_renew_${crypto.randomUUID().replaceAll("-", "")}`;
 
   const { response, json } = await kakaoPay(
@@ -149,9 +160,9 @@ export async function chargeKakao(env, userId, sid) {
       sid,
       partner_order_id: partnerOrderId,
       partner_user_id: userId,
-      item_name: PLAN.name,
+      item_name: plan.name,
       quantity: 1,
-      total_amount: PLAN.amount,
+      total_amount: plan.amount,
       tax_free_amount: 0,
     },
   );
@@ -164,7 +175,7 @@ export async function chargeKakao(env, userId, sid) {
 
   const start = new Date();
   const end = new Date(start);
-  end.setUTCMonth(end.getUTCMonth() + 1);
+  end.setUTCMonth(end.getUTCMonth() + plan.months);
   await supabase(env, `subscriptions?user_id=eq.${userId}`, {
     method: "PATCH",
     body: JSON.stringify({

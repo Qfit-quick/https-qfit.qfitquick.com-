@@ -50,8 +50,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-g1Q2tZQc.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-gvA9jUHy.css">
+  <script type="module" crossorigin src="./assets/index-BxhJ6WNv.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-qDya9AXq.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -1891,10 +1891,20 @@
  <div class="premium-icon">✨</div>
  <div class="pause-title" id="premium-title" data-i18n="premiumTitleOff">프리미엄 전용 운동</div>
  <p class="premium-desc" id="premium-desc" data-i18n="premiumDescOff">이 운동은 프리미엄 회원만 이용할 수 있어요. 프리미엄에 가입하면 더 다양한 고강도 운동을 즐길 수 있어요.</p>
+ <!-- 월간/연간 선택(2026-09-30). 로그인 화면의 auth-tabs 와 같은 부품을
+      재사용한다(.auth-tab, components.css) — 두 값 중 하나를 고르는
+      토글이라 모양도 같다. 고른 쪽은 src/ui/billing.js 의 selectedPlanId
+      에 저장되고, 프리미엄 시작·카카오페이 버튼 둘 다 이 값을 그대로
+      결제 요청에 실어 보낸다. -->
+ <div class="auth-tabs premium-plan-tabs" id="premium-plan-tabs">
+ <button class="auth-tab active" type="button" data-plan="premium_monthly" data-i18n="premiumPlanMonthly">월간</button>
+ <button class="auth-tab" type="button" data-plan="premium_annual" data-i18n="premiumPlanAnnual">연간</button>
+ </div>
  <div class="premium-price-box" id="premium-price-box">
  <span class="premium-price-amount" id="premium-price-amount">₩1,900</span>
- <span class="premium-price-unit" data-i18n="premiumPriceUnit">/ 월</span>
+ <span class="premium-price-unit" id="premium-price-unit" data-i18n="premiumPriceUnit">/ 월</span>
  </div>
+ <p class="premium-fineprint premium-plan-note" id="premium-plan-note" hidden data-i18n="premiumPlanAnnualNote">월 결제보다 2개월치를 아껴요</p>
  <button class="btn-restart" id="premium-activate-btn" type="button" data-i18n="premiumStartBtn">✨ 프리미엄 시작하기</button>
  <p class="premium-fineprint" id="premium-fineprint" data-i18n="premiumFineprint">등록한 카드로 매달 자동 결제돼요</p>
  <!-- 1개월 무료 체험(2026-09-30) — 결제수단 등록 없이 바로 시작한다.

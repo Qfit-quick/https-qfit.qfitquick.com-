@@ -4709,12 +4709,29 @@ function refreshPremiumUI(){
  activateBtn.disabled = false;
  activateBtn.textContent = t(STATIC_UI.premiumStartBtn);
  }
+ // 월간/연간 선택(2026-09-30) — 고른 요금제는 src/ui/billing.js 가
+ // window.getSelectedPlanId 로 알려준다(그 파일이 유일하게 탭 클릭을
+ // 듣고, 실제 결제 요청에도 이 값을 그대로 실어 보내는 곳이다 — 값이
+ // 두 군데 따로 있으면 "화면엔 연간인데 결제는 월간"이 될 수 있다).
+ const planId = window.getSelectedPlanId?.() || 'premium_monthly';
+ const isAnnual = planId === 'premium_annual';
+ const planTabs = document.getElementById('premium-plan-tabs');
+ if(planTabs){
+ planTabs.style.display = isPremium ? 'none' : 'flex';
+ planTabs.querySelectorAll('[data-plan]').forEach(b=> b.classList.toggle('active', b.dataset.plan === planId));
+ }
  const priceBox = document.getElementById('premium-price-box');
  if(priceBox) priceBox.style.display = isPremium ? 'none' : 'flex';
+ const priceAmount = document.getElementById('premium-price-amount');
+ if(priceAmount) priceAmount.textContent = isAnnual ? '₩19,000' : '₩1,900';
+ const priceUnit = document.getElementById('premium-price-unit');
+ if(priceUnit) priceUnit.textContent = t(isAnnual ? STATIC_UI.premiumPriceUnitAnnual : STATIC_UI.premiumPriceUnit);
+ const planNote = document.getElementById('premium-plan-note');
+ if(planNote) planNote.hidden = isPremium || !isAnnual;
  const fineprint = document.getElementById('premium-fineprint');
  if(fineprint){
  fineprint.style.display = isPremium ? 'none' : '';
- fineprint.textContent = t(STATIC_UI.premiumFineprint);
+ fineprint.textContent = t(isAnnual ? STATIC_UI.premiumFineprintAnnual : STATIC_UI.premiumFineprint);
  }
  // 무료 체험 버튼(2026-09-30) — 프리미엄이 아니고, 이 계정이 체험을
  // 아직 한 번도 안 썼을 때만 보인다. 로그인 전에는 billing 이 아예

@@ -577,10 +577,12 @@
 .premium-box { gap: var(--s-3); }
 .premium-icon { font-size: 40px; line-height: 1; }
 .premium-desc { font-size: var(--t-md); color: var(--text-dim); }
+.premium-plan-tabs { width: 100%; }
 .premium-price-box { display: flex; align-items: baseline; justify-content: center; gap: var(--s-1); }
 .premium-price-amount { font-family: var(--font-num); font-size: var(--t-2xl); font-weight: 800; }
 .premium-price-unit { font-size: var(--t-sm); color: var(--text-dim); }
 .premium-fineprint { font-size: var(--t-xs); color: var(--text-dim); }
+.premium-plan-note { font-size: var(--t-xs); color: var(--accent); text-align: center; }
 .premium-cancel-box { display: flex; flex-direction: column; gap: var(--s-2); }
 
 .flash-overlay {

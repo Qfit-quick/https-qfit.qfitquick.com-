@@ -638,6 +638,12 @@ export const STATIC_UI = {
  premiumStartBtn: {ko:'✨ 프리미엄 시작하기', en:'✨ Start Premium', zh:'✨ 开通高级会员'},
  premiumPriceUnit: {ko:'/ 월', en:'/ mo', zh:'/ 月'},
  premiumFineprint: {ko:'등록한 카드로 매달 자동 결제돼요', en:'Your card will be charged automatically every month.', zh:'将从已登记的银行卡每月自动扣款。'},
+ // 월간/연간 요금제 선택(2026-09-30).
+ premiumPlanMonthly: {ko:'월간', en:'Monthly', zh:'月付'},
+ premiumPlanAnnual: {ko:'연간', en:'Annual', zh:'年付'},
+ premiumPriceUnitAnnual: {ko:'/ 년', en:'/ yr', zh:'/ 年'},
+ premiumFineprintAnnual: {ko:'등록한 카드로 1년에 한 번 자동 결제돼요', en:'Your card will be charged automatically once a year.', zh:'将从已登记的银行卡每年自动扣款一次。'},
+ premiumPlanAnnualNote: {ko:'월 결제보다 2개월치를 아껴요', en:'Save 2 months compared to paying monthly', zh:'比按月付款省下2个月的费用'},
  // 1개월 무료 체험(2026-09-30) — 결제수단 등록 없이 바로 시작, 계정당 한 번.
  premiumTrialBtn: {ko:'1개월 무료 체험 시작하기', en:'Start 1-month free trial', zh:'开始1个月免费试用'},
  premiumTrialDone: {ko:'무료 체험이 시작됐어요! 1개월 뒤 자동으로 끝나요(결제수단 없이는 계속 청구되지 않아요)', en:"Your free trial has started! It ends automatically in a month (no card means no charge after that).", zh:'免费试用已开始！1个月后自动结束（未绑定支付方式不会继续扣费）'},

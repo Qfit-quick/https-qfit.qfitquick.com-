@@ -1,13 +1,26 @@
 // Server-only Toss Payments Billing API. Do not import from src/.
 // Required Worker secrets: TOSS_SECRET_KEY, TOSS_CLIENT_KEY, SUPABASE_URL,
 // SUPABASE_SECRET_KEY, SUPABASE_PUBLISHABLE_KEY.
-// 2026-09-30: 2,400원 → 1,900원. kakaoBilling.js 의 PLAN 도 같이 바꿔야
-// 한다 — 이 파일 값만 바꾸면 결제수단마다 가격이 달라진다.
-const PLAN = Object.freeze({
-  id: "premium_monthly",
-  name: "Q-fit Premium (monthly)",
-  amount: 1900,
+// 2026-09-30: 2,400원 → 1,900원(월간). 같은 날 연간 요금제를 추가했다 —
+// 12개월치(22,800원)에서 2개월분을 깎은 19,000원. kakaoBilling.js 가 이
+// PLANS 를 그대로 가져다 쓴다(따로 복사하지 않는다 — requireUser 를
+// 따로 복사해 뒀다가 인증을 건너뛰던 사고가 여기서도 날 수 있어서다).
+export const PLANS = Object.freeze({
+  premium_monthly: {
+    id: "premium_monthly",
+    name: "Q-fit Premium (monthly)",
+    amount: 1900,
+    months: 1,
+  },
+  premium_annual: {
+    id: "premium_annual",
+    name: "Q-fit Premium (annual)",
+    amount: 19000,
+    months: 12,
+  },
 });
+const DEFAULT_PLAN_ID = "premium_monthly";
+const planFor = (planId) => PLANS[planId] || PLANS[DEFAULT_PLAN_ID];
 const TOSS = "https://api.tosspayments.com";
 // reply/requireUser/supabase/getCustomer/markPastDue 는 Toss 전용이 아니라
 // 결제 제공자 공통 배관이다(인증·DB 접근). 카카오페이(worker/api/
@@ -87,29 +100,41 @@ export async function getCustomer(env, userId) {
   return rows[0] || null;
 }
 
-async function prepare(env, user) {
-  let customer = await getCustomer(env, user.id);
+// customer_key 는 Toss 전용 개념이지만 컬럼이 not null unique 라 카카오만
+// 쓰는 사람도 값이 있어야 한다 — 실제로는 안 쓰이는 자리표 값이다.
+// kakaoBilling.js 의 approveKakao 도 이걸 그대로 가져다 쓴다(2026-09-30
+// 발견 — 원래는 이 존재 보장 없이 카카오 쪽에서 바로 PATCH 해서, 카카오로
+// 처음 가입하는 사람은 billing_customers 행 자체가 없어 0건 업데이트로
+// 조용히 실패했다).
+export async function ensureBillingCustomer(env, userId) {
+  let customer = await getCustomer(env, userId);
   if (!customer) {
     const customerKey = `qfit_${crypto.randomUUID()}`;
     await supabase(env, "billing_customers", {
       method: "POST",
       headers: { prefer: "resolution=ignore-duplicates,return=representation" },
-      body: JSON.stringify({ user_id: user.id, customer_key: customerKey }),
+      body: JSON.stringify({ user_id: userId, customer_key: customerKey }),
     });
-    customer = await getCustomer(env, user.id);
+    customer = await getCustomer(env, userId);
   }
   if (!customer) throw new Error("Billing customer creation failed");
+  return customer;
+}
+
+async function prepare(env, user, planId) {
+  const plan = planFor(planId);
+  const customer = await ensureBillingCustomer(env, user.id);
   // The client key is public by design; the secret key is never returned.
   return reply({
     customerKey: customer.customer_key,
     clientKey: env.TOSS_CLIENT_KEY,
-    plan: PLAN,
+    plan,
   });
 }
 
-const SUBSCRIPTION_FIELDS = "id,status,current_period_start,current_period_end,billing_anchor_day,payment_retry_count,next_retry_at,trial_used";
+const SUBSCRIPTION_FIELDS = "id,status,plan_id,current_period_start,current_period_end,billing_anchor_day,payment_retry_count,next_retry_at,trial_used";
 
-async function ensureSubscription(env, userId) {
+export async function ensureSubscription(env, userId, planId) {
   const rows = await supabase(
     env,
     `subscriptions?user_id=eq.${userId}&select=${SUBSCRIPTION_FIELDS}`,
@@ -120,7 +145,7 @@ async function ensureSubscription(env, userId) {
       method: "POST",
       body: JSON.stringify({
         user_id: userId,
-        plan_id: PLAN.id,
+        plan_id: planFor(planId).id,
         status: "pending",
       }),
     });
@@ -137,10 +162,13 @@ async function ensureSubscription(env, userId) {
   }
 }
 
-function addCalendarMonth(date, anchorDay) {
+// months=1(월간) 또는 12(연간, 2026-09-30 추가) — 요금제의 months 값을
+// 그대로 넘긴다. 매달 anchorDay 로 맞추던 것과 같은 이유(예: 31일에
+// 가입하면 다음 기간은 그 달의 마지막 날로)를 몇 달을 더하든 그대로 쓴다.
+function addCalendarMonth(date, anchorDay, months = 1) {
   const next = new Date(date);
   next.setUTCDate(1);
-  next.setUTCMonth(next.getUTCMonth() + 1);
+  next.setUTCMonth(next.getUTCMonth() + months);
   const lastDay = new Date(
     Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0),
   ).getUTCDate();
@@ -205,11 +233,12 @@ async function settlePayment(
   payment,
   periodStartAt,
   anchorDay,
+  plan,
 ) {
   if (
     payment.status !== "DONE" ||
     payment.orderId !== order.order_id ||
-    Number(payment.totalAmount) !== PLAN.amount
+    Number(payment.totalAmount) !== plan.amount
   ) {
     console.error(
       "Toss billing response did not match the pending order",
@@ -218,7 +247,7 @@ async function settlePayment(
     return pendingResponse();
   }
   const start = new Date(periodStartAt);
-  const end = addCalendarMonth(start, anchorDay);
+  const end = addCalendarMonth(start, anchorDay, plan.months);
   const settledAt = payment.approvedAt || new Date().toISOString();
   await supabase(
     env,
@@ -255,8 +284,12 @@ async function settlePayment(
   return reply({ status: "active", currentPeriodEnd: end.toISOString() });
 }
 
-export async function charge(env, userId, customer, periodStart, isInitial = false) {
-  const subscription = await ensureSubscription(env, userId);
+// planId 는 최초 결제(authorize)에서만 온다 — 사람이 그 순간 고른 요금제.
+// 갱신(cron)에서는 안 넘어오므로, 구독에 이미 박혀 있는 plan_id 를 쓴다.
+// 가입 이후 요금제를 바꾸는 기능은 없다 — 바꾸려면 해지 후 다시 가입.
+export async function charge(env, userId, customer, periodStart, isInitial = false, planId) {
+  const subscription = await ensureSubscription(env, userId, planId);
+  const plan = planFor(planId || subscription.plan_id);
   if (isInitial && subscription.status === "active")
     return reply({ status: "active", duplicate: true });
 
@@ -294,6 +327,7 @@ export async function charge(env, userId, customer, periodStart, isInitial = fal
         reconciled.payment,
         periodStartAt,
         anchorDay,
+        plan,
       );
     return pendingResponse();
   }
@@ -323,6 +357,7 @@ export async function charge(env, userId, customer, periodStart, isInitial = fal
         reconciled.payment,
         periodStartAt,
         anchorDay,
+        plan,
       );
     if (reconciled.uncertain) return pendingResponse();
   } else {
@@ -334,7 +369,7 @@ export async function charge(env, userId, customer, periodStart, isInitial = fal
           user_id: userId,
           order_id: orderId(),
           billing_period_start: billingPeriodStart,
-          amount: PLAN.amount,
+          amount: plan.amount,
           status: "pending",
         }),
       });
@@ -359,9 +394,9 @@ export async function charge(env, userId, customer, periodStart, isInitial = fal
       env.TOSS_SECRET_KEY,
       {
         customerKey: customer.customer_key,
-        amount: PLAN.amount,
+        amount: plan.amount,
         orderId: order.order_id,
-        orderName: PLAN.name,
+        orderName: plan.name,
       },
     );
   } catch (error) {
@@ -400,11 +435,12 @@ export async function charge(env, userId, customer, periodStart, isInitial = fal
     json,
     periodStartAt,
     anchorDay,
+    plan,
   );
 }
 
 async function authorize(request, env, user) {
-  const { authKey, customerKey } = await request.json().catch(() => ({}));
+  const { authKey, customerKey, planId } = await request.json().catch(() => ({}));
   if (
     typeof authKey !== "string" ||
     authKey.length > 300 ||
@@ -441,6 +477,7 @@ async function authorize(request, env, user) {
     securedCustomer,
     new Date().toISOString().slice(0, 10),
     true,
+    planId,
   );
 }
 
@@ -502,8 +539,10 @@ export async function handleBillingRequest(request, env) {
   if (!user) return reply({ error: "Authentication required." }, 401);
   try {
     const path = new URL(request.url).pathname;
-    if (request.method === "POST" && path === "/api/billing/prepare")
-      return prepare(env, user);
+    if (request.method === "POST" && path === "/api/billing/prepare") {
+      const { planId } = await request.json().catch(() => ({}));
+      return prepare(env, user, planId);
+    }
     if (request.method === "POST" && path === "/api/billing/authorize")
       return authorize(request, env, user);
     if (request.method === "POST" && path === "/api/billing/trial/start")
@@ -529,7 +568,7 @@ export async function handleBillingRequest(request, env) {
 export async function renewDueSubscriptions(env) {
   const now = encodeURIComponent(new Date().toISOString());
   const select =
-    "select=user_id,current_period_end,billing_anchor_day,payment_retry_count";
+    "select=user_id,plan_id,current_period_end,billing_anchor_day,payment_retry_count";
   const activeDue = await supabase(
     env,
     `subscriptions?status=eq.active&cancel_at_period_end=eq.false&current_period_end=lte.${now}&${select}`,
@@ -552,7 +591,7 @@ export async function renewDueSubscriptions(env) {
       // import 로 쓰고 있어서, 반대 방향은 지연 평가로 끊는다.
       if (customer?.provider === "kakao" && customer.kakao_sid) {
         const { chargeKakao } = await import("./kakaoBilling.js");
-        await chargeKakao(env, subscription.user_id, customer.kakao_sid);
+        await chargeKakao(env, subscription.user_id, customer.kakao_sid, subscription.plan_id);
         continue;
       }
       if (!customer?.billing_key) {
@@ -568,6 +607,8 @@ export async function renewDueSubscriptions(env) {
         subscription.user_id,
         customer,
         subscription.current_period_end.slice(0, 10),
+        false,
+        subscription.plan_id,
       );
     } catch (error) {
       // Keep processing other subscribers if one row or provider call fails.

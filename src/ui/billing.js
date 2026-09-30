@@ -38,6 +38,15 @@ const RETURN_HASH = '#billing-return';
 // 넘어갔다가 돌아온다 — 그 사이 JS 메모리는 전부 사라진다. sessionStorage
 // 에 잠깐 적어 뒀다가 돌아온 직후 한 번만 읽고 지운다.
 const KAKAO_TID_KEY = 'qfit_kakao_tid_v1';
+// 월간/연간 선택(2026-09-30). 프리미엄 덮개의 탭이 이 값 하나만 바꾸고,
+// app.js 의 refreshPremiumUI() 는 window.getSelectedPlanId 로 읽어만
+//간다 — 실제 결제 요청(카드 등록·카카오 등록)도 반드시 이 값을 그대로
+// 실어 보낸다. Toss 는 카드 인증창에서 successUrl 로 돌아오며 페이지가
+// 다시 로드되므로(카카오의 tid 와 같은 사정), 고른 요금제도 sessionStorage
+// 에 잠깐 맡겨 뒀다가 authorize 호출 때 같이 보낸다.
+const PLAN_ID_KEY = 'qfit_billing_plan_id_v1';
+let selectedPlanId = 'premium_monthly';
+window.getSelectedPlanId = () => selectedPlanId;
 
 async function authHeader() {
   const supabase = await getSupabase();
@@ -85,6 +94,10 @@ async function finishAuthorizeFromReturn() {
   const customerKey = params.get('customerKey');
   clearReturnUrl();
 
+  let planId = null;
+  try { planId = sessionStorage.getItem(PLAN_ID_KEY); } catch (e) {}
+  try { sessionStorage.removeItem(PLAN_ID_KEY); } catch (e) {}
+
   if (!authKey || !customerKey) {
     toast(t(S.billingRegisterFailed));
     return;
@@ -92,7 +105,7 @@ async function finishAuthorizeFromReturn() {
   try {
     const result = await billingFetch('/api/billing/authorize', {
       method: 'POST',
-      body: JSON.stringify({ authKey, customerKey }),
+      body: JSON.stringify({ authKey, customerKey, planId: planId || undefined }),
     });
     window.applyBillingStatus?.(result);
     if (result.status === 'active') toast(t(S.billingRegisterDone));
@@ -111,6 +124,10 @@ async function finishKakaoApproveFromReturn() {
   const pgToken = params.get('pg_token');
   if (!pgToken) return; // 카카오가 아니거나(예: Toss), 그냥 새로 들어온 것이다.
   const partnerOrderId = params.get('partner_order_id');
+  // plan_id 는 prepareKakao() 가 approval_url 자체에 실어 뒀다(카카오는
+  // 돌아올 때 자기가 아는 파라미터만 덧붙이므로, sessionStorage 없이도
+  // 주소에서 바로 읽힌다).
+  const planId = params.get('plan_id');
   clearReturnUrl();
 
   let tid = null;
@@ -124,7 +141,7 @@ async function finishKakaoApproveFromReturn() {
   try {
     const result = await billingFetch('/api/billing/kakao/approve', {
       method: 'POST',
-      body: JSON.stringify({ pgToken, tid, partnerOrderId }),
+      body: JSON.stringify({ pgToken, tid, partnerOrderId, planId: planId || undefined }),
     });
     window.applyBillingStatus?.(result);
     if (result.status === 'active') toast(t(S.billingRegisterDoneKakao));
@@ -182,10 +199,14 @@ async function startCardRegistration(button) {
       return;
     }
     const { loadTossPayments } = await import('@tosspayments/tosspayments-sdk');
-    const prepared = await billingFetch('/api/billing/prepare', { method: 'POST' });
+    const prepared = await billingFetch('/api/billing/prepare', {
+      method: 'POST',
+      body: JSON.stringify({ planId: selectedPlanId }),
+    });
     const { customerKey, clientKey } = prepared;
     if (!customerKey || !clientKey) throw new Error('prepare response missing keys');
 
+    try { sessionStorage.setItem(PLAN_ID_KEY, selectedPlanId); } catch (e) {}
     const tossPayments = await loadTossPayments(clientKey);
     const payment = tossPayments.payment({ customerKey });
     await payment.requestBillingAuth({
@@ -219,7 +240,10 @@ async function startKakaoRegistration(button) {
       toast(t(S.billingLoginRequired));
       return;
     }
-    const prepared = await billingFetch('/api/billing/kakao/prepare', { method: 'POST' });
+    const prepared = await billingFetch('/api/billing/kakao/prepare', {
+      method: 'POST',
+      body: JSON.stringify({ planId: selectedPlanId }),
+    });
     const { tid, partnerOrderId, nextRedirectPcUrl, nextRedirectMobileUrl } = prepared;
     const redirectUrl = isLikelyMobile() ? nextRedirectMobileUrl : nextRedirectPcUrl;
     if (!tid || !partnerOrderId || !redirectUrl) throw new Error('kakao prepare response missing fields');
@@ -281,6 +305,14 @@ export function initBilling({ translate, STATIC_UI } = {}) {
   // 가짜 버튼이었다 — src/app.js 의 refreshPremiumUI 주석 참고).
   const premiumBtn = document.getElementById('premium-activate-btn');
   if (premiumBtn) premiumBtn.addEventListener('click', () => startCardRegistration(premiumBtn));
+
+  const planTabs = document.getElementById('premium-plan-tabs');
+  if (planTabs) planTabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-plan]');
+    if (!btn || !planTabs.contains(btn)) return;
+    selectedPlanId = btn.dataset.plan;
+    window.refreshPremiumUI?.();
+  });
 
   const trialBtn = document.getElementById('premium-trial-btn');
   if (trialBtn) trialBtn.addEventListener('click', () => startFreeTrial(trialBtn));
