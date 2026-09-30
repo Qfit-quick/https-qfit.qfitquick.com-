@@ -297,7 +297,7 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
       header.type = 'button';
       header.className = 'challenge-phase-header';
       header.innerHTML =
-        '<span><span class="challenge-week-range">' + phase.range[0] + '~' + phase.range[1] + '주</span>' + esc(phase.title) +
+        '<span><span class="challenge-week-range">' + esc(t(S.challengeWeekRange).replace('%s', phase.range[0]).replace('%s', phase.range[1])) + '</span>' + esc(phase.title) +
         (idx === currentPhaseIdx ? '<span class="challenge-badge">' + esc(t(S.challengeBadgeCurrent)) + '</span>' : '') + '</span>' +
         '<span class="challenge-chev">▾</span>';
       header.addEventListener('click', () => {

@@ -21,6 +21,18 @@ let homeParent = null; // 그 요소가 원래 있던 자리
 let homeNext = null;
 let opener = null; // 시트를 연 버튼 (닫으면 여기로 초점을 돌려준다)
 
+// 닫기 버튼 aria-label — sheet.js 는 이 앱의 사전(STATIC_UI)을 안 받으므로
+// document.documentElement.lang(app.js 가 언어를 바꿀 때마다 적어 둔다)
+// 만으로 판단한다. 예전엔 en/ko 두 갈래뿐이라 중국어에서 '닫기'(한국어)가
+// 나왔다 — build() 가 시트를 처음 열 때 딱 한 번만 도니 그 뒤로 언어를
+// 바꿔도 안 바뀌는 문제까지 같이 있었다(2026-09-30 발견).
+function closeLabelFor(lang) {
+  if (lang === 'en') return 'Close';
+  if (lang && lang.startsWith('zh')) return '关闭';
+  return '닫기';
+}
+let closeBtn = null;
+
 function build() {
   backdrop = document.createElement('div');
   backdrop.className = 'sheet-backdrop';
@@ -42,8 +54,8 @@ function build() {
   titleEl = sheet.querySelector('.sheet-title');
   body = sheet.querySelector('.sheet-body');
 
-  const closeBtn = sheet.querySelector('.sheet-close');
-  closeBtn.setAttribute('aria-label', document.documentElement.lang === 'en' ? 'Close' : '닫기');
+  closeBtn = sheet.querySelector('.sheet-close');
+  closeBtn.setAttribute('aria-label', closeLabelFor(document.documentElement.lang));
   closeBtn.addEventListener('click', () => closeSheet());
   if (ICON.close) closeBtn.innerHTML = ICON.close;
 
@@ -52,6 +64,10 @@ function build() {
   app.appendChild(sheet);
 
   attachDrag();
+
+  document.addEventListener('qfit:lang', () => {
+    closeBtn.setAttribute('aria-label', closeLabelFor(document.documentElement.lang));
+  });
 }
 
 // 아래로 끌어내려 닫기. 폰에서는 닫기 버튼을 찾는 것보다 이게 빠르다.

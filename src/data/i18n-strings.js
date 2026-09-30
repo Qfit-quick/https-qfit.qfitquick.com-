@@ -80,6 +80,8 @@ export const STATIC_UI = {
  chatbotGreeting: {ko:'안녕하세요! 부위별 대처법, 회복 습관, 운동 방법, 업적, 프로그램, 음식 칼로리, 앱 사용법을 물어보세요.', en:"Hi! Ask me about injury care by body part, recovery habits, exercises, achievements, programs, food calories, or how the app works.", zh:'你好！可以问我部位处理方法、恢复习惯、运动方法、成就、训练计划、食物热量或使用方法。'},
  chatbotFallback: {ko:'무슨 말인지 잘 모르겠어요. 아래 중에 골라보시겠어요?', en:"I'm not sure I understood. Want to pick one of these?", zh:'我不太明白，要不要选一下下面的选项？'},
  chatbotDetailLink: {ko:'%s 자세히 보기 →', en:'See more about %s →', zh:'查看更多关于%s →'},
+ chatbotChallengeOverview: {ko:'%s주 · %s단계', en:'%s wks · %s phases', zh:'%s周 · %s阶段'},
+ chatbotChallengePhase1: {ko:'1단계 — %s: %s', en:'Phase 1 — %s: %s', zh:'第1阶段 — %s：%s'},
  chatbotFoodPer100: {ko:'100g당', en:'Per 100g:', zh:'每100克：'},
  chatbotAboutKcal: {ko:'약 %skcal', en:'About %s kcal', zh:'约%s千卡'},
  // 로컬 서버 연결(2026-09-21) — 로컬 답은 항상 즉시 뜨고, 이 문구들은
@@ -152,6 +154,7 @@ export const STATIC_UI = {
  challengeProgressText: {ko:'기록 완료 %s/%s주', en:'%s/%s weeks logged', zh:'已记录 %s/%s周'},
  challengeCalendarWeek: {ko:'시작일 기준 %s주차', en:'Week %s since start', zh:'距开始第%s周'},
  challengeWeekLabel: {ko:'%s주차', en:'Wk %s', zh:'第%s周'},
+ challengeWeekRange: {ko:'%s~%s주', en:'Wk %s–%s', zh:'第%s~%s周'},
  challengeGoalPrefix: {ko:'목표: %s', en:'Goal: %s', zh:'目标：%s'},
  challengeBadgeCurrent: {ko:'진행중', en:'Current', zh:'进行中'},
  challengeColExercise: {ko:'운동', en:'Exercise', zh:'动作'},
@@ -269,6 +272,17 @@ export const STATIC_UI = {
  streakNone: {ko:'첫 기록을 기다리는 중', en:'Waiting for your first', zh:'等待第一次记录'},
  startSheetTitle: {ko:'어떻게 시작할까요?', en:'How do you want to start?', zh:'想怎么开始？'},
  sheetBackNote: {ko:'뒤로가기 한 번은 시트만 닫습니다.', en:'One back press just closes this sheet.', zh:'按一次返回只会关闭这个面板。'},
+ ariaBack: {ko:'뒤로', en:'Back', zh:'返回'},
+ // 아래 aria-* 키들(2026-09-30) — 화면에 안 보이는 스크린리더 전용
+ // 라벨이라 눈으로 훑을 때는 안 걸린다. app/index.html 에 하드코딩된
+ // 한글 aria-label 을 data-i18n-aria 로 옮기며 같이 추가했다.
+ ariaMute: {ko:'소리 켜기/끄기', en:'Toggle sound', zh:'开关声音'},
+ ariaLangSwitch: {ko:'언어 바꾸기', en:'Change language', zh:'切换语言'},
+ ariaConfirmHold: {ko:'인증', en:'Hold to confirm', zh:'长按确认'},
+ ariaDecrease: {ko:'줄이기', en:'Decrease', zh:'减少'},
+ ariaIncrease: {ko:'늘리기', en:'Increase', zh:'增加'},
+ ariaPlanTabs: {ko:'계획 보기 방식', en:'Plan view', zh:'计划视图'},
+ ariaSend: {ko:'보내기', en:'Send', zh:'发送'},
  modeManualSub: {ko:'동작 24개에서 고르기', en:'Pick from 24 exercises', zh:'从24个动作中挑选'},
  modeRandomSub: {ko:'고민 없이 무작위로 뽑기', en:'Randomly picked for you', zh:'随机抽取'},
  modeQceSub: {ko:'8개 스테이션 한 바퀴', en:'8 stations, one lap', zh:'8个站点一圈'},

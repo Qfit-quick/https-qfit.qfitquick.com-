@@ -226,6 +226,14 @@ function applyStaticTranslations(){
  const entry = STATIC_UI[el.dataset.i18nPlaceholder];
  if(entry) el.placeholder = t(entry);
  });
+ // 화면엔 안 보이는 스크린리더 전용 라벨. 예전엔 마크업에 한글을 그대로
+ // 박아 둬서, i18n 검사(scripts/i18n.mjs)가 태그 안 글자만 보고 속성은
+ // 안 보다 보니 언어를 바꿔도 안 바뀌는 채로 오래 남아 있었다(2026-09-30
+ // 발견 — data-i18n/placeholder 와 같은 자리에서 같이 챙긴다).
+ document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+ const entry = STATIC_UI[el.dataset.i18nAria];
+ if(entry) el.setAttribute('aria-label', t(entry));
+ });
  try{ renderBodyparts(); }catch(e){ console.error('renderBodyparts failed:', e); }
  // 기록 화면 '최근 출석' 라벨도 인덱스로 집고 있었다. [0] 은 '이번 달' 이라
  // 이 줄이 바로 위 사전 훑기를 덮어써서 '이번 달' 자리에 '최근 출석' 이

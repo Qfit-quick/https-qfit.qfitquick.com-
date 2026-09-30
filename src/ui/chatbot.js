@@ -332,8 +332,8 @@ function muscleReplyHtml(group, excludeTerms) {
 // 주고, 나머지는 실제 화면(도전 탭)에서 보게 한다.
 function challengeReplyHtml({ key, track }) {
   const firstPhase = track.phases && track.phases[0];
-  return `<p><b>${esc(track.name)}</b> (${track.totalWeeks}주 · ${track.phases.length}단계)</p>` +
-    (firstPhase ? `<p>1단계 — ${esc(firstPhase.title)}: ${esc(firstPhase.goal)}</p>` : '') +
+  return `<p><b>${esc(track.name)}</b> (${esc(t(S.chatbotChallengeOverview).replace('%s', track.totalWeeks).replace('%s', track.phases.length))})</p>` +
+    (firstPhase ? `<p>${esc(t(S.chatbotChallengePhase1).replace('%s', firstPhase.title).replace('%s', firstPhase.goal))}</p>` : '') +
     `<button type="button" class="link-btn chatbot-detail-link" data-challenge="${key}">` +
     esc(t(S.chatbotDetailLink).replace('%s', track.name)) + '</button>';
 }

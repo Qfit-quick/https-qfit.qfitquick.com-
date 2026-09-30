@@ -101,9 +101,25 @@ if (bare.length) {
   if (bare.length > 10) console.log(`  … 그 밖에 ${bare.length - 10}곳`);
 }
 
+// aria-label 은 태그 안 글자가 아니라 속성이라 위 훑기에 안 걸린다.
+// 화면엔 안 보이는 스크린리더 전용 라벨이라 눈으로 훑어도 안 걸리는
+// 자리다 — 실제로 2026-09-30 이전까지 28곳이 이 상태로 남아 있었다.
+const ariaBare = [];
+for (const m of html.matchAll(/<[a-z][\w-]*\s+[^>]*aria-label="([^"]*[가-힣][^"]*)"[^>]*>/g)) {
+  const [full, text] = m;
+  if (full.includes('data-i18n-aria')) continue;
+  const line = html.slice(0, m.index).split('\n').length;
+  ariaBare.push({ line, text: text.trim().slice(0, 34) });
+}
+if (ariaBare.length) {
+  console.log(`\nindex.html — data-i18n-aria 없는 한글 aria-label ${ariaBare.length}곳`);
+  ariaBare.slice(0, 10).forEach((b) => console.log(`  ${String(b.line).padStart(4)}행  aria-label="${b.text}"`));
+  if (ariaBare.length > 10) console.log(`  … 그 밖에 ${ariaBare.length - 10}곳`);
+}
+
 const limit = Number(process.env.I18N_ALLOW ?? 0);
 const bareLimit = Number(process.env.I18N_MARKUP_ALLOW ?? 0);
-const bad = missing + inline + (bare.length > bareLimit ? bare.length - bareLimit : 0);
+const bad = missing + inline + (bare.length > bareLimit ? bare.length - bareLimit : 0) + ariaBare.length;
 if (bad > limit) {
   console.log(`\n남은 것 ${bad}개 (허용 ${limit})`);
   process.exit(1);

@@ -53,7 +53,7 @@ export function initHeaders({ STATIC_UI, t, ICON }) {
     const hd = document.createElement('header');
     hd.className = 'hd';
     hd.innerHTML =
-      `<button class="hd-back" type="button" aria-label="뒤로">${ICON.back}</button>` +
+      `<button class="hd-back" type="button" aria-label="${translate(dict.ariaBack)}">${ICON.back}</button>` +
       (key ? `<h2 class="hd-title" data-hd-key="${key}"></h2>` : '');
 
     hd.querySelector('.hd-back').addEventListener('click', () => {
@@ -123,5 +123,8 @@ export function paintTitles() {
   if (!dict) return;
   document.querySelectorAll('.hd-title[data-hd-key]').forEach((el) => {
     el.textContent = titleFor(el.dataset.hdKey);
+  });
+  document.querySelectorAll('.hd-back').forEach((btn) => {
+    btn.setAttribute('aria-label', translate(dict.ariaBack));
   });
 }

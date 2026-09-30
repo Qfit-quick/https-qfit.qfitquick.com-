@@ -91,10 +91,10 @@
       아무것도 끼지 않게 하기 위해서다. 아이콘 버튼에는 data-i18n 을 달지 말 것 —
       번역 훑기가 textContent 를 덮어써 아이콘이 지워진다(aria-label 로 대신한다). -->
  <div class="home-top">
- <button class="icb" id="open-settings-btn" type="button" aria-label="설정" data-icon="settings"></button>
- <button class="icb mute-btn" id="mute-btn-start" type="button" aria-label="소리 켜기/끄기"></button>
+ <button class="icb" id="open-settings-btn" type="button" aria-label="설정" data-icon="settings" data-i18n-aria="settingsBtn"></button>
+ <button class="icb mute-btn" id="mute-btn-start" type="button" aria-label="소리 켜기/끄기" data-i18n-aria="ariaMute"></button>
  <span class="home-top-gap"></span>
- <button class="txtb lang-btn" id="lang-btn" type="button" aria-label="언어 바꾸기">EN</button>
+ <button class="txtb lang-btn" id="lang-btn" type="button" aria-label="언어 바꾸기" data-i18n-aria="ariaLangSwitch">EN</button>
  <button class="txtb" id="open-account-btn" data-i18n="accountBtn">로그인</button>
  </div>
 
@@ -407,7 +407,7 @@
       src/ui/amrap.js 가 이 화면만 따로 움직인다. -->
  <div class="screen" id="amrap-screen">
  <div class="amrap-head">
- <button class="hd-back" type="button" id="amrap-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <button class="hd-back" type="button" id="amrap-back-btn" aria-label="뒤로" data-icon="back" data-i18n-aria="ariaBack"></button>
  <h2 class="hd-title" id="amrap-title">Cindy</h2>
  </div>
  <div id="amrap-run">
@@ -464,7 +464,7 @@
       src/ui/circuit.js 가 안쪽을 움직인다. -->
  <div class="screen" id="circuit-screen">
  <div class="amrap-head">
- <button class="hd-back" type="button" id="circuit-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <button class="hd-back" type="button" id="circuit-back-btn" aria-label="뒤로" data-icon="back" data-i18n-aria="ariaBack"></button>
  <h2 class="hd-title" id="circuit-title">QCE</h2>
  </div>
  <div id="circuit-run">
@@ -517,7 +517,7 @@
       모양 — 거기는 이 머리가 화면 최상단에 한 번만 있고 나머지를 안
       가린다). 완주 화면에서도 뒤로 나갈 길이 있어야 한다. -->
  <div class="amrap-head" id="quick-head" hidden>
- <button class="hd-back" type="button" id="quick-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <button class="hd-back" type="button" id="quick-back-btn" aria-label="뒤로" data-icon="back" data-i18n-aria="ariaBack"></button>
  <h2 class="hd-title" id="quick-title">3초 후 시작</h2>
  </div>
  <div id="quick-run" hidden>
@@ -556,7 +556,7 @@
       건너뛰기'와 안 겹치게 별도 카드로 둔다 — quickStart.js 가 이 카드
       위에서 난 클릭은 건너뛰기로 안 잡는다. -->
  <div class="rest-touch-card" id="quick-rest-touch-card" hidden>
- <div class="rest-touch-zone" id="quick-rest-touch-zone" role="button" tabindex="0" aria-label="인증">
+ <div class="rest-touch-zone" id="quick-rest-touch-zone" role="button" tabindex="0" aria-label="인증" data-i18n-aria="ariaConfirmHold">
  <svg class="rest-touch-ring" viewBox="0 0 64 64" aria-hidden="true">
  <circle class="track" cx="32" cy="32" r="26"></circle>
  <circle class="prog" id="quick-rest-touch-prog" cx="32" cy="32" r="26"></circle>
@@ -587,7 +587,7 @@
       규칙 참고). -->
  <div class="screen senior-mode" id="senior-run-screen">
  <div class="amrap-head">
- <button class="hd-back" type="button" id="senior-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <button class="hd-back" type="button" id="senior-back-btn" aria-label="뒤로" data-icon="back" data-i18n-aria="ariaBack"></button>
  <h2 class="hd-title" data-i18n="seniorModeTitle">어르신·재활 모드</h2>
  </div>
  <div id="senior-run" hidden>
@@ -631,31 +631,31 @@
       정한다. 안쪽은 src/ui/tabata.js 가 움직인다. -->
  <div class="screen" id="tabata-setup-screen">
  <div class="amrap-head">
- <button class="hd-back" type="button" id="tabata-setup-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <button class="hd-back" type="button" id="tabata-setup-back-btn" aria-label="뒤로" data-icon="back" data-i18n-aria="ariaBack"></button>
  <h2 class="hd-title" data-i18n="tabataSetupTitle">타바타 타이머</h2>
  </div>
  <div class="card tabata-field">
  <span class="dim" data-i18n="tabataWorkLabel">운동 시간(초)</span>
  <div class="stepper">
- <button class="icb stepper-btn" type="button" id="tabata-work-minus" aria-label="줄이기" data-icon="minus"></button>
+ <button class="icb stepper-btn" type="button" id="tabata-work-minus" aria-label="줄이기" data-icon="minus" data-i18n-aria="ariaDecrease"></button>
  <input class="stepper-val" id="tabata-work-value" type="number" inputmode="numeric" value="20">
- <button class="icb stepper-btn" type="button" id="tabata-work-plus" aria-label="늘리기" data-icon="plus"></button>
+ <button class="icb stepper-btn" type="button" id="tabata-work-plus" aria-label="늘리기" data-icon="plus" data-i18n-aria="ariaIncrease"></button>
  </div>
  </div>
  <div class="card tabata-field">
  <span class="dim" data-i18n="tabataRestLabel">휴식 시간(초)</span>
  <div class="stepper">
- <button class="icb stepper-btn" type="button" id="tabata-rest-minus" aria-label="줄이기" data-icon="minus"></button>
+ <button class="icb stepper-btn" type="button" id="tabata-rest-minus" aria-label="줄이기" data-icon="minus" data-i18n-aria="ariaDecrease"></button>
  <input class="stepper-val" id="tabata-rest-value" type="number" inputmode="numeric" value="10">
- <button class="icb stepper-btn" type="button" id="tabata-rest-plus" aria-label="늘리기" data-icon="plus"></button>
+ <button class="icb stepper-btn" type="button" id="tabata-rest-plus" aria-label="늘리기" data-icon="plus" data-i18n-aria="ariaIncrease"></button>
  </div>
  </div>
  <div class="card tabata-field">
  <span class="dim" data-i18n="tabataRoundsLabel">라운드 수</span>
  <div class="stepper">
- <button class="icb stepper-btn" type="button" id="tabata-rounds-minus" aria-label="줄이기" data-icon="minus"></button>
+ <button class="icb stepper-btn" type="button" id="tabata-rounds-minus" aria-label="줄이기" data-icon="minus" data-i18n-aria="ariaDecrease"></button>
  <input class="stepper-val" id="tabata-rounds-value" type="number" inputmode="numeric" value="8">
- <button class="icb stepper-btn" type="button" id="tabata-rounds-plus" aria-label="늘리기" data-icon="plus"></button>
+ <button class="icb stepper-btn" type="button" id="tabata-rounds-plus" aria-label="늘리기" data-icon="plus" data-i18n-aria="ariaIncrease"></button>
  </div>
  </div>
  <p class="dim" id="tabata-total-hint"></p>
@@ -676,7 +676,7 @@
  </div>
  </div>
  <div class="amrap-head" id="tabata-head" hidden>
- <button class="hd-back" type="button" id="tabata-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <button class="hd-back" type="button" id="tabata-back-btn" aria-label="뒤로" data-icon="back" data-i18n-aria="ariaBack"></button>
  <h2 class="hd-title" data-i18n="tabataSetupTitle">타바타 타이머</h2>
  </div>
  <div id="tabata-run" hidden>
@@ -712,7 +712,7 @@
       재사용해 간단한 뒤로가기 머리만 둔다. 안쪽은 src/ui/programs.js 가 채운다. -->
  <div class="screen" id="qce-rulebook-screen">
  <div class="amrap-head">
- <button class="hd-back" type="button" id="qce-rulebook-back-btn" aria-label="뒤로" data-icon="back"></button>
+ <button class="hd-back" type="button" id="qce-rulebook-back-btn" aria-label="뒤로" data-icon="back" data-i18n-aria="ariaBack"></button>
  <h2 class="hd-title" data-i18n="qceRulebookTitle">QCE 경기 규칙</h2>
  </div>
  <div id="qce-rulebook-body"></div>
@@ -737,7 +737,7 @@
  </div>
 
  <div id="plan-body" hidden>
- <div class="plan-tabs" role="tablist" aria-label="계획 보기 방식">
+ <div class="plan-tabs" role="tablist" aria-label="계획 보기 방식" data-i18n-aria="ariaPlanTabs">
  <button class="plan-tab on" type="button" role="tab" data-plan-tab="today" data-i18n="planTabToday">오늘</button>
  <button class="plan-tab" type="button" role="tab" data-plan-tab="week" data-i18n="planTabWeek">주간 운동</button>
  <button class="plan-tab" type="button" role="tab" data-plan-tab="diet" data-i18n="planTabDiet">식단</button>
@@ -764,7 +764,7 @@
 
  <label class="inp-wrap challenge-search-wrap">
  <span class="inp-ic" data-icon="search"></span>
- <input type="text" id="challenge-search-input" class="inp search-input" placeholder="운동 검색 (예: 턱걸이)" data-i18n-placeholder="challengeSearchPlaceholder" aria-label="운동 검색">
+ <input type="text" id="challenge-search-input" class="inp search-input" placeholder="운동 검색 (예: 턱걸이)" data-i18n-placeholder="challengeSearchPlaceholder" aria-label="운동 검색" data-i18n-aria="challengeSearchPlaceholder">
  </label>
  <div id="challenge-search-results"></div>
 
@@ -1209,7 +1209,7 @@
  <div class="select-tools">
  <label class="inp-wrap">
  <span class="inp-ic" data-icon="search"></span>
- <input type="text" id="ex-search-input" class="inp ex-search-input" placeholder="동작 검색 (예: 스쿼트)" data-i18n-placeholder="exSearchPlaceholder" aria-label="동작 검색">
+ <input type="text" id="ex-search-input" class="inp ex-search-input" placeholder="동작 검색 (예: 스쿼트)" data-i18n-placeholder="exSearchPlaceholder" aria-label="동작 검색" data-i18n-aria="exSearchPlaceholder">
  </label>
  <div class="chip-row" id="group-row"></div>
  </div>
@@ -1237,7 +1237,7 @@
  <form class="chatbot-input-row screen-foot" id="chatbot-form">
  <input type="text" id="chatbot-input" class="inp chatbot-input" data-i18n-placeholder="chatbotPlaceholder" placeholder="궁금한 걸 물어보세요" autocomplete="off" maxlength="1000">
  <span class="dim chatbot-count" id="chatbot-count">0/1000</span>
- <button type="submit" class="chatbot-send-btn" id="chatbot-send-btn" aria-label="보내기" data-icon="send"></button>
+ <button type="submit" class="chatbot-send-btn" id="chatbot-send-btn" aria-label="보내기" data-icon="send" data-i18n-aria="ariaSend"></button>
  </form>
  <div class="chatbot-foot-row">
  <button class="back-link-btn" id="chatbot-back-btn" data-i18n="backBtn">이전</button>
@@ -1326,7 +1326,7 @@
  <!-- 값을 쥐고 있는 두 요소는 그대로 두고 화면에서만 감춘다. 사람은 시트의
       −/+ 로 만지고, 여기 붙어 있는 기존 검사·계산은 그대로 돈다. -->
  <input type="checkbox" id="custom-setcount-toggle" hidden>
- <input type="number" id="custom-setcount-input" min="2" max="40" inputmode="numeric" value="8" hidden aria-label="세트 수 직접 입력">
+ <input type="number" id="custom-setcount-input" min="2" max="40" inputmode="numeric" value="8" hidden aria-label="세트 수 직접 입력" data-i18n-aria="customSetsTitle">
  </section>
 
  <section class="setup-sec">
@@ -1341,7 +1341,7 @@
  </div>
  <span class="range-note" id="duration-range-note"></span>
  <input type="checkbox" id="custom-duration-toggle" hidden>
- <input type="number" id="custom-duration-input" min="4" max="50" inputmode="numeric" value="10" hidden aria-label="동작 시간 직접 입력">
+ <input type="number" id="custom-duration-input" min="4" max="50" inputmode="numeric" value="10" hidden aria-label="동작 시간 직접 입력" data-i18n-aria="customSecsTitle">
  </div>
 
  <!-- 동작 전환 속도(2026-09-12). 세트 수와 달리 언제나 바로 보인다 —
@@ -1405,9 +1405,9 @@
  <div class="stepper-panel" id="stepper-panel" style="display:none;">
  <p class="dim" id="stepper-range"></p>
  <div class="stepper">
- <button class="icb stepper-btn" id="stepper-down" type="button" aria-label="줄이기" data-icon="minus"></button>
+ <button class="icb stepper-btn" id="stepper-down" type="button" aria-label="줄이기" data-icon="minus" data-i18n-aria="ariaDecrease"></button>
  <input class="stepper-val" id="stepper-val" type="number" inputmode="numeric" value="8">
- <button class="icb stepper-btn" id="stepper-up" type="button" aria-label="늘리기" data-icon="plus"></button>
+ <button class="icb stepper-btn" id="stepper-up" type="button" aria-label="늘리기" data-icon="plus" data-i18n-aria="ariaIncrease"></button>
  </div>
  <button class="primary" id="stepper-apply" data-i18n="applyBtn">적용</button>
  </div>
@@ -1545,7 +1545,7 @@
    <div class="injury-section-title" data-i18n="injuryByPartTitle">부위별 회복</div>
    <label class="inp-wrap">
    <span class="inp-ic" data-icon="search"></span>
-   <input type="text" id="injury-search-input" class="inp search-input" placeholder="부위 또는 증상 검색" data-i18n-placeholder="injurySearchPlaceholder" aria-label="부위 검색">
+   <input type="text" id="injury-search-input" class="inp search-input" placeholder="부위 또는 증상 검색" data-i18n-placeholder="injurySearchPlaceholder" aria-label="부위 검색" data-i18n-aria="injurySearchPlaceholder">
    </label>
    <div class="chip-row" id="injury-chip-row"></div>
    <div class="search-empty" id="injury-search-empty" style="display:none;" data-i18n="searchEmpty">검색 결과가 없습니다</div>
@@ -1586,7 +1586,7 @@
  <h2 class="lb-title" data-i18n="movesBtn">운동동작 소개</h2>
  <label class="inp-wrap">
  <span class="inp-ic" data-icon="search"></span>
- <input type="text" id="video-search-input" class="inp search-input" placeholder="동작 검색 (예: 스쿼트)" data-i18n-placeholder="exSearchPlaceholder" aria-label="동작 검색">
+ <input type="text" id="video-search-input" class="inp search-input" placeholder="동작 검색 (예: 스쿼트)" data-i18n-placeholder="exSearchPlaceholder" aria-label="동작 검색" data-i18n-aria="exSearchPlaceholder">
  </label>
  <div class="video-gallery-grid" id="video-gallery-grid"></div>
  <div class="search-empty" id="video-search-empty" style="display:none;" data-i18n="searchEmpty">검색 결과가 없습니다</div>
@@ -1715,7 +1715,7 @@
       <!-- 휴식마다 뜬다(이 앱은 휴식이 한 번뿐이라 그게 곧 첫 휴식). 카메라 없이
            사람이 화면 앞에 있는지 가볍게 확인한다 — 번개를 0.6초 꾹 누르면 찬다. -->
       <div class="rest-touch-card" id="rest-touch-card" style="display:none;">
-        <div class="rest-touch-zone" id="rest-touch-zone" role="button" tabindex="0" aria-label="인증">
+        <div class="rest-touch-zone" id="rest-touch-zone" role="button" tabindex="0" aria-label="인증" data-i18n-aria="ariaConfirmHold">
           <svg class="rest-touch-ring" viewBox="0 0 64 64" aria-hidden="true">
             <circle class="track" cx="32" cy="32" r="26"></circle>
             <circle class="prog" id="rest-touch-prog" cx="32" cy="32" r="26"></circle>
@@ -1755,8 +1755,8 @@
     <!-- 3단 · 다음 동작과 조작. -->
     <div class="gz-bottom">
       <span class="next-preview" id="next-preview"></span>
-      <button class="mute-btn" id="mute-btn-game" type="button" aria-label="소리 켜기/끄기"></button>
-      <button class="pause-btn" id="pause-btn" data-icon="pause" aria-label="일시정지"></button>
+      <button class="mute-btn" id="mute-btn-game" type="button" aria-label="소리 켜기/끄기" data-i18n-aria="ariaMute"></button>
+      <button class="pause-btn" id="pause-btn" data-icon="pause" aria-label="일시정지" data-i18n-aria="heartgamePauseLabel"></button>
     </div>
 
     <!-- 세션 진행. 잔여 시간(상단 가로)과 축을 달리해 둘이 안 겹친다. -->
