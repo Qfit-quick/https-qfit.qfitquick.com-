@@ -11,10 +11,11 @@
 // 것을 그대로 가져다 쓴다.
 import { reply, requireUser, supabase, getCustomer, markPastDue } from "./billing.js";
 
+// worker/api/billing.js 의 PLAN 과 같은 값으로 맞춘다(2026-09-30, 1,900원).
 const PLAN = Object.freeze({
   id: "premium_monthly",
   name: "Q-fit Premium (monthly)",
-  amount: 2400,
+  amount: 1900,
 });
 
 // 테스트용 CID. 카카오 가맹점 심사가 끝나면 실제 CID 로 바꾼다(대시보드

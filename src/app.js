@@ -4716,6 +4716,17 @@ function refreshPremiumUI(){
  fineprint.style.display = isPremium ? 'none' : '';
  fineprint.textContent = t(STATIC_UI.premiumFineprint);
  }
+ // 무료 체험 버튼(2026-09-30) — 프리미엄이 아니고, 이 계정이 체험을
+ // 아직 한 번도 안 썼을 때만 보인다. 로그인 전에는 billing 이 아예
+ // 없어서(trialUsed 를 모른다) 일단 숨겨 둔다 — 로그인해야 서버가
+ // 진짜 여부를 알려준다(billing.js 의 checkBillingStatus).
+ const trialBtn = document.getElementById('premium-trial-btn');
+ if(trialBtn){
+ const trialUsed = !!(billing && billing.trialUsed);
+ trialBtn.style.display = (isPremium || trialUsed) ? 'none' : '';
+ trialBtn.disabled = false;
+ trialBtn.textContent = t(STATIC_UI.premiumTrialBtn);
+ }
  const title = document.getElementById('premium-title');
  if(title) title.textContent = t(isPremium ? STATIC_UI.premiumTitleOn : STATIC_UI.premiumTitleOff);
  const desc = document.getElementById('premium-desc');
@@ -4766,7 +4777,12 @@ window.applyBillingStatus = function(payload){
  const cancelAtPeriodEnd = ('cancel_at_period_end' in payload) ? !!payload.cancel_at_period_end
  : ('cancelAtPeriodEnd' in payload) ? !!payload.cancelAtPeriodEnd
  : !!prevBilling.cancelAtPeriodEnd;
- myProfile.billing = { status, currentPeriodEnd, cancelAtPeriodEnd };
+ // 무료 체험(2026-09-30) — 이미 썼으면 체험 버튼을 다시 안 보여준다.
+ // 상태 응답에 안 실려 있으면(옛 판 서버 등) 이전 값을 그대로 둔다.
+ const trialUsed = ('trial_used' in payload) ? !!payload.trial_used
+ : ('trialUsed' in payload) ? !!payload.trialUsed
+ : !!prevBilling.trialUsed;
+ myProfile.billing = { status, currentPeriodEnd, cancelAtPeriodEnd, trialUsed };
  if(status === 'active') myProfile.isPremium = true;
  else if(status !== 'pending') myProfile.isPremium = false;
  saveProfile();

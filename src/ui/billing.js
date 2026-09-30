@@ -149,6 +149,30 @@ async function checkBillingStatus() {
   }
 }
 
+// 무료 체험(2026-09-30) — 결제수단이 필요 없어서 Toss/카카오 SDK 를 전혀
+// 안 부른다. 서버가 subscriptions 를 바로 active 로 만들어 주는 요청
+// 하나뿐이다.
+async function startFreeTrial(button) {
+  button.disabled = true;
+  try {
+    const auth = await authHeader();
+    if (!auth) {
+      toast(t(S.billingLoginRequired));
+      return;
+    }
+    const result = await billingFetch('/api/billing/trial/start', { method: 'POST' });
+    window.applyBillingStatus?.(result);
+    toast(t(S.premiumTrialDone));
+  } catch (e) {
+    console.error('free trial start failed:', e);
+    toast(e?.message === 'NOT_LOGGED_IN' ? t(S.billingLoginRequired)
+      : e?.status === 409 ? t(S.premiumTrialFailed)
+      : t(S.billingRegisterFailed));
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function startCardRegistration(button) {
   button.disabled = true;
   try {
@@ -257,6 +281,9 @@ export function initBilling({ translate, STATIC_UI } = {}) {
   // 가짜 버튼이었다 — src/app.js 의 refreshPremiumUI 주석 참고).
   const premiumBtn = document.getElementById('premium-activate-btn');
   if (premiumBtn) premiumBtn.addEventListener('click', () => startCardRegistration(premiumBtn));
+
+  const trialBtn = document.getElementById('premium-trial-btn');
+  if (trialBtn) trialBtn.addEventListener('click', () => startFreeTrial(trialBtn));
 
   const cancelBtn = document.getElementById('premium-cancel-btn');
   if (cancelBtn) cancelBtn.addEventListener('click', () => toggleCancelSubscription(cancelBtn));

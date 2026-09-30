@@ -50,7 +50,7 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-C8brJXI5.js"></script>
+  <script type="module" crossorigin src="./assets/index-CLTzaNaZ.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-gvA9jUHy.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -1882,11 +1882,15 @@
  <div class="pause-title" id="premium-title" data-i18n="premiumTitleOff">프리미엄 전용 운동</div>
  <p class="premium-desc" id="premium-desc" data-i18n="premiumDescOff">이 운동은 프리미엄 회원만 이용할 수 있어요. 프리미엄에 가입하면 더 다양한 고강도 운동을 즐길 수 있어요.</p>
  <div class="premium-price-box" id="premium-price-box">
- <span class="premium-price-amount" id="premium-price-amount">₩2,400</span>
+ <span class="premium-price-amount" id="premium-price-amount">₩1,900</span>
  <span class="premium-price-unit" data-i18n="premiumPriceUnit">/ 월</span>
  </div>
  <button class="btn-restart" id="premium-activate-btn" type="button" data-i18n="premiumStartBtn">✨ 프리미엄 시작하기</button>
  <p class="premium-fineprint" id="premium-fineprint" data-i18n="premiumFineprint">등록한 카드로 매달 자동 결제돼요</p>
+ <!-- 1개월 무료 체험(2026-09-30) — 결제수단 등록 없이 바로 시작한다.
+      한 계정당 한 번만(서버가 trial_used 로 막는다). src/ui/billing.js
+      의 startFreeTrial() 이 묶는다. -->
+ <button class="link-btn" id="premium-trial-btn" type="button" data-i18n="premiumTrialBtn">1개월 무료 체험 시작하기</button>
  <!-- 실제 구독이 있을 때만 보인다(app.js 의 refreshPremiumUI 가 채운다) -->
  <div class="premium-cancel-box" id="premium-cancel-box" style="display:none">
  <p class="premium-fineprint" id="premium-cancel-note"></p>
@@ -1942,6 +1946,6 @@
  </div>
  </div>
 </div>
-
+
 </body>
 </html>

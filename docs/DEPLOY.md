@@ -91,9 +91,23 @@ push 마다 다시 빌드해서 산출물이 다르면 되커밋하고, 그 다�
 
 ## Toss Payments 연동 (2026-09-25)
 
-정기결제(프리미엄 월 구독, 월 2,400원)가 `worker/api/billing.js` +
-`src/ui/billing.js` + Supabase 세 테이블로 붙어 있다. API 동작·DB 스키마
-자세한 내용은 `docs/sql/2026-09-toss-billing.sql` 과 그 옆 명세서를 본다.
+정기결제(프리미엄 월 구독, 월 1,900원 — 2026-09-30 에 2,400원에서 내림)가
+`worker/api/billing.js` + `src/ui/billing.js` + Supabase 세 테이블로 붙어
+있다. API 동작·DB 스키마 자세한 내용은 `docs/sql/2026-09-toss-billing.sql`
+과 그 옆 명세서를 본다.
+
+카카오페이(`worker/api/kakaoBilling.js`)도 같은 가격·같은 구독 하나를
+공유한다 — 가격을 바꿀 땐 두 파일의 `PLAN.amount` 를 같이 바꿔야 한다.
+
+## 무료 체험 (2026-09-30)
+
+결제수단 등록 없이 계정당 한 번, 1개월을 그냥 active 로 준다
+(`worker/api/billing.js` 의 `startTrial`, `docs/sql/2026-09-premium-trial.sql`
+의 `subscriptions.trial_used`). 결제수단이 없으니 체험이 끝나면 기존
+갱신 크론이 스스로 "카드 없음" 으로 판단해 `past_due` 로 떨어뜨린다 —
+체험판을 끝내는 별도 로직이 없다. Supabase SQL Editor 에서
+`docs/sql/2026-09-premium-trial.sql` 을 한 번 실행해야 한다(안 돌리면
+체험 버튼을 눌러도 500).
 
 **지금 상태: Toss 시크릿이 아직 안 들어가 있어서 실제 결제는 안 된다.**
 카드 등록 버튼(설정 화면)을 누르면 서버가 `TOSS_SECRET_KEY` 를 못 찾아

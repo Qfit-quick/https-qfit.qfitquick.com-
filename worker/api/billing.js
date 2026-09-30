@@ -1,10 +1,12 @@
 // Server-only Toss Payments Billing API. Do not import from src/.
 // Required Worker secrets: TOSS_SECRET_KEY, TOSS_CLIENT_KEY, SUPABASE_URL,
 // SUPABASE_SECRET_KEY, SUPABASE_PUBLISHABLE_KEY.
+// 2026-09-30: 2,400원 → 1,900원. kakaoBilling.js 의 PLAN 도 같이 바꿔야
+// 한다 — 이 파일 값만 바꾸면 결제수단마다 가격이 달라진다.
 const PLAN = Object.freeze({
   id: "premium_monthly",
   name: "Q-fit Premium (monthly)",
-  amount: 2400,
+  amount: 1900,
 });
 const TOSS = "https://api.tosspayments.com";
 // reply/requireUser/supabase/getCustomer/markPastDue 는 Toss 전용이 아니라
@@ -105,10 +107,12 @@ async function prepare(env, user) {
   });
 }
 
+const SUBSCRIPTION_FIELDS = "id,status,current_period_start,current_period_end,billing_anchor_day,payment_retry_count,next_retry_at,trial_used";
+
 async function ensureSubscription(env, userId) {
   const rows = await supabase(
     env,
-    `subscriptions?user_id=eq.${userId}&select=id,status,current_period_start,current_period_end,billing_anchor_day,payment_retry_count,next_retry_at`,
+    `subscriptions?user_id=eq.${userId}&select=${SUBSCRIPTION_FIELDS}`,
   );
   if (rows[0]) return rows[0];
   try {
@@ -126,7 +130,7 @@ async function ensureSubscription(env, userId) {
     if (error.status !== 409 && error.code !== "23505") throw error;
     const rows = await supabase(
       env,
-      `subscriptions?user_id=eq.${userId}&select=id,status,current_period_start,current_period_end,billing_anchor_day,payment_retry_count,next_retry_at`,
+      `subscriptions?user_id=eq.${userId}&select=${SUBSCRIPTION_FIELDS}`,
     );
     if (rows[0]) return rows[0];
     throw error;
@@ -440,6 +444,35 @@ async function authorize(request, env, user) {
   );
 }
 
+// 무료 체험(2026-09-30) — 결제수단을 안 묻는다. subscriptions 를 그냥
+// active 로, 기간을 1개월로 박아 둔다. 기간이 끝나면 결제수단이 없으니
+// renewDueSubscriptions() 의 기존 "customer?.billing_key 없음" 분기가
+// 그대로 markPastDue 로 떨어뜨린다 — 체험판을 "끝내는" 로직을 따로 안
+// 만들어도 된다. trial_used 로 한 사람당 한 번만 준다(탈퇴·재가입까지
+// 막지는 못한다 — 이메일 기반 서비스의 일반적인 한계다).
+async function startTrial(env, user) {
+  const sub = await ensureSubscription(env, user.id);
+  if (sub.trial_used) return reply({ error: "Trial already used." }, 409);
+  if (sub.status === "active") return reply({ status: "active", duplicate: true });
+  const start = new Date();
+  const end = new Date(start);
+  end.setUTCMonth(end.getUTCMonth() + 1);
+  const updated = await supabase(env, `subscriptions?user_id=eq.${user.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      status: "active",
+      current_period_start: start.toISOString(),
+      current_period_end: end.toISOString(),
+      trial_used: true,
+      cancel_at_period_end: false,
+      payment_retry_count: 0,
+      next_retry_at: null,
+    }),
+  });
+  const row = updated[0] || {};
+  return reply({ status: row.status, currentPeriodEnd: row.current_period_end });
+}
+
 async function setCancelFlag(env, user, cancel) {
   const rows = await supabase(
     env,
@@ -473,12 +506,14 @@ export async function handleBillingRequest(request, env) {
       return prepare(env, user);
     if (request.method === "POST" && path === "/api/billing/authorize")
       return authorize(request, env, user);
+    if (request.method === "POST" && path === "/api/billing/trial/start")
+      return startTrial(env, user);
     if (request.method === "GET" && path === "/api/billing/status") {
       const rows = await supabase(
         env,
-        `subscriptions?user_id=eq.${user.id}&select=status,current_period_end,cancel_at_period_end`,
+        `subscriptions?user_id=eq.${user.id}&select=status,current_period_end,cancel_at_period_end,trial_used`,
       );
-      return reply(rows[0] || { status: "none" });
+      return reply(rows[0] || { status: "none", trial_used: false });
     }
     if (request.method === "POST" && path === "/api/billing/cancel") {
       const { cancel } = await request.json().catch(() => ({}));

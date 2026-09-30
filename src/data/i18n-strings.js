@@ -638,6 +638,10 @@ export const STATIC_UI = {
  premiumStartBtn: {ko:'✨ 프리미엄 시작하기', en:'✨ Start Premium', zh:'✨ 开通高级会员'},
  premiumPriceUnit: {ko:'/ 월', en:'/ mo', zh:'/ 月'},
  premiumFineprint: {ko:'등록한 카드로 매달 자동 결제돼요', en:'Your card will be charged automatically every month.', zh:'将从已登记的银行卡每月自动扣款。'},
+ // 1개월 무료 체험(2026-09-30) — 결제수단 등록 없이 바로 시작, 계정당 한 번.
+ premiumTrialBtn: {ko:'1개월 무료 체험 시작하기', en:'Start 1-month free trial', zh:'开始1个月免费试用'},
+ premiumTrialDone: {ko:'무료 체험이 시작됐어요! 1개월 뒤 자동으로 끝나요(결제수단 없이는 계속 청구되지 않아요)', en:"Your free trial has started! It ends automatically in a month (no card means no charge after that).", zh:'免费试用已开始！1个月后自动结束（未绑定支付方式不会继续扣费）'},
+ premiumTrialFailed: {ko:'체험판은 계정당 한 번만 이용할 수 있어요', en:'The free trial can only be used once per account', zh:'免费试用每个账户只能使用一次'},
  // Toss 카드 등록(2026-09-25, ui/billing.js) — 위 프리미엄 덮개도 이제
  // 같은 흐름을 탄다(2026-09-26).
  billingLoginRequired: {ko:'로그인 후 이용할 수 있어요', en:'Please log in first', zh:'请先登录'},
@@ -763,7 +767,7 @@ export const STATIC_UI = {
  legalTermsAccountHead: {ko:'회원가입 및 탈퇴', en:'Signup and withdrawal', zh:'注册与退出'},
  legalTermsAccountBody: {ko:'이메일로 회원가입하며, 별도 절차 없이 설정 화면에서 언제든 탈퇴(데이터 삭제)할 수 있습니다.', en:'You sign up with an email address, and may leave (delete your data) at any time from Settings with no separate procedure.', zh:'使用邮箱注册，可随时在设置中退出（删除数据），无需额外流程。'},
  legalTermsBillingHead: {ko:'유료 구독', en:'Paid subscription', zh:'付费订阅'},
- legalTermsBillingBody: {ko:'프리미엄은 월 단위 정기결제이며, 결제는 Toss Payments를 통해 처리됩니다. 해지는 설정 화면에서 즉시 가능하고, 해지 후에는 다음 결제일부터 청구되지 않습니다. 이미 결제된 기간의 환불은 전자상거래 등에서의 소비자보호에 관한 법률 등 관련 법령을 따릅니다.', en:'Premium is billed monthly, processed through Toss Payments. You can cancel instantly from Settings; after cancelling, you will not be charged from the next billing date. Refunds for an already-paid period follow applicable consumer protection law (e.g. the Act on Consumer Protection in Electronic Commerce).', zh:'高级版为按月定期付款，通过 Toss Payments 处理。可在设置中立即解约，解约后从下一个扣款日起不再收费。已付款期间的退款依照电子商务消费者保护相关法律执行。'},
+ legalTermsBillingBody: {ko:'프리미엄은 월 단위 정기결제이며, 결제는 Toss Payments 또는 카카오페이를 통해 처리됩니다. 신규 이용자는 결제수단 등록 없이 1개월 무료 체험을 계정당 한 번 이용할 수 있으며, 체험 기간이 끝나면 결제수단이 없는 한 자동으로 청구되지 않습니다. 해지는 설정 화면에서 즉시 가능하고, 해지 후에는 다음 결제일부터 청구되지 않습니다. 이미 결제된 기간의 환불은 전자상거래 등에서의 소비자보호에 관한 법률 등 관련 법령을 따릅니다.', en:'Premium is billed monthly, processed through Toss Payments or Kakao Pay. New users may use a one-month free trial once per account with no payment method required; if no payment method is on file when the trial ends, you will not be charged automatically. You can cancel instantly from Settings; after cancelling, you will not be charged from the next billing date. Refunds for an already-paid period follow applicable consumer protection law (e.g. the Act on Consumer Protection in Electronic Commerce).', zh:'高级版为按月定期付款，通过 Toss Payments 或 Kakao Pay 处理。新用户每个账户可免费试用1个月，无需绑定支付方式；试用期结束时若未绑定支付方式，不会自动扣费。可在设置中立即解约，解约后从下一个扣款日起不再收费。已付款期间的退款依照电子商务消费者保护相关法律执行。'},
  legalTermsDutyHead: {ko:'이용자의 의무', en:'User obligations', zh:'用户义务'},
  legalTermsDutyBody: {ko:'정확한 정보를 입력하고, 계정을 본인 외의 사람과 공유하거나 부정한 방법으로 서비스를 이용하지 않습니다.', en:'Enter accurate information, and do not share your account with others or use the Service through improper means.', zh:'应填写准确信息，不与他人共享账户，不以不正当方式使用本服务。'},
  legalTermsDisclaimerHead: {ko:'면책조항', en:'Disclaimer', zh:'免责声明'},
