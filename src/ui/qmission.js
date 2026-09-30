@@ -10,7 +10,7 @@
 // 동기화·병합 로직을 지고 있어서, 평가하지 않기로 한 이 점수를 거기
 // 섞으면 그 복잡도를 그대로 물려받는다.
 import { QM_CATEGORIES, QM_MISSIONS, QM_POINTS_PER_MISSION, QM_DAILY_PICK_COUNT, QM_DAILY_HEALTH_PICK_COUNT } from '../data/qmissions.js';
-import { dayKey } from '../health/store.js';
+import { dayKey, shiftDay } from '../health/store.js';
 import { ICON } from './icons.js';
 
 let t = (o) => (o && o.ko) || '';
@@ -85,17 +85,44 @@ function picksForDate(dateStr) {
 function missionByKey(key) { return QM_MISSIONS.find((m) => m.key === key); }
 function categoryByKey(key) { return QM_CATEGORIES.find((c) => c.key === key); }
 
+// 2026-09-29 "일주일 것도 보이게" 요청 전에는 오늘 하루치 {date, done}
+// 만 저장했다 — 날짜가 바뀌면 완료 표시가 통째로 사라져서, 지난 며칠에
+// 뭘 골랐고 뭘 했는지 다시 볼 방법이 없었다. 날짜별 완료 목록을 두는
+// 걸로 바꾼다. 추천 자체(어떤 미션 3개였는지)는 그대로 picksForDate()
+// 가 날짜만으로 다시 계산하므로 안 쌓아 둬도 된다 — 쌓아 두는 건 "그중
+// 뭘 체크했는지"뿐이다.
+const HISTORY_DAYS_KEPT = 60; // 무한정 안 늘어나게. 주간 보기는 7일이면 된다.
+
+function loadHistory() {
+  const saved = read(TODAY_KEY, null);
+  if (saved && saved.history && typeof saved.history === 'object') return saved.history;
+  // 옛 판({date, done}) 을 만나면 그 하루치만 이어받는다 — 버리면 오늘
+  // 이미 체크한 게 날아간다.
+  if (saved && saved.date && Array.isArray(saved.done)) return { [saved.date]: saved.done };
+  return {};
+}
+function saveHistory(history) {
+  const keys = Object.keys(history).sort();
+  if (keys.length > HISTORY_DAYS_KEPT) {
+    keys.slice(0, keys.length - HISTORY_DAYS_KEPT).forEach((k) => delete history[k]);
+  }
+  write(TODAY_KEY, { history });
+}
+
+function doneForDate(dateStr) {
+  const history = loadHistory();
+  return Array.isArray(history[dateStr]) ? history[dateStr] : [];
+}
+
 function loadToday() {
   const today = dayKey();
-  const saved = read(TODAY_KEY, null);
-  // 날짜가 바뀌었으면(자정을 넘겨 켜 둔 채였거나 다음날 처음 열었거나)
-  // 완료 표시만 새로 비운다 — 추천 자체는 picksForDate() 가 날짜로부터
-  // 다시 계산하므로 따로 저장할 게 없다.
-  if (!saved || saved.date !== today) return { date: today, done: [] };
-  if (!Array.isArray(saved.done)) saved.done = [];
-  return saved;
+  return { date: today, done: doneForDate(today) };
 }
-function saveToday(next) { write(TODAY_KEY, next); }
+function saveToday(next) {
+  const history = loadHistory();
+  history[next.date] = next.done;
+  saveHistory(history);
+}
 
 function monthKeyOf(dateStr) { return dateStr.slice(0, 7); }
 
@@ -133,6 +160,77 @@ function thisMonthTally() {
   const rows = QM_CATEGORIES.map((c) => ({ ...c, count: bucket[c.key] || 0 }));
   const total = rows.reduce((sum, r) => sum + r.count, 0);
   return { rows, total, totalQ: impact.totalQ };
+}
+
+// ── 이번 주 ───────────────────────────────────────────────────
+// 오늘이 든 월~일 이레 — 홈 화면 week-strip("이번 주")과 같은 기준으로
+// 맞춘다. picksForDate() 는 날짜만 있으면 언제든 같은 결과를 다시
+// 계산하므로, 지난 날뿐 아니라 이번 주 안의 앞으로 올 날도 미리 보여줄
+// 수 있다 — 다만 완료 표시는 실제로 그 날을 산 기록(doneForDate)에서만
+// 나온다.
+let selectedWeekDate = null; // 주간 스트립에서 고른 날짜. null 이면 안 펼친 상태.
+
+// programs.js 의 formatDate() 와 같은 방식 — 이 앱에서 날짜 하나를 보여줄
+// 때 쓰는 정해진 모양이다.
+function formatWeekDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return t({
+    ko: `${m}월 ${d}일`,
+    en: dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    zh: `${m}月${d}日`,
+  });
+}
+
+function weekDates() {
+  const today = dayKey();
+  const mondayOffset = (new Date().getDay() + 6) % 7; // 월=0 … 일=6
+  const monday = shiftDay(today, -mondayOffset);
+  return Array.from({ length: 7 }, (_, i) => shiftDay(monday, i));
+}
+
+function renderWeekSection() {
+  const strip = el('qmission-week-strip');
+  const detail = el('qmission-week-detail');
+  if (!strip) return;
+  const today = dayKey();
+  const dow = t({ ko: ['월', '화', '수', '목', '금', '토', '일'], en: ['M', 'T', 'W', 'T', 'F', 'S', 'S'], zh: ['一', '二', '三', '四', '五', '六', '日'] });
+
+  strip.innerHTML = weekDates().map((date, i) => {
+    const picks = picksForDate(date);
+    const doneKeys = doneForDate(date);
+    const doneCount = picks.filter((m) => doneKeys.includes(m.key)).length;
+    const isToday = date === today;
+    const isFuture = date > today;
+    const state = isToday ? 'today' : isFuture ? 'future' : (doneCount === picks.length ? 'done' : 'miss');
+    const dotContent = doneCount === picks.length && picks.length > 0 ? ICON.check : (doneCount > 0 ? String(doneCount) : '');
+    const on = date === selectedWeekDate ? ' on' : '';
+    return `<button class="week-day ${state}${on}" type="button" data-date="${esc(date)}" aria-pressed="${date === selectedWeekDate}">` +
+      `<span class="wd-label">${esc(dow[i])}</span>` +
+      `<span class="wd-dot">${dotContent}</span>` +
+      '</button>';
+  }).join('');
+
+  if (!detail) return;
+  if (!selectedWeekDate) {
+    detail.innerHTML = '';
+    detail.hidden = true;
+    return;
+  }
+  detail.hidden = false;
+  const picks = picksForDate(selectedWeekDate);
+  const doneKeys = doneForDate(selectedWeekDate);
+  const label = formatWeekDate(selectedWeekDate);
+  detail.innerHTML =
+    `<p class="qm-week-detail-date">${esc(label)}</p>` +
+    '<ul class="qm-card-list">' +
+    picks.map((m) => {
+      const on = doneKeys.includes(m.key);
+      return `<li class="qm-card-row${on ? ' on' : ''}">` +
+        `<span class="qm-card-mark" aria-hidden="true">${on ? ICON.check : ''}</span>` +
+        `<span>${esc(t(m.label))}</span></li>`;
+    }).join('') +
+    '</ul>';
 }
 
 // ── 홈 카드 ───────────────────────────────────────────────────
@@ -200,7 +298,11 @@ function renderImpactSection() {
 }
 
 export function renderQMissionScreen() {
+  // 화면에 새로 들어올 때마다 펼침 상태를 접어 둔다 — 어제 펼쳐 뒀던
+  // 날짜가 다음에 열었을 때도 그대로 펼쳐져 있으면 어색하다.
+  selectedWeekDate = null;
   renderMissionList();
+  renderWeekSection();
   renderImpactSection();
 }
 
@@ -224,8 +326,18 @@ export function initQMission({ translate, STATIC_UI, onShowScreen } = {}) {
     if (!btn) return;
     toggleMission(btn.dataset.mission);
     renderMissionList();
+    renderWeekSection();
     renderImpactSection();
     renderQMissionCard();
+  });
+
+  // 이번 주 스트립 — 같은 날을 다시 누르면 접는다(토글), 다른 날을
+  // 누르면 그 날로 바뀐다.
+  el('qmission-week-strip')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-date]');
+    if (!btn) return;
+    selectedWeekDate = selectedWeekDate === btn.dataset.date ? null : btn.dataset.date;
+    renderWeekSection();
   });
 
   document.addEventListener('qfit:lang', () => {

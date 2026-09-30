@@ -50,8 +50,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-DH9ygNfc.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-C3z2z2_j.css">
+  <script type="module" crossorigin src="./assets/index-2U7uR0ne.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-gvA9jUHy.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -910,6 +910,13 @@
  <div class="week-title" data-i18n="qmTodayLabel">오늘의 미션</div>
  <div class="log-check" id="qmission-list"></div>
 
+ <!-- 이번 주(2026-09-29 요청 "일주일 것도 보이게"). 날짜를 누르면 그
+      날의 미션 3개가 아래 펼쳐진다 — 홈 week-strip 과 같은 칸 모양을
+      재사용한다(src/styles/screens.css 의 .week-day, 새 CSS 없음). -->
+ <div class="week-title" data-i18n="qmWeekTitle">이번 주</div>
+ <div class="week-strip" id="qmission-week-strip"></div>
+ <div id="qmission-week-detail" hidden></div>
+
  <div class="card">
  <div class="week-title" data-i18n="qmImpactTitle">이번 달 Q-Impact</div>
  <div id="qmission-impact"></div>
@@ -1252,6 +1259,10 @@
  <div id="account-signup-form" class="auth-form" style="display:none;">
  <input type="email" id="account-signup-email" class="auth-input" placeholder="이메일" data-i18n-placeholder="loginEmailPlaceholder" autocomplete="email">
  <input type="password" id="account-signup-pw" class="auth-input" placeholder="비밀번호 (6자리 이상)" data-i18n-placeholder="signupPwPlaceholder" autocomplete="new-password">
+ <!-- 비밀번호 확인(2026-09-30 요청) — 오타로 자기 비밀번호를 잘못 만드는
+      것을 여기서 막는다. 서버는 이 값을 모른다(요청에 안 실어 보낸다) —
+      순전히 클라이언트에서 둘이 같은지만 본다. -->
+ <input type="password" id="account-signup-pw2" class="auth-input" placeholder="비밀번호 확인" data-i18n-placeholder="signupPw2Placeholder" autocomplete="new-password">
  <button class="primary" id="account-signup-btn" data-i18n="signupBtn">회원가입</button>
  <div class="auth-error" id="account-signup-error"></div>
  </div>
@@ -1931,6 +1942,6 @@
  </div>
  </div>
 </div>
-
+
 </body>
 </html>

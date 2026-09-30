@@ -438,6 +438,8 @@
    목록(2026-09-27 가독성 요청). .tc-open 버튼과는 위아래로 붙지 않게
    margin 을 둔다. */
 .qm-card-list { display: flex; flex-direction: column; gap: var(--s-1); margin: var(--s-2) 0 var(--s-3); }
+/* 이번 주 스트립에서 날짜를 눌러 펼친 자리의 날짜 제목(2026-09-29). */
+.qm-week-detail-date { font-weight: 700; margin: var(--s-3) 0 var(--s-1); }
 .qm-card-row { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-sm); color: var(--text-dim); }
 .qm-card-row.on { color: var(--text); }
 .qm-card-mark {

@@ -4974,6 +4974,7 @@ try{
  try{
  const email = document.getElementById('account-signup-email').value.trim();
  const pw = document.getElementById('account-signup-pw').value;
+ const pw2 = document.getElementById('account-signup-pw2').value;
  errEl.style.color = '#ff6b5b';
  errEl.textContent = '처리 중...';
  if(!email){ errEl.textContent = '이메일을 입력해주십시오.'; return; }
@@ -4981,6 +4982,10 @@ try{
  const sb = await getSupabase();
  if(!sb){ errEl.textContent = '연결에 실패했어요. 페이지를 새로고침해서 다시 시도해주십시오.'; return; }
  if(pw.length < 6){ errEl.textContent = '비밀번호는 6자리 이상이어야 합니다.'; return; }
+ // 비밀번호 확인(2026-09-30) — 서버에 물어보기 전에 여기서 막는다.
+ // 오타로 자기도 모르는 비밀번호를 만드는 것을 막는 게 목적이라,
+ // 네트워크를 타기 전에 걸러야 뜻이 있다.
+ if(pw !== pw2){ errEl.textContent = '비밀번호가 서로 달라요. 다시 확인해주십시오.'; return; }
  const { data, error } = await sb.auth.signUp({ email, password: pw });
  if(error) throw error;
  if(!data.session){

@@ -683,6 +683,8 @@ export const STATIC_UI = {
  qmCardOpenBtn: {ko:'미션 보기', en:'View missions', zh:'查看任务'},
  qmScreenTitle: {ko:'Q-Mission', en:'Q-Mission', zh:'Q-Mission'},
  qmTodayLabel: {ko:'오늘의 미션', en:"Today's missions", zh:'今天的行动'},
+ // 이번 주 스트립(2026-09-29) — 날짜를 누르면 그 날의 미션 3개가 펼쳐진다.
+ qmWeekTitle: {ko:'이번 주', en:'This week', zh:'本周'},
  qmImpactTitle: {ko:'이번 달 Q-Impact', en:"This month's Q-Impact", zh:'本月 Q-Impact'},
  qmImpactNarrative: {ko:'이번 달 %s개의 행동을 실천했습니다.', en:'%s action(s) taken this month.', zh:'本月你已实践了%s次行动。'},
  qmImpactEmpty: {ko:'아직 이번 달 기록이 없어요 — 하나만 체크해도 여기에 쌓입니다', en:'No records yet this month — check even one off and it starts showing up here.', zh:'本月还没有记录 — 只要勾选一项，这里就会开始累积。'},
@@ -721,6 +723,7 @@ export const STATIC_UI = {
  loginEmailPlaceholder: {ko:'이메일', en:'Email', zh:'邮箱'},
  loginPwPlaceholder: {ko:'비밀번호', en:'Password', zh:'密码'},
  signupPwPlaceholder: {ko:'비밀번호 (6자리 이상)', en:'Password (6+ characters)', zh:'密码（至少6位）'},
+ signupPw2Placeholder: {ko:'비밀번호 확인', en:'Confirm password', zh:'确认密码'},
 
  // 알 성장 창
  petNext: {ko:'다음 진화까지 %s XP', en:'%s XP to the next evolution', zh:'距离下次进化还需 %s XP'},
