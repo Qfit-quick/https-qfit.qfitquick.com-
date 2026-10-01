@@ -13,7 +13,8 @@
 //     그 순간이 며칠씩 안 온다.
 //
 // 그래서 두 가지를 여기서 한다: 앱이 앞으로 돌아올 때마다 새 판이 있는지
-// 직접 묻고(update), 새 워커가 제어권을 가져가면 화면을 다시 띄운다.
+// 직접 묻고(update), 새 워커가 제어권을 가져가면 — 화면이 안 보이게 된
+// 다음에 — 화면을 다시 띄운다.
 //
 // sw.js 는 skipWaiting + clientsClaim 이라 새 워커가 곧바로 제어권을
 // 가져간다. 그런데 그것만으로는 **떠 있는 화면은 안 바뀐다** — 옛 HTML 과
@@ -39,21 +40,31 @@ export function initUpdate() {
     applyWhenSafe();
   });
 
-  // 운동 중에는 다시 띄우지 않는다. 세트 한가운데서 화면이 처음으로
+  // 다시 띄우는 것은 **화면이 안 보일 때만** 한다(2026-10-01) — 앱을 내리거나
+  // 다른 탭으로 갔을 때. 예전엔 새 판을 받자마자 다시 띄웠는데, 그 순간이
+  // 대개 앱을 막 연 직후라 명언 카드(ui/gate.js)가 뜬 채였다. 사용자에게는
+  // "명언을 눌렀더니 화면이 깜빡이고 명언이 또 뜬다"로 보였다. 안 보일 때
+  // 다시 띄우면 아무도 그 순간을 못 보고, 돌아오면 새 판이 떠 있다.
+  //
+  // 운동 중에도 다시 띄우지 않는다. 세트 한가운데서 화면이 처음으로
   // 돌아가면 새 판을 받은 것보다 잃는 것이 크다. body.immersive 가
   // 그 상태를 이미 들고 있다(ui/nav.js 의 paint).
   function applyWhenSafe() {
-    if (!document.body.classList.contains('immersive')) {
+    const safe = () => document.visibilityState === 'hidden'
+      && !document.body.classList.contains('immersive');
+    if (safe()) { location.reload(); return; }
+    const tryNow = () => {
+      if (!safe()) return;
+      document.removeEventListener('visibilitychange', tryNow);
+      window.removeEventListener('pagehide', tryNow);
+      watch.disconnect();
       location.reload();
-      return;
-    }
-    // 운동이 끝나 immersive 가 걷히는 순간을 기다린다.
-    const stop = new MutationObserver(() => {
-      if (document.body.classList.contains('immersive')) return;
-      stop.disconnect();
-      location.reload();
-    });
-    stop.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    };
+    document.addEventListener('visibilitychange', tryNow);
+    window.addEventListener('pagehide', tryNow);
+    // 숨겨진 채로 운동이 끝나는 경우(드물다)까지 놓치지 않는다.
+    const watch = new MutationObserver(tryNow);
+    watch.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
 
   function check() {

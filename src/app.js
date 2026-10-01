@@ -1618,12 +1618,17 @@ function stripAuthReturnParams(){
 // 로그인 복귀가 실패했을 때 — 계정 화면을 열고 이유를 그 자리와 토스트
 // 양쪽에 적는다. 예전엔 실패해도 아무 말 없이 첫 화면에 남아서
 // "로그인 누르면 첫 화면으로 돌아온다"로만 보였다.
-function showAuthReturnError(msg){
+//
+// detail 은 Supabase·제공자가 준 원문 사유다. 화면 문구 밑에 그대로 붙인다 —
+// 휴대폰에선 콘솔을 볼 수 없어서, 사용자가 이 줄을 알려 줘야 원인을
+// 짚을 수 있다(네이버 로그인을 이걸로 추적했다, 2026-10-01).
+function showAuthReturnError(msg, detail){
  showScreen(accountScreen);
  showAccountSubForm('login');
  ['account-login-error', 'account-signup-error'].forEach(id => {
  const el = document.getElementById(id);
- if(el){ el.style.color = ''; el.textContent = msg; }
+ if(el){ el.style.color = ''; el.textContent = detail ? msg + '
+(' + String(detail).slice(0, 160) + ')' : msg; el.style.whiteSpace = 'pre-line'; }
  });
  toast(msg);
 }
@@ -1692,7 +1697,7 @@ async function checkSupabaseSession(){
  }else if(!user){
  showAuthReturnError(/flow state|expired|already|invalid/i.test(exchangeError?.message || '')
  ? t(STATIC_UI.authLinkExpired)
- : t(STATIC_UI.socialLoginFailed));
+ : t(STATIC_UI.socialLoginFailed), exchangeError?.message);
  }
  if(!user) return;
  }
@@ -1710,7 +1715,7 @@ async function checkSupabaseSession(){
  if(codeReturning) showScreen(startScreen);
  }catch(e){
  console.error('session check failed:', e);
- if(codeReturning){ stripAuthReturnParams(); showAuthReturnError(t(STATIC_UI.socialLoginFailed)); }
+ if(codeReturning){ stripAuthReturnParams(); showAuthReturnError(t(STATIC_UI.socialLoginFailed), e && e.message); }
  }
 }
 
@@ -5314,13 +5319,13 @@ try{
  stripAuthReturnParams();
  // 메일 링크(가입 인증·재설정)가 만료됐거나 이미 쓰였다 — error 는
  // access_denied 로 같이 오므로 '취소'보다 먼저 본다.
- if(/otp_expired/.test(params.get('error_code') || '') || /expired|invalid/i.test(desc)) showAuthReturnError(t(STATIC_UI.authLinkExpired));
+ if(/otp_expired/.test(params.get('error_code') || '') || /expired|invalid/i.test(desc)) showAuthReturnError(t(STATIC_UI.authLinkExpired), desc || err);
  // 카카오·네이버가 이메일을 안 넘겨주면 Supabase 가 계정을 못 만든다
  // ("Error getting user email from external provider").
- else if(/user email|email from/i.test(desc)) showAuthReturnError(t(STATIC_UI.socialLoginNeedEmail));
+ else if(/user email|email from/i.test(desc)) showAuthReturnError(t(STATIC_UI.socialLoginNeedEmail), desc || err);
  // 제공자 화면에서 '취소'·'동의 안 함'을 누른 것은 오류가 아니다.
  else if(err === 'access_denied') toast(t(STATIC_UI.socialLoginCancelled));
- else showAuthReturnError(t(STATIC_UI.socialLoginFailed));
+ else showAuthReturnError(t(STATIC_UI.socialLoginFailed), desc || err);
  }
 }catch(e){ console.error('oauth error check failed:', e); }
 
