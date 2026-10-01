@@ -282,6 +282,15 @@ Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-kakao-billing.sql`
    - 대시보드가 보여 주는 **Callback URL** 을 복사해 2번의 네이버 앱
      설정에도 등록돼 있는지 다시 확인한다.
 
+**scope 에 `email` 을 넣으면 안 된다**(2026-10-01). 네이버는
+`openid`·`profile` 만 받고, `email` 이 섞이면 로그인 화면도 안 띄우고
+곧장 `invalid_scope` 로 돌려보낸다. 사용자에게는 "네이버를 누르면 첫
+화면으로 돌아온다"로 보였다. 지금 대시보드 설정은 `openid profile email`
+을 보내고 있어서, 앱(`src/app.js` 의 `startSocialSignIn`)이 네이버일 때만
+`scopes: 'openid profile'` 로 덮어쓴다. 대시보드의 Scopes 칸도
+`openid profile` 로 고쳐 두면 둘이 어긋날 일이 없다. 이메일은 scope 가
+아니라 네이버 앱의 '제공 정보' 설정으로 오고, 아래 중계가 받아 넘긴다.
+
 **왜 중계가 필요한가**: 네이버의 실제 사용자 정보 주소
 (`openapi.naver.com/v1/nid/me`)는 `{resultcode, message, response: {id,
 email, ...}}` 처럼 진짜 필드를 `response` 로 한 번 더 감싸서 돌려준다.

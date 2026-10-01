@@ -5174,7 +5174,16 @@ async function startSocialSignIn(provider, button){
  const sb = await getSupabase();
  if(!sb){ if(errEl) errEl.textContent = '연결에 실패했어요. 페이지를 새로고침해서 다시 시도해주십시오.'; return; }
  const redirectTo = location.origin + location.pathname;
- const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo } });
+ const options = { redirectTo };
+ // 네이버는 scope 에 email 이 있으면 로그인 화면도 안 보여 주고 곧장
+ // invalid_scope 로 돌려보낸다 — "네이버를 누르면 첫 화면으로 돌아온다"가
+ // 이것이었다(2026-10-01). Supabase 대시보드의 커스텀 제공자 설정이
+ // 'openid profile email' 을 보내므로, 여기서 넘기는 scopes 로 덮어쓴다
+ // (Supabase 는 이 값을 더하지 않고 그대로 대신 쓴다). 이메일은 scope 가
+ // 아니라 네이버 앱의 '제공 정보' 설정으로 오고, worker/api/naverAuth.js
+ // 가 /v1/nid/me 에서 받아 넘긴다.
+ if(provider === 'custom:naver') options.scopes = 'openid profile';
+ const { error } = await sb.auth.signInWithOAuth({ provider, options });
  if(error) throw error;
  // 성공하면 브라우저가 그 제공자 페이지로 완전히 넘어가므로 여기
  // 이후 코드는 보통 실행되지 않는다 — 아래 catch 는 리다이렉트 자체가
