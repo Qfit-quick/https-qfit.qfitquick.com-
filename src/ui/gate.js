@@ -32,9 +32,34 @@ const answer = { mood: null, drive: null };
 
 function el(id) { return document.getElementById(id); }
 
+// "이 탭에서 방금 본 명언"(2026-10-01). 명언이 두 번 뜨는 일이 잦았다 —
+// 관문을 걷자마자 페이지가 새로 열리는 경우가 셋이나 있어서다:
+//  - 새 판 자동 새로고침(pwa/update.js) — 앱을 열 때 새 판이 있으면 곧장
+//    다시 띄운다. 배포가 잦은 날엔 열 때마다 이게 걸린다.
+//  - 간편 로그인·결제(Toss·카카오페이)에서 돌아올 때 — 다른 사이트에 갔다
+//    오는 것이라 페이지가 처음부터 다시 뜬다.
+//  - 사람이 한 새로고침.
+// 그래서 명언을 걷은 지 얼마 안 됐으면 관문을 다시 세우지 않고, 보던 중에
+// 새로 열렸으면 새로 뽑지 않고 보던 명언을 그대로 다시 보여 준다.
+// sessionStorage 라 앱(탭)을 닫았다 다시 열면 비워진다 — "열 때마다 새
+// 명언"(2026-09-15 요청)은 그대로다.
+const SEEN_KEY = 'qfit_gate_seen_v1';
+const RECENT_MS = 30 * 60 * 1000;
+
+function loadSeen() {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(SEEN_KEY) || 'null');
+    return v && typeof v === 'object' ? v : null;
+  } catch (e) { return null; }
+}
+function saveSeen(patch) {
+  try { sessionStorage.setItem(SEEN_KEY, JSON.stringify({ ...(loadSeen() || {}), ...patch })); } catch (e) { /* 시크릿 모드 등 — 예전처럼 매번 뜰 뿐이다 */ }
+}
+
 function dismiss() {
   const gate = el('gate');
   if (!gate) return;
+  saveSeen({ dismissedAt: Date.now() });
   gate.classList.add('leaving');
   // 투명해진 뒤에 지운다. 남겨 두면 화면 전체를 덮은 채라 아무것도 못 누른다.
   setTimeout(() => gate.remove(), 320);
@@ -205,14 +230,33 @@ export function initGate({ translate, STATIC_UI, onEnter } = {}) {
   // 읽어 가는 것도 방금 여기서 뽑은 것과 같아진다.
   if (hasCheckin(today)) {
     try {
+      const seen = loadSeen();
+      const now = Date.now();
+      const sameDay = seen && seen.day === today;
+      // 방금 보고 걷은 명언이다 — 관문을 세우지 않는다(위 SEEN_KEY 설명).
+      if (sameDay && seen.dismissedAt && now - seen.dismissedAt < RECENT_MS) {
+        gate.remove();
+        if (typeof onDone === 'function') {
+          const cb = onDone;
+          onDone = null;
+          try { cb(); } catch (e) { console.error('gate done callback failed:', e); }
+        }
+        return false;
+      }
+
       gate.hidden = false;
       document.body.classList.add('gated');
 
       const day = loadDay(today);
       answer.mood = day.mood;
       answer.drive = day.drive;
-      const q = randomQuote(toneFor(day.mood, day.drive));
+      // 보던 중에 페이지가 새로 열렸다 — 그 명언을 그대로 다시 보여 준다.
+      const again = (sameDay && !seen.dismissedAt && now - (seen.shownAt || 0) < RECENT_MS)
+        ? QUOTES.find((x) => x.id === seen.quoteId)
+        : null;
+      const q = again || randomQuote(toneFor(day.mood, day.drive));
       renderQuote(q);
+      if (!again) saveSeen({ day: today, quoteId: q.id, shownAt: now, dismissedAt: null });
       saveCheckin(today, { mood: day.mood, drive: day.drive, quoteId: q.id });
       paintAdvice();
 
@@ -254,6 +298,7 @@ export function initGate({ translate, STATIC_UI, onEnter } = {}) {
         // 답과 뽑힌 명언을 그날 줄에 적는다. 기록지에서 "그날 기분이 어땠나"
         // 를 되돌아볼 수 있어야 설문이 버려지는 질문이 아니게 된다.
         saveCheckin(today, { mood: answer.mood, drive: answer.drive, quoteId: q.id });
+        saveSeen({ day: today, quoteId: q.id, shownAt: Date.now(), dismissedAt: null });
         showStep('quote');
       }, driveUrl)));
     }
