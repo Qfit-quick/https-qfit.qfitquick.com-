@@ -282,6 +282,30 @@ Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-kakao-billing.sql`
    - 대시보드가 보여 주는 **Callback URL** 을 복사해 2번의 네이버 앱
      설정에도 등록돼 있는지 다시 확인한다.
 
+**⚠ 2026-10-01 현재 대시보드 설정이 위 4번과 다르다 — 이게 네이버 로그인이
+안 되는 원인이다.** 대시보드의 Naver 제공자가 **Auto-discovery**
+(Issuer `https://nid.naver.com`)로 등록돼 있다. 그러면 Supabase 가 네이버의
+공개 설정에서 사용자 정보 주소를 네이버 원래 주소
+(`openapi.naver.com/v1/nid/me`)로 가져다 쓰고, 이메일이 `response` 안에
+감싸여 있어 못 찾는다. 앱에는 `Error getting user email from external
+provider` 로 돌아온다. 실제 크롬에서 네이버 로그인을 끝까지 돌려 이 사유를
+확인했다. 예전엔 이 안내가 '새 판 즉시 새로고침'에 지워져서 "누르면 첫
+화면으로 돌아온다"로만 보였다.
+
+고치는 법 — Authentication → Sign In / Providers → Custom Providers →
+Naver → **Configuration Method 를 Manual configuration** 으로 바꾸고:
+
+| 칸 | 값 |
+| --- | --- |
+| Authorization URL | `https://nid.naver.com/oauth2.0/authorize` |
+| Token URL | `https://nid.naver.com/oauth2.0/token` |
+| UserInfo URL | `https://qfit.qfitquick.com/api/auth/naver-userinfo` |
+| Scopes | `profile` (또는 비움) |
+
+Client ID·Secret 은 그대로 둔다. 위 세 주소는 2026-10-01 에 바깥에서 응답을
+확인했다(로그인 화면으로 넘어감, 토큰 주소 응답, 워커 응답). 네이버 개발자
+센터의 '제공 정보'에 **이메일**이 켜져 있어야 워커가 이메일을 넘길 수 있다.
+
 **scope 에 `email` 을 넣으면 안 된다**(2026-10-01). 네이버는
 `openid`·`profile` 만 받고, `email` 이 섞이면 로그인 화면도 안 띄우고
 곧장 `invalid_scope` 로 돌려보낸다. 사용자에게는 "네이버를 누르면 첫
