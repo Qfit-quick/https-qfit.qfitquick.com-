@@ -2,7 +2,8 @@ import { ICON } from './ui/icons.js';
 import { openSheet, closeSheet } from './ui/sheet.js';
 import { toast } from './ui/toast.js';
 import { advanceProgramProgress, clearPendingProgramDay } from './ui/programs.js';
-import { getSupabase, hasStoredSession, hasOAuthCodeReturn, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
+import { getSupabase, hasStoredSession, hasOAuthCodeReturn, hasPendingPkceVerifier, waitForUrlAuthEvent, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
+import { refreshBillingStatus } from './ui/billing.js';
 import { heartbeat as presenceHeartbeat, getTodayActiveCount } from './cloud/presence.js';
 import * as reminder from './notify/reminder.js';
 import { RECOVERY_CARDS, INJURY_GUIDES, SPECIAL_GUIDES, DIET_GUIDES } from './data/recovery.js';
@@ -1522,9 +1523,15 @@ function updateAccountUI(){
  if(backBtn){
  backBtn.textContent = '로그아웃';
  backBtn.onclick = async ()=>{
- try{ if(isSupabaseReady()){ const sb = await getSupabase(); await sb.auth.signOut(); } }catch(e){}
+ // signOut() 은 서버 호출이 실패해도 이 기기의 세션은 지운다.
+ try{ const sb = await getSupabase(); if(sb) await sb.auth.signOut(); }catch(e){ console.error('signout failed:', e); }
  currentUserId = null;
+ // 프리미엄은 그 계정의 구독이다 — 로그아웃한 뒤에도 풀려 있으면
+ // 이 기기를 쓰는 다음 사람이 결제 없이 쓴다. 다시 로그인하면
+ // afterSignedIn() 이 서버에서 다시 받아 온다.
+ window.applyBillingStatus?.({ status: 'none', current_period_end: null, cancel_at_period_end: false });
  updateAccountUI();
+ toast(t(STATIC_UI.loggedOutMsg));
  showScreen(startScreen);
  };
  }
@@ -1597,53 +1604,113 @@ function isPasswordRecoveryRedirect(){
  return /type=recovery/.test(location.hash) || /type=recovery/.test(location.search);
 }
 
+// 로그인 복귀 주소에 붙어 온 것들을 지운다 — 나머지 쿼리·해시(화면 이름)는
+// 그대로 둔다. code 는 한 번 쓰면 끝이라(Supabase 가 재사용을 거부한다)
+// 남겨 두면 새로고침할 때마다 죽은 code 로 다시 교환하려다 실패한다.
+function stripAuthReturnParams(){
+ try{
+ const u = new URL(location.href);
+ ['code', 'sb_flow_id', 'error', 'error_code', 'error_description'].forEach(k => u.searchParams.delete(k));
+ history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+ }catch(e){}
+}
+
+// 로그인 복귀가 실패했을 때 — 계정 화면을 열고 이유를 그 자리와 토스트
+// 양쪽에 적는다. 예전엔 실패해도 아무 말 없이 첫 화면에 남아서
+// "로그인 누르면 첫 화면으로 돌아온다"로만 보였다.
+function showAuthReturnError(msg){
+ showScreen(accountScreen);
+ showAccountSubForm('login');
+ ['account-login-error', 'account-signup-error'].forEach(id => {
+ const el = document.getElementById(id);
+ if(el){ el.style.color = ''; el.textContent = msg; }
+ });
+ toast(msg);
+}
+
+// 로그인이 막 끝난 뒤 공통으로 할 일. 프리미엄 잠금은 구독 상태로만
+// 정해지므로(CLAUDE.md) 로그인할 때마다 서버에 다시 물어야 한다 — 안
+// 물으면 구독 중인 사람이 로그인해도 새로고침 전까지 잠겨 있다.
+async function afterSignedIn(userId){
+ currentUserId = userId;
+ await syncProfileFromCloud();
+ // 추천 링크로 들어와 가입한 경우. 예전엔 메일 인증 없이 바로 세션이 나온
+ // 가입에서만 적용돼서, 인증 메일을 거쳐 가입하면(보통은 이쪽) 빠졌다.
+ // 이미 추천인이 있는 계정은 건드리지 않는다.
+ try{
+ const pendingRef = localStorage.getItem('qfit_pending_ref');
+ if(pendingRef){
+ localStorage.removeItem('qfit_pending_ref');
+ if(!myProfile.referredBy && pendingRef !== userId){
+ myProfile.referredBy = pendingRef;
+ saveProfile();
+ }
+ }
+ }catch(e){}
+ updateAccountUI();
+ updateBestBox();
+ refreshBillingStatus();
+}
+
 async function checkSupabaseSession(){
  // 로그인한 적이 없으면 SDK 를 받지도 않는다. 로그인은 선택 기능이라
  // 안 쓰는 사람에게 120KB 를 받게 할 이유가 없다 — 단, 비밀번호 재설정
- // 링크를 막 타고 온 경우와 소셜 로그인(구글/카카오/네이버)에서 막
- // 돌아온 경우는 예외로 받는다. 안 받으면 그 토큰·code 를 처리할
- // 클라이언트 자체가 없다.
+ // 링크를 막 타고 온 경우와 로그인·인증 링크에서 막 돌아온 경우(?code=)는
+ // 예외로 받는다. 안 받으면 그 토큰·code 를 처리할 클라이언트 자체가 없다.
+ //
+ // pkce 흐름(supabase.js)에선 소셜 로그인·가입 인증 메일·비밀번호 재설정
+ // 메일이 전부 똑같이 ?code=... 로 돌아온다. 주소만으론 셋을 못 가른다 —
+ // 재설정인지는 SDK 가 교환 뒤에 내는 PASSWORD_RECOVERY 이벤트로만 안다.
  const recovering = isPasswordRecoveryRedirect();
- const oauthReturning = hasOAuthCodeReturn();
- if(!hasStoredSession() && !recovering && !oauthReturning) return;
+ const codeReturning = hasOAuthCodeReturn();
+ if(!hasStoredSession() && !recovering && !codeReturning) return;
  const sb = await getSupabase();
- if(!sb) return;
+ if(!sb){
+ if(codeReturning){ stripAuthReturnParams(); showAuthReturnError(t(STATIC_UI.socialLoginFailed)); }
+ return;
+ }
  try{
- // pkce 흐름은 주소의 ?code=... 를 getSession() 이 처음 불릴 때 알아서
- // 세션으로 바꾼다(supabase-js 의 detectSessionInUrl) — 소셜 로그인으로
- // 막 돌아온 경우가 바로 이 자리다.
  // code 교환은 SDK 초기화(initialize) 안에서 일어나고, 거기서 난 오류는
- // getSession() 이 돌려주지 않는다 — 실패 원인을 남기려면 초기화 결과를
- // 따로 받아야 한다. 이미 초기화됐으면 그 결과를 그대로 돌려준다.
- const init = oauthReturning ? await sb.auth.initialize() : null;
- const { data, error } = await sb.auth.getSession();
- // code 는 한 번 쓰면 끝이다(Supabase 가 재사용을 거부한다) — 성공하든
- // 실패하든 주소에서 지운다. 안 지우면 새로고침할 때마다 이미 죽은
- // code 로 다시 교환을 시도해 매번 조용히 실패한다.
- if(oauthReturning) history.replaceState(history.state, '', location.pathname + (location.hash || ''));
- if(data && data.session && data.session.user){
- currentUserId = data.session.user.id;
- if(recovering){
+ // getSession() 이 돌려주지 않는다 — 초기화 결과를 따로 받아야 한다.
+ // 이미 초기화됐으면(결제 쪽이 먼저 SDK 를 불렀을 때) 그 결과를 그대로 준다.
+ const init = codeReturning ? await sb.auth.initialize() : null;
+ const exchangeError = init && init.error;
+ const exchanged = codeReturning && !exchangeError && hasPendingPkceVerifier();
+ const urlEvent = exchanged ? await waitForUrlAuthEvent() : null;
+ const { data } = await sb.auth.getSession();
+ if(codeReturning) stripAuthReturnParams();
+ const user = data && data.session && data.session.user;
+
+ if(codeReturning && (!user || exchangeError)){
+ if(exchangeError) console.error('auth code exchange failed:', exchangeError);
+ // 이 브라우저엔 그 요청의 verifier 가 없다 — 메일 앱이 링크를 다른
+ // 브라우저로 열었거나(가입 인증·비밀번호 재설정), 인앱 브라우저에서
+ // 시작해 바깥 브라우저로 넘어왔다. 가입 인증은 Supabase 가 링크를
+ // 여는 순간 이미 끝내 두므로, 그 경우엔 그냥 로그인하면 된다.
+ if(!hasPendingPkceVerifier()){
+ if(!user) showAuthReturnError(t(STATIC_UI.authLinkOtherBrowser));
+ }else if(!user){
+ showAuthReturnError(/flow state|expired|already|invalid/i.test(exchangeError?.message || '')
+ ? t(STATIC_UI.authLinkExpired)
+ : t(STATIC_UI.socialLoginFailed));
+ }
+ if(!user) return;
+ }
+ if(!user) return;
+
+ if(recovering || urlEvent === 'PASSWORD_RECOVERY'){
  // 프로필 동기화 없이 새 비밀번호 화면만 연다 — 아직 본인이 맞는지
  // 확인 중인 단계라, 이 세션으로 기존 기기 기록을 덮어쓰지 않는다.
+ currentUserId = user.id;
  showScreen(accountScreen);
  showAccountSubForm('newpw');
  return;
  }
- await syncProfileFromCloud();
- updateAccountUI();
- updateBestBox();
- if(oauthReturning) showScreen(startScreen);
- }else if(oauthReturning){
- // code 교환이 실패했다(만료·재사용·code_verifier 없음 등). 예전엔 여기서
- // 아무 말 없이 첫 화면에 남아 '로그인 누르면 첫 화면으로 돌아온다'로만
- // 보였다 — 실패했다고 알려야 사용자도 우리도 원인을 알 수 있다.
- console.error('oauth code exchange failed:', (init && init.error) || error);
- toast(t(STATIC_UI.socialLoginFailed));
- }
+ await afterSignedIn(user.id);
+ if(codeReturning) showScreen(startScreen);
  }catch(e){
  console.error('session check failed:', e);
- if(oauthReturning) toast(t(STATIC_UI.socialLoginFailed));
+ if(codeReturning){ stripAuthReturnParams(); showAuthReturnError(t(STATIC_UI.socialLoginFailed)); }
  }
 }
 
@@ -5036,9 +5103,8 @@ try{
  if(!sb){ errEl.textContent = '연결에 실패했어요. 페이지를 새로고침해서 다시 시도해주십시오.'; return; }
  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
  if(error) throw error;
- currentUserId = data.user.id;
- await syncProfileFromCloud();
- updateAccountUI();
+ errEl.textContent = '';
+ await afterSignedIn(data.user.id);
  showScreen(startScreen);
  }catch(e){
  console.error('login failed:', e);
@@ -5066,7 +5132,9 @@ try{
  // 오타로 자기도 모르는 비밀번호를 만드는 것을 막는 게 목적이라,
  // 네트워크를 타기 전에 걸러야 뜻이 있다.
  if(pw !== pw2){ errEl.textContent = '비밀번호가 서로 달라요. 다시 확인해주십시오.'; return; }
- const { data, error } = await sb.auth.signUp({ email, password: pw });
+ // 인증 메일 링크가 돌아올 곳 — 비우면 Supabase 대시보드의 Site URL 로
+ // 간다. 재설정 메일(resetPasswordForEmail)과 같은 이유로 명시한다.
+ const { data, error } = await sb.auth.signUp({ email, password: pw, options: { emailRedirectTo: location.origin + location.pathname } });
  if(error) throw error;
  if(!data.session){
  // 인증 메일 안내(2026-10-01 가독성 요청으로 전용 화면으로 뺐다) —
@@ -5077,16 +5145,8 @@ try{
  showAccountSubForm('checkEmail');
  return;
  }
- currentUserId = data.user.id;
- try{
- const pendingRef = localStorage.getItem('qfit_pending_ref');
- if(pendingRef && pendingRef !== currentUserId){
- myProfile.referredBy = pendingRef;
- localStorage.removeItem('qfit_pending_ref');
- }
- }catch(e){}
- await syncProfileToCloud(); // push whatever local progress this device already has
- updateAccountUI();
+ errEl.textContent = '';
+ await afterSignedIn(data.user.id);
  showScreen(startScreen);
  }catch(e){
  console.error('signup failed:', e);
@@ -5102,6 +5162,13 @@ try{
 // 받는다 — 돌아온 뒤의 처리는 checkSupabaseSession() 이 부팅 때 맡는다.
 async function startSocialSignIn(provider, button){
  const errEl = document.getElementById('account-login-error') || document.getElementById('account-signup-error');
+ // 구글은 앱 안의 웹뷰(카카오톡·인스타그램·페이스북·네이버 앱)에서 로그인을
+ // 정책으로 막는다(403 disallowed_useragent) — 그 화면으로 보내 봤자 구글
+ // 오류 페이지에 갇힌다. 카카오·네이버는 웹뷰에서도 된다.
+ if(provider === 'google' && /kakaotalk|instagram|FBAN|FBAV|NAVER\(inapp/i.test(navigator.userAgent || '')){
+ if(errEl){ errEl.style.color = ''; errEl.textContent = t(STATIC_UI.googleInAppBlocked); }
+ return;
+ }
  if(button) button.disabled = true;
  try{
  const sb = await getSupabase();
@@ -5197,10 +5264,8 @@ try{
  // Supabase 는 비밀번호를 바꾼 뒤에도 그 세션을 그대로 로그인 상태로
  // 유지한다 — 그러니 여기서부터는 정식 로그인과 같게 다룬다.
  const { data: sessionData } = await sb.auth.getSession();
- currentUserId = sessionData?.session?.user?.id || currentUserId;
- await syncProfileFromCloud();
+ await afterSignedIn(sessionData?.session?.user?.id || currentUserId);
  showAccountSubForm('login');
- updateAccountUI();
  toast(t(STATIC_UI.newPwSavedMsg));
  showScreen(startScreen);
  }catch(e){
@@ -5225,12 +5290,28 @@ try{ checkSupabaseSession(); }catch(e){ console.error('checkSupabaseSession fail
 // 제공자 쪽 오류가 나면, 주소에 code 대신 error=...&error_description=...
 // 가 붙어 돌아온다 — 이때는 getSession() 이 할 일이 없으니 여기서 따로
 // 알려준다.
+//
+// Supabase 는 흐름에 따라 이걸 쿼리(?error=)나 해시(#error=)에 붙인다 — 둘 다
+// 본다. 해시는 이 앱의 화면 이름(#account-screen)으로도 쓰이므로, 해시가
+// error= 를 담고 있을 때만 그쪽을 파라미터로 읽는다.
 try{
- const params = new URLSearchParams(location.search);
+ const fromHash = /(^#|&)error=/.test(location.hash) ? new URLSearchParams(location.hash.slice(1)) : null;
+ const params = (fromHash && fromHash.has('error')) ? fromHash : new URLSearchParams(location.search);
  if(params.has('error') && !isPasswordRecoveryRedirect()){
- console.error('oauth return error:', params.get('error'), params.get('error_description'));
- toast(t(STATIC_UI.socialLoginFailed));
- history.replaceState(null, '', location.pathname);
+ const err = params.get('error') || '';
+ const desc = params.get('error_description') || '';
+ console.error('oauth return error:', err, params.get('error_code'), desc);
+ if(fromHash && fromHash.has('error')) history.replaceState(history.state, '', location.pathname + location.search);
+ stripAuthReturnParams();
+ // 메일 링크(가입 인증·재설정)가 만료됐거나 이미 쓰였다 — error 는
+ // access_denied 로 같이 오므로 '취소'보다 먼저 본다.
+ if(/otp_expired/.test(params.get('error_code') || '') || /expired|invalid/i.test(desc)) showAuthReturnError(t(STATIC_UI.authLinkExpired));
+ // 카카오·네이버가 이메일을 안 넘겨주면 Supabase 가 계정을 못 만든다
+ // ("Error getting user email from external provider").
+ else if(/user email|email from/i.test(desc)) showAuthReturnError(t(STATIC_UI.socialLoginNeedEmail));
+ // 제공자 화면에서 '취소'·'동의 안 함'을 누른 것은 오류가 아니다.
+ else if(err === 'access_denied') toast(t(STATIC_UI.socialLoginCancelled));
+ else showAuthReturnError(t(STATIC_UI.socialLoginFailed));
  }
 }catch(e){ console.error('oauth error check failed:', e); }
 

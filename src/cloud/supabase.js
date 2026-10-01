@@ -37,6 +37,14 @@ export const SUPABASE_ANON_KEY = KEY;
 let client = null;
 let loading = null;
 
+// 주소의 ?code=... 를 SDK 가 세션으로 바꾼 뒤 내는 이벤트. 비밀번호 재설정
+// 링크로 돌아온 것인지('PASSWORD_RECOVERY') 일반 로그인인지('SIGNED_IN')는
+// 이것만이 알려 준다 — pkce 흐름에선 주소에 type=recovery 가 붙지 않는다.
+// SDK 는 이걸 초기화가 끝난 다음 틱에 내므로, 클라이언트를 만들자마자
+// 구독해 두지 않으면 놓친다.
+let urlAuthEvent = null;
+const urlAuthWaiters = [];
+
 /** 이 기기에서 로그인한 적이 있나.
  *  Supabase 는 세션을 localStorage 의 sb-<프로젝트>-auth-token 에 둔다.
  *  이걸 먼저 보면, 로그인한 적 없는 사람은 SDK 를 아예 안 받는다. */
@@ -67,6 +75,12 @@ export async function getSupabase() {
         // 해시(#q-mission-screen 등)로 하므로 그 둘이 부딪힌다. pkce 는
         // 대신 ?code=... 를 '쿼리'로 돌려주니 해시와 안 겹친다.
         client = createClient(URL, KEY, { auth: { flowType: 'pkce' } });
+        client.auth.onAuthStateChange((event) => {
+          if (event !== 'SIGNED_IN' && event !== 'PASSWORD_RECOVERY') return;
+          if (urlAuthEvent) return;
+          urlAuthEvent = event;
+          urlAuthWaiters.splice(0).forEach((resolve) => resolve(event));
+        });
         return client;
       })
       .catch((e) => {
@@ -95,6 +109,40 @@ export function hasOAuthCodeReturn() {
     return false;
   }
 }
+
+/** 주소의 code 를 세션으로 바꾼 직후의 이벤트를 기다린다 —
+ *  'PASSWORD_RECOVERY' | 'SIGNED_IN' | null(시간 안에 안 오면). */
+export function waitForUrlAuthEvent(ms = 2000) {
+  if (urlAuthEvent) return Promise.resolve(urlAuthEvent);
+  return new Promise((resolve) => {
+    urlAuthWaiters.push(resolve);
+    setTimeout(() => resolve(urlAuthEvent), ms);
+  });
+}
+
+/** 이 브라우저에 진행 중인 pkce 요청(code_verifier)이 남아 있나.
+ *  없는데 주소에 code 가 왔다면 — 메일 앱이 다른 브라우저로 인증·재설정
+ *  링크를 열었거나, 인앱 브라우저에서 시작해 바깥 브라우저로 넘어온
+ *  경우다. 그 code 는 이 브라우저에선 절대 세션이 될 수 없다. */
+export function hasPendingPkceVerifier() {
+  return PKCE_VERIFIER_AT_BOOT;
+}
+
+// 부팅 순간에 한 번만 본다 — SDK 는 code 교환을 마치면(성공하든 실패하든)
+// verifier 를 지우므로, 나중에 보면 '원래 없었다'와 구분이 안 된다.
+// '-flows-code-verifier' 는 진행 중인 요청 목록(배열)이라 비어도 "[]" 로
+// 남는다 — 그건 verifier 가 아니다.
+const PKCE_VERIFIER_AT_BOOT = (() => {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith('sb-') || !k.endsWith('-code-verifier')) continue;
+      if (k.endsWith('-flows-code-verifier')) continue;
+      if (localStorage.getItem(k)) return true;
+    }
+  } catch (e) {}
+  return false;
+})();
 
 /** 이미 받아 둔 경우에만 true. 받으러 가지 않는다. */
 export function isSupabaseReady() {

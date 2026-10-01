@@ -26,7 +26,7 @@
 // 라우팅이 없는 SPA 라 실제 경로(/billing/success 같은)로 돌아오면
 // 정적 자산이 없어 404 가 난다(vite.config.js 의 base:'./' 주석 참고).
 // 루트(#만 있는 주소)는 항상 index.html 이라 안전하다.
-import { getSupabase } from '../cloud/supabase.js';
+import { getSupabase, hasStoredSession, hasOAuthCodeReturn } from '../cloud/supabase.js';
 import { toast } from './toast.js';
 
 let t = (o) => (o && o.ko) || '';
@@ -158,6 +158,15 @@ async function finishKakaoApproveFromReturn() {
 // 섣불리 건드리지 않는다 — NOT_LOGGED_IN 인지, 그냥 네트워크 문제인지
 // 구별할 수 없어서 둘 다 "그대로 둔다"로 처리한다).
 async function checkBillingStatus() {
+  // 로그인 흔적이 아예 없는 기기면 서버에 물을 것도 없다 — 여기서
+  // getSupabase() 를 부르면 로그인 안 하는 방문자도 부팅마다 SDK(약
+  // 220KB)를 받게 된다. 이 경우만은 '로그인 안 됨'이 확실하므로 잠근다:
+  // 구독은 계정에 붙어 있고, 2026-10-01 전에는 로그아웃해도 isPremium 이
+  // 이 기기에 그대로 남아 있었다.
+  if (!hasStoredSession() && !hasOAuthCodeReturn()) {
+    window.applyBillingStatus?.({ status: 'none', current_period_end: null, cancel_at_period_end: false });
+    return;
+  }
   try {
     const status = await billingFetch('/api/billing/status');
     window.applyBillingStatus?.(status);
@@ -282,6 +291,11 @@ async function toggleCancelSubscription(button) {
     toast(t(S.billingRegisterFailed));
     button.disabled = false;
   }
+}
+
+/** 로그인 직후 app.js 가 부른다 — 그 계정의 구독 상태로 잠금을 다시 맞춘다. */
+export function refreshBillingStatus() {
+  return checkBillingStatus();
 }
 
 export function initBilling({ translate, STATIC_UI } = {}) {

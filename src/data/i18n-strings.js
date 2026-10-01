@@ -217,6 +217,14 @@ export const STATIC_UI = {
  socialLoginNaver: {ko:'네이버로 계속하기', en:'Continue with Naver', zh:'使用Naver继续'},
  socialLoginDivider: {ko:'또는', en:'or', zh:'或'},
  socialLoginFailed: {ko:'간편 로그인에 실패했어요. 다시 시도해주십시오.', en:'Social login failed. Please try again.', zh:'第三方登录失败，请重试。'},
+ // 로그인 복귀가 실패한 이유별 안내(2026-10-01). 예전엔 전부 위 한 줄이거나
+ // 아예 아무 말 없이 첫 화면에 떨어졌다.
+ socialLoginCancelled: {ko:'로그인을 취소했어요.', en:'Login was cancelled.', zh:'已取消登录。'},
+ socialLoginNeedEmail: {ko:'이메일 제공에 동의해야 로그인할 수 있어요. 다시 시도하면서 이메일 항목에 동의해 주세요.', en:'Please allow access to your email address to log in, then try again.', zh:'需要同意提供邮箱才能登录，请重试并勾选邮箱。'},
+ authLinkOtherBrowser: {ko:'이 링크는 요청했던 브라우저에서 열어야 해요. 가입 인증 메일이었다면 인증은 끝났으니 여기서 이메일로 로그인해 주세요.', en:'Please open this link in the browser where you made the request. If it was a sign-up confirmation, you are verified — just log in here with your email.', zh:'请在发起请求的浏览器中打开此链接。若是注册验证邮件，验证已完成，请在此用邮箱登录。'},
+ authLinkExpired: {ko:'링크가 만료됐거나 이미 사용됐어요. 처음부터 다시 시도해 주세요.', en:'This link has expired or was already used. Please start over.', zh:'链接已过期或已被使用，请重新开始。'},
+ googleInAppBlocked: {ko:'구글은 카카오톡·인스타그램 같은 앱 안의 브라우저에서 로그인을 막아요. 위 안내대로 기본 브라우저로 열어 주세요.', en:'Google blocks sign-in inside in-app browsers (KakaoTalk, Instagram…). Please open this page in your default browser.', zh:'Google 不允许在应用内浏览器（KakaoTalk、Instagram 等）中登录，请用默认浏览器打开。'},
+ loggedOutMsg: {ko:'로그아웃했어요.', en:'You have been logged out.', zh:'已退出登录。'},
  skipAccount: {ko:'계정 없이 계속하기', en:'Continue without an account', zh:'不登录，继续使用'},
  // 비밀번호 재설정(2026-09-21)
  forgotPwBtn: {ko:'비밀번호를 잊으셨나요?', en:'Forgot your password?', zh:'忘记密码了吗？'},

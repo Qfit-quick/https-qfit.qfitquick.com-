@@ -90,7 +90,41 @@ Pages 경로는 포기했다 — 그 주소(`qfit.github.io/...`)는 이제 갱�
   넘기고, 그 함수만이 `isPremium` 을 바꾼다 — 프리미엄 관련 코드를 새로
   건드릴 때 이 경로를 벗어나 `isPremium` 을 직접 켜지 않는다.
 
+## 로그인 복귀는 전부 `?code=` 하나로 온다 (2026-10-01)
+
+Supabase 클라이언트가 pkce 흐름이라(`src/cloud/supabase.js`), 소셜 로그인·
+가입 인증 메일·비밀번호 재설정 메일이 **전부 똑같이** `/?code=...` 로
+돌아온다. 처리는 `src/app.js` 의 `checkSupabaseSession()` 한 곳이다.
+"카카오·네이버 로그인을 누르면 첫 화면으로 돌아온다"는 버그가 이 자리에서
+세 겹으로 나 있었고, 셋 다 **오류 없이 조용히** 실패했다:
+
+- **부팅 때 쿼리를 지우지 않는다.** 화면 라우터(`src/ui/nav.js`)가
+  `location.search` 를 버리면 SDK(동적 import 라 늦게 뜬다)가 읽기 전에
+  code 가 사라진다. code 는 교환이 끝난 뒤 `stripAuthReturnParams()` 만 지운다.
+- **`state=` 를 기대하지 않는다.** state 는 Supabase 와 카카오·네이버
+  사이에서만 오간다. 앱으로는 code(그리고 `sb_flow_id`)만 온다.
+- **재설정 링크인지는 주소로 모른다.** pkce 에선 `type=recovery` 가 안 붙는다.
+  SDK 가 교환 뒤에 내는 `PASSWORD_RECOVERY` 이벤트(`waitForUrlAuthEvent`)로만
+  안다.
+- **이 브라우저에 verifier 가 없으면 그 code 는 절대 세션이 안 된다** —
+  메일 앱이 다른 브라우저로 링크를 연 경우다. `hasPendingPkceVerifier()` 가
+  부팅 순간에 찍어 둔 값으로 가려서 따로 안내한다.
+- **로그아웃하면 프리미엄도 잠근다.** 구독은 계정에 붙어 있다. 로그인하면
+  `afterSignedIn()` 이 서버에서 구독 상태를 다시 받는다.
+
+이 흐름을 건드렸으면 `npm run build && npm run auth` 를 돌린다. Supabase
+응답을 흉내 내서 성공·실패·재설정·취소 등 12가지 경로를 실제 브라우저로
+돌린다(playwright, CI 에선 안 돈다). 카카오·네이버 쪽 설정(동의 항목 등)은
+이걸로 못 잡는다 — 그건 `docs/DEPLOY.md` 의 간편 로그인 절을 본다.
+
 ## 산출물의 줄바꿈은 LF 여야 한다
+
+**소스도 마찬가지다**(2026-10-01). `.gitattributes` 맨 위의
+`* text=auto eol=lf` 가 윈도우에서도 소스를 LF 로 풀게 한다. 이게 없을
+때는 여기서 빌드한 산출물이 CI 빌드와 해시부터 달라서, push 마다 CI 가
+산출물을 되커밋했고 다음 pull 마다 `app/dist/` 에서 충돌이 났다. 그
+줄을 넣기 전에 clone 한 폴더라면 CRLF 로 풀린 파일이 남아 있을 수 있다 —
+`git ls-files --eol | grep w/crlf` 로 본다.
 
 `app/dist/sw.js` 는 `index.html`·`manifest.webmanifest` 의 md5 를 적어
 둔다. 윈도우에서 `core.autocrlf=true` 로 clone 해 CRLF 로 풀리면 그 md5 가
@@ -148,7 +182,7 @@ Pages 경로는 포기했다 — 그 주소(`qfit.github.io/...`)는 이제 갱�
     npm run coverage   # 스타일 없는 클래스
     npm run contrast   # 명도 대비
 
-`smoke`·`flow`·`shot` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
+`smoke`·`flow`·`shot`·`auth` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
 안 돌린다.
 
 `npm run phases` 는 브라우저 없이 돈다(2026-09-26 부터 워크플로에도 붙어
