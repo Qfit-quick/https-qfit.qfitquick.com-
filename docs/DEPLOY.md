@@ -214,6 +214,92 @@ Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-kakao-billing.sql`
 `'toss'`, `kakao_sid`)만 더하는 것이라, 실행해도 기존 Toss 구독자에게는
 아무 영향이 없다.
 
+## 간편 로그인 — 구글·카카오·네이버 (2026-10-01)
+
+로그인·회원가입 화면(`#account-screen`)에 세 버튼을 추가했다. 결제
+(Toss·카카오페이)와는 완전히 별개 기능이다 — 이쪽은 Supabase Auth 가
+직접 처리하고, 이 저장소 코드는 "어느 제공자로 로그인할지" 버튼을 누르는
+것과 돌아온 뒤 세션을 읽는 것만 한다. 시크릿(클라이언트 ID·시크릿)은
+전부 **Supabase 대시보드**에 들어가지 — 이 저장소에는 안 둔다.
+
+구글·카카오는 Supabase 가 기본 제공하는 소셜 로그인이고, **네이버는
+아니다**(Supabase 공식 제공자 목록에 없다). 그래서 네이버만
+"커스텀 OAuth2 제공자" 기능으로 등록한다 — Free 플랜도 3개까지는
+무료로 쓸 수 있어 추가 비용은 없다.
+
+### 구글
+
+1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   에서 프로젝트를 만들고 "OAuth 2.0 클라이언트 ID"(유형: 웹 애플리케이션)
+   를 발급한다.
+2. **승인된 리디렉션 URI** 에 Supabase 대시보드가 알려 주는 콜백 주소
+   (`https://pdmjlleaheqyldhitkty.supabase.co/auth/v1/callback`)를 그대로
+   등록한다.
+3. Supabase 대시보드 → Authentication → Sign In / Providers → Google 을
+   열고, 발급받은 클라이언트 ID·시크릿을 넣고 켠다.
+
+### 카카오
+
+**결제용 카카오페이 앱과는 다른 설정이다** — 카카오 개발자센터의 같은
+앱 안에 "카카오 로그인" 제품을 별도로 켜야 한다(이미 결제 때문에 앱을
+만들어 뒀다면 그 앱을 재사용해도 된다. 제품만 추가로 켜면 된다).
+
+1. [Kakao Developers](https://developers.kakao.com) 에서 앱을 열고
+   "카카오 로그인" 을 활성화한다.
+2. **Redirect URI** 에 Supabase 콜백 주소(위와 동일한 모양,
+   `https://pdmjlleaheqyldhitkty.supabase.co/auth/v1/callback`)를 등록한다.
+3. "카카오 로그인" > "보안" 에서 **Client Secret** 을 발급한다(필수는
+   아니지만 Supabase 가 요구한다).
+4. 동의 항목에서 최소한 "닉네임"·"카카오계정(이메일)" 을 켠다 — 이메일을
+   안 켜면 Supabase 가 받는 사용자 정보에 이메일이 비어, 이메일 기준으로
+   다른 로그인 수단과 계정을 합칠 방법이 없어진다.
+5. Supabase 대시보드 → Providers → Kakao 에 REST API 키(Client ID)와
+   위 Client Secret 을 넣고 켠다.
+
+### 네이버 (커스텀 OAuth2 제공자)
+
+네이버는 Supabase 기본 목록에 없어서 "직접 등록"으로 붙인다. 네이버가
+돌려주는 사용자 정보가 Supabase 가 기대하는 모양과 달라(아래 참고)
+`worker/api/naverAuth.js` 가 그 사이에서 모양만 바꿔 준다 — 이 중계가
+없으면 로그인마다 다른 사람으로 인식되거나 아예 실패한다.
+
+1. [네이버 개발자센터](https://developers.naver.com/apps)에서 애플리케이션을
+   등록하고 "네이버 로그인" API 사용을 신청한다. 제공 정보에서 최소
+   "이메일"·"이름" 을 선택한다(선택 동의 항목이라 심사 없이 바로 켜진다).
+2. **Callback URL** 에 Supabase 콜백 주소를 등록한다.
+3. "API 설정"에서 **Client ID**·**Client Secret** 을 확인한다.
+4. Supabase 대시보드 → Authentication → Sign In / Providers 맨 아래
+   "Add provider" → **OAuth2 (Manual configuration)** 를 고르고:
+   - **Provider identifier**: `naver` (클라이언트 코드가 호출하는
+     `custom:naver` 의 뒷부분 — Supabase 가 앞에 `custom:` 을 자동으로
+     붙인다)
+   - **Client ID / Secret**: 3번에서 받은 값
+   - **Authorization URL**: `https://nid.naver.com/oauth2.0/authorize`
+   - **Token URL**: `https://nid.naver.com/oauth2.0/token`
+   - **UserInfo URL**: 네이버의 진짜 주소가 아니라
+     **`https://qfit.qfitquick.com/api/auth/naver-userinfo`** 를 넣는다
+     (워커가 중계하는 주소 — 다음 문단 참고)
+   - 대시보드가 보여 주는 **Callback URL** 을 복사해 2번의 네이버 앱
+     설정에도 등록돼 있는지 다시 확인한다.
+
+**왜 중계가 필요한가**: 네이버의 실제 사용자 정보 주소
+(`openapi.naver.com/v1/nid/me`)는 `{resultcode, message, response: {id,
+email, ...}}` 처럼 진짜 필드를 `response` 로 한 번 더 감싸서 돌려준다.
+Supabase 는 이런 중첩을 모르고 최상위에서 `sub`(식별자)·`email` 을 바로
+찾기 때문에, 감싸인 채로 등록하면 매번 다른 사람으로 보이거나 실패한다.
+`worker/api/naverAuth.js` 가 그 응답을 받아 `{sub, email, name, picture}`
+평평한 모양으로 펴서 돌려주는 자리이고, `wrangler.jsonc` 의
+`run_worker_first: ["/api/*"]` 덕분에 이 주소도 자산보다 먼저 워커를
+탄다 — 별도 설정 없이 바로 동작한다.
+
+### 확인하는 법
+
+세 버튼 모두 코드 쪽은 이미 완성돼 있다 — 위 설정 전까지는 눌러도
+Supabase 가 `"provider is not enabled"`(구글·카카오) 또는
+`"custom provider custom:naver not found"`(네이버) 라고 답하는 화면으로
+넘어가는데, 이건 버그가 아니라 "아직 대시보드 설정 전" 이라는 뜻이다.
+설정을 마치면 같은 버튼이 그대로 로그인까지 이어진다.
+
 ## 워크플로가 하는 일
 
 `.github/workflows/deploy.yml` — main push 와 수동 실행(`workflow_dispatch`).

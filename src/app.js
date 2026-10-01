@@ -2,7 +2,7 @@ import { ICON } from './ui/icons.js';
 import { openSheet, closeSheet } from './ui/sheet.js';
 import { toast } from './ui/toast.js';
 import { advanceProgramProgress, clearPendingProgramDay } from './ui/programs.js';
-import { getSupabase, hasStoredSession, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
+import { getSupabase, hasStoredSession, hasOAuthCodeReturn, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
 import { heartbeat as presenceHeartbeat, getTodayActiveCount } from './cloud/presence.js';
 import * as reminder from './notify/reminder.js';
 import { RECOVERY_CARDS, INJURY_GUIDES, SPECIAL_GUIDES, DIET_GUIDES } from './data/recovery.js';
@@ -1584,13 +1584,18 @@ function isPasswordRecoveryRedirect(){
 async function checkSupabaseSession(){
  // 로그인한 적이 없으면 SDK 를 받지도 않는다. 로그인은 선택 기능이라
  // 안 쓰는 사람에게 120KB 를 받게 할 이유가 없다 — 단, 비밀번호 재설정
- // 링크를 막 타고 온 경우는 예외로 받는다. 안 받으면 그 토큰을 처리할
- // 클라이언트 자체가 없어서 "새 비밀번호 설정" 화면을 띄울 방법이 없다.
+ // 링크를 막 타고 온 경우와 소셜 로그인(구글/카카오/네이버)에서 막
+ // 돌아온 경우는 예외로 받는다. 안 받으면 그 토큰·code 를 처리할
+ // 클라이언트 자체가 없다.
  const recovering = isPasswordRecoveryRedirect();
- if(!hasStoredSession() && !recovering) return;
+ const oauthReturning = hasOAuthCodeReturn();
+ if(!hasStoredSession() && !recovering && !oauthReturning) return;
  const sb = await getSupabase();
  if(!sb) return;
  try{
+ // pkce 흐름은 주소의 ?code=... 를 getSession() 이 처음 불릴 때 알아서
+ // 세션으로 바꾼다(supabase-js 의 detectSessionInUrl) — 소셜 로그인으로
+ // 막 돌아온 경우가 바로 이 자리다.
  const { data } = await sb.auth.getSession();
  if(data && data.session && data.session.user){
  currentUserId = data.session.user.id;
@@ -1604,6 +1609,7 @@ async function checkSupabaseSession(){
  await syncProfileFromCloud();
  updateAccountUI();
  updateBestBox();
+ if(oauthReturning) showScreen(startScreen);
  }
  }catch(e){ console.error('session check failed:', e); }
 }
@@ -5052,6 +5058,39 @@ try{
  });
 }catch(e){ console.error('signup button failed:', e); }
 
+// 간편 로그인(구글·카카오·네이버, 2026-10-01). 로그인·회원가입 구분이
+// 없다 — OAuth 는 처음 온 사람도 같은 버튼으로 계정을 만들고, 다시 온
+// 사람은 그대로 로그인된다. 눌린 버튼이 전체화면으로 그 제공자 로그인
+// 페이지를 열어 버리므로(signInWithOAuth), 성공 뒤 결과는 여기서 못
+// 받는다 — 돌아온 뒤의 처리는 checkSupabaseSession() 이 부팅 때 맡는다.
+async function startSocialSignIn(provider, button){
+ const errEl = document.getElementById('account-login-error') || document.getElementById('account-signup-error');
+ if(button) button.disabled = true;
+ try{
+ const sb = await getSupabase();
+ if(!sb){ if(errEl) errEl.textContent = '연결에 실패했어요. 페이지를 새로고침해서 다시 시도해주십시오.'; return; }
+ const redirectTo = location.origin + location.pathname;
+ const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo } });
+ if(error) throw error;
+ // 성공하면 브라우저가 그 제공자 페이지로 완전히 넘어가므로 여기
+ // 이후 코드는 보통 실행되지 않는다 — 아래 catch 는 리다이렉트 자체가
+ // 안 될 때(제공자가 Supabase 쪽에서 아직 안 켜졌을 때 등)만 탄다.
+ }catch(e){
+ console.error('social sign-in failed:', provider, e);
+ if(errEl) errEl.textContent = /provider is not enabled/i.test(e?.message || '')
+ ? '지금은 이 간편 로그인을 쓸 수 없어요.'
+ : '간편 로그인에 실패했습니다. 다시 시도해주십시오.';
+ }finally{
+ if(button) button.disabled = false;
+ }
+}
+
+try{
+ document.querySelectorAll('#account-social-row [data-provider]').forEach(btn=>{
+ btn.addEventListener('click', ()=> startSocialSignIn(btn.dataset.provider, btn));
+ });
+}catch(e){ console.error('social login buttons failed:', e); }
+
 try{
  const forgotBtn = document.getElementById('account-forgot-btn');
  if(forgotBtn) forgotBtn.addEventListener('click', ()=>{
@@ -5139,6 +5178,19 @@ try{
 }catch(e){ console.error('beforeunload setup failed:', e); }
 
 try{ checkSupabaseSession(); }catch(e){ console.error('checkSupabaseSession failed:', e); }
+
+// 간편 로그인 중 사용자가 그 제공자 화면에서 취소하거나(동의 안 함)
+// 제공자 쪽 오류가 나면, 주소에 code 대신 error=...&error_description=...
+// 가 붙어 돌아온다 — 이때는 getSession() 이 할 일이 없으니 여기서 따로
+// 알려준다.
+try{
+ const params = new URLSearchParams(location.search);
+ if(params.has('error') && !isPasswordRecoveryRedirect()){
+ console.error('oauth return error:', params.get('error'), params.get('error_description'));
+ toast(t(STATIC_UI.socialLoginFailed));
+ history.replaceState(null, '', location.pathname);
+ }
+}catch(e){ console.error('oauth error check failed:', e); }
 
 // ---------- LIVE STATS (오늘 사용자 수) ----------
 // 랭킹 대신 보여 달라는 요청(2026-09-16, 접속자 수는 같은 날 빼기로 함).

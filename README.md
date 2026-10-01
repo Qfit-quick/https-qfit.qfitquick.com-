@@ -144,6 +144,15 @@ challengeTracks(턱걸이·플란체 같은 챌린지 트랙 9개)는 원본 데
 **`TOSS_SECRET_KEY`·`TOSS_CLIENT_KEY` 워커 시크릿을 넣어야 동작한다** —
 발급·설정 방법은 `docs/DEPLOY.md` 의 "Toss Payments 연동" 항목 참고.
 
+## 간편 로그인 (2026-10-01)
+
+계정 화면에서 이메일·비밀번호 말고 구글·카카오·네이버로도 로그인할 수
+있다(Supabase Auth). 구글·카카오는 Supabase 가 기본 제공하고, 네이버는
+없어서 "커스텀 OAuth2 제공자"로 등록했다 — `worker/api/naverAuth.js`
+가 네이버의 응답 모양을 Supabase 가 기대하는 모양으로 펴 주는 중계
+역할을 한다. 각 제공자 발급·Supabase 대시보드 설정 방법은
+`docs/DEPLOY.md` 의 "간편 로그인" 항목 참고.
+
 ## 배포
 
 `main` 에 push 하면 `.github/workflows/deploy.yml` 이 다시 빌드하고,

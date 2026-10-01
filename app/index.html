@@ -1256,6 +1256,15 @@
  <button class="auth-tab" data-tab="signup" data-i18n="signupBtn">회원가입</button>
  </div>
 
+ <!-- 간편 로그인(2026-10-01) — 로그인/회원가입 탭 공용. OAuth 는 가입과
+      로그인이 같은 동작이라 탭마다 따로 둘 이유가 없다. -->
+ <div class="auth-social" id="account-social-row">
+ <button class="social-btn social-google" type="button" data-provider="google" data-i18n="socialLoginGoogle">Google로 계속하기</button>
+ <button class="social-btn social-kakao" type="button" data-provider="kakao" data-i18n="socialLoginKakao">카카오로 계속하기</button>
+ <button class="social-btn social-naver" type="button" data-provider="custom:naver" data-i18n="socialLoginNaver">네이버로 계속하기</button>
+ </div>
+ <div class="auth-social-divider" data-i18n="socialLoginDivider">또는</div>
+
  <div id="account-login-form" class="auth-form">
  <input type="email" id="account-login-email" class="auth-input" placeholder="이메일" data-i18n-placeholder="loginEmailPlaceholder" autocomplete="email">
  <input type="password" id="account-login-pw" class="auth-input" placeholder="비밀번호" data-i18n-placeholder="loginPwPlaceholder" autocomplete="current-password">

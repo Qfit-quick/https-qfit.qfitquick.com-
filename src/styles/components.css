@@ -345,6 +345,39 @@
 
 .auth-tabs { display: flex; gap: var(--s-2); }
 
+/* 간편 로그인(2026-10-01). 브랜드 배경색을 그대로 채우면(카카오 노랑
+   위 검정은 괜찮지만, 네이버 초록 위 흰 글자는 약 2.3:1 로 contrast.mjs
+   하한(4.5:1)에 크게 못 미친다 — 실측 후 발견) 글자 대비가 깨지는 조합이
+   섞여 있어서, 바탕·글자는 이 앱의 이미 검증된 토큰(surface-2/text)을
+   그대로 쓰고 브랜드색은 작은 점 하나로만 표시한다. */
+.auth-social { display: flex; flex-direction: column; gap: var(--s-2); }
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--t-md);
+  font-weight: 600;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.social-btn:active { transform: scale(0.98); }
+.social-btn::before { content: ''; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.social-google::before { background: #4285f4; }
+.social-kakao::before { background: #fee500; box-shadow: inset 0 0 0 1px #d9c300; }
+.social-naver::before { background: #03c75a; }
+.auth-social-divider {
+  text-align: center;
+  font-size: var(--t-sm);
+  color: var(--text-dim);
+  margin: var(--s-1) 0;
+}
+
 /* 눌러서 여는 패널. "버튼 안에 기능을 숨긴다"는 게 이것이다 —
    첫 화면에는 행동 하나만 두고, 고를 것은 누른 다음에 나온다. */
 .one-min-panel {

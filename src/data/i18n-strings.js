@@ -209,6 +209,14 @@ export const STATIC_UI = {
  accountEyebrow: {ko:'계정 연동', en:'Account', zh:'账号'},
  accountBlurb: {ko:'로그인하면 기기 바뀌어도 기록이 그대로 이어져요.', en:'Log in to keep your records across devices.', zh:'登录后换设备也能保留记录。'},
  signupBtn: {ko:'회원가입', en:'Sign up', zh:'注册'},
+ // 간편 로그인(2026-10-01) — 로그인·회원가입 두 폼 모두에서 같은 버튼
+ // 셋을 쓴다(OAuth 는 가입/로그인 구분이 없다). 'Naver' 는 영문 로마자
+ // 표기 그대로(고유명사라 번역하지 않는다, langList 등과 같은 원칙).
+ socialLoginGoogle: {ko:'Google로 계속하기', en:'Continue with Google', zh:'使用Google继续'},
+ socialLoginKakao: {ko:'카카오로 계속하기', en:'Continue with Kakao', zh:'使用Kakao继续'},
+ socialLoginNaver: {ko:'네이버로 계속하기', en:'Continue with Naver', zh:'使用Naver继续'},
+ socialLoginDivider: {ko:'또는', en:'or', zh:'或'},
+ socialLoginFailed: {ko:'간편 로그인에 실패했어요. 다시 시도해주십시오.', en:'Social login failed. Please try again.', zh:'第三方登录失败，请重试。'},
  skipAccount: {ko:'계정 없이 계속하기', en:'Continue without an account', zh:'不登录，继续使用'},
  // 비밀번호 재설정(2026-09-21)
  forgotPwBtn: {ko:'비밀번호를 잊으셨나요?', en:'Forgot your password?', zh:'忘记密码了吗？'},

@@ -61,7 +61,12 @@ export async function getSupabase() {
   if (!loading) {
     loading = import('@supabase/supabase-js')
       .then(({ createClient }) => {
-        client = createClient(URL, KEY);
+        // flowType: 'pkce' (2026-10-01, 소셜 로그인 추가하며 명시) —
+        // supabase-js 기본값은 'implicit' 라, OAuth 로 돌아올 때 주소
+        // 해시에 #access_token=... 을 바로 붙인다. 이 앱은 화면 이동도
+        // 해시(#q-mission-screen 등)로 하므로 그 둘이 부딪힌다. pkce 는
+        // 대신 ?code=... 를 '쿼리'로 돌려주니 해시와 안 겹친다.
+        client = createClient(URL, KEY, { auth: { flowType: 'pkce' } });
         return client;
       })
       .catch((e) => {
@@ -71,6 +76,19 @@ export async function getSupabase() {
       });
   }
   return loading;
+}
+
+/** 소셜 로그인(구글/카카오/네이버)에서 막 돌아온 주소인가 — pkce 흐름은
+ *  주소 쿼리에 ?code=...&state=... 를 남긴다. 이 기기에 로그인 흔적이
+ *  없어도(첫 로그인) SDK 를 받아야 그 code 를 세션으로 바꿀 수 있다. */
+export function hasOAuthCodeReturn() {
+  if (!CLOUD_ENABLED) return false;
+  try {
+    const q = location.search;
+    return /[?&]code=/.test(q) && /[?&]state=/.test(q);
+  } catch (e) {
+    return false;
+  }
 }
 
 /** 이미 받아 둔 경우에만 true. 받으러 가지 않는다. */
