@@ -397,13 +397,17 @@
    시간에 매인 일이라, 훑을 때 눈이 거기 먼저 닿아야 한다. */
 .recovery-card:first-child .rc-tag { background: var(--mint); color: var(--on-mint); }
 .rc-title { flex: 1; font-size: var(--t-md); font-weight: 700; }
-.recovery-list { display: flex; flex-direction: column; gap: var(--s-2); }
+/* 가독성 요청(2026-10-01) — 목록 글자를 text-dim(보조 색)으로 두고 있었다.
+   부위별 회복·회복 습관 둘 다 사람이 실제로 읽으러 들어오는 본문인데
+   보조색을 쓰면 중요하지 않은 글처럼 흐리게 보인다. 본문색(text)으로
+   올린다. */
+.recovery-list { display: flex; flex-direction: column; gap: var(--s-3); }
 .recovery-list li,
 .injury-body li {
   position: relative;
   padding-left: var(--s-4);
   font-size: var(--t-md);
-  color: var(--text-dim);
+  color: var(--text);
 }
 .recovery-list li::before,
 .injury-body li::before {
@@ -489,14 +493,21 @@
 .injury-accordion.open .injury-summary::after { transform: rotate(-135deg) translate(-3px, -3px); }
 .injury-body { display: none; padding: 0 var(--s-4) var(--s-4); }
 .injury-accordion.open .injury-body { display: block; }
+/* 가독성 요청(2026-10-01) — 소제목(흔한 원인·증상·즉시 대처·회복 관리)이
+   본문 목록 글자(--t-md)보다 작은 --t-sm 에 보조색이라, 어디서 다음
+   항목으로 넘어가는지 잘 안 읽혔다. 소제목은 본문보다 커야 소제목으로
+   읽힌다 — 색도 본문색(text)으로 올리고, 구간 사이를 선 하나로 끊는다
+   (전부 같은 회색 덩어리로 붙어 보이던 것을 막는다). */
 .injury-body h4 {
-  font-size: var(--t-sm);
+  font-size: var(--t-lg);
   font-weight: 700;
-  color: var(--text-dim);
-  margin-top: var(--s-4);
+  color: var(--text);
+  margin-top: var(--s-6);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
 }
-.injury-body h4:first-child { margin-top: 0; }
-.injury-body ul { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-2); }
+.injury-body h4:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+.injury-body ul { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-3); }
 .warn-line { color: var(--hot); font-weight: 600; }
 
 /* ── 운동 영상 (설계 15) ─────────────────────────────
