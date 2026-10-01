@@ -19,6 +19,53 @@
   padding-top: var(--s-6);
 }
 
+/* 배경 킥(2026-10-01) — 은은한 글로우 + 천천히 떠다니는 블러 블롭 둘.
+   #start-screen 이 이미 position:absolute 인 화면 상자(+ z-index:1, 즉
+   자기만의 스택 컨텍스트)라, 안에서 z-index:-1 을 줘도 다른 화면 뒤로
+   새지 않고 이 화면 안 내용 뒤에만 깔린다. */
+.home-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(480px circle at 50% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%);
+}
+.home-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.22;
+  will-change: transform;
+}
+.home-blob-a {
+  top: 6%;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  background: var(--accent);
+  animation: homeBlobA 22s ease-in-out infinite alternate;
+}
+.home-blob-b {
+  bottom: 22%;
+  left: -70px;
+  width: 200px;
+  height: 200px;
+  background: var(--mint);
+  animation: homeBlobB 26s ease-in-out infinite alternate;
+}
+@keyframes homeBlobA {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-22px, 28px) scale(1.1); }
+}
+@keyframes homeBlobB {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(24px, -20px) scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-blob { animation: none; }
+}
+
 /* 로고는 설계 규격 그대로 — --t-logo(390 폭에서 66px), Barlow Condensed 700,
    행간 .92, 자간 -.03em. 마침표만 앰버로 찍는다.
    앰버를 글자에 쓰는 것은 흰 배경에서 1.25:1 이라 설계가 '금지' 로 박아 두었는데,
