@@ -1613,6 +1613,10 @@ async function checkSupabaseSession(){
  // 세션으로 바꾼다(supabase-js 의 detectSessionInUrl) — 소셜 로그인으로
  // 막 돌아온 경우가 바로 이 자리다.
  const { data } = await sb.auth.getSession();
+ // code 는 한 번 쓰면 끝이다(Supabase 가 재사용을 거부한다) — 성공하든
+ // 실패하든 주소에서 지운다. 안 지우면 새로고침할 때마다 이미 죽은
+ // code 로 다시 교환을 시도해 매번 조용히 실패한다.
+ if(oauthReturning) history.replaceState(history.state, '', location.pathname + (location.hash || ''));
  if(data && data.session && data.session.user){
  currentUserId = data.session.user.id;
  if(recovering){

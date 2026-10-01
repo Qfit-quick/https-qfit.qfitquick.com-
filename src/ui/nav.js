@@ -305,7 +305,18 @@ export function initNav({ translate, STATIC_UI } = {}) {
   });
 
   // 첫 화면을 기록해 둔다. 이게 없으면 첫 뒤로가기가 앱을 나가 버린다.
+  //
+  // 쿼리스트링(location.search)은 지우지 않고 그대로 둔다 — 전에는
+  // location.hash 만 남기고 통째로 버렸는데, 그게 소셜 로그인(2026-10-01)
+  // 을 깨뜨렸다. Supabase 가 pkce 흐름에서 돌아올 때 ?code=...&state=...
+  // 를 쿼리로 붙여 주는데, Supabase SDK 는 동적 import 라 로딩이 끝나기
+  // 전에(비동기라 이 함수보다 한참 늦게 끝난다) 여기서 먼저 쿼리를
+  // 지워버리면, SDK 가 실제로 그 code 를 읽을 즈음엔 이미 사라진 뒤라
+  // 로그인이 조용히 실패하고 그냥 첫 화면으로 떨어졌다 — "네이버·카카오
+  // 로그인 누르면 첫 화면으로 돌아온다"는 증상이 이것이다. Toss/카카오
+  // 결제 복귀(#billing-return?...)는 애초에 해시 뒤에 파라미터를 붙이는
+  // 방식이라 이 문제를 비켜 갔었다.
   const first = document.querySelector('.screen.active')?.id || 'start-screen';
-  history.replaceState({ s: first }, '', location.hash || '');
+  history.replaceState({ s: first }, '', location.search + (location.hash || ''));
   paint(first);
 }
