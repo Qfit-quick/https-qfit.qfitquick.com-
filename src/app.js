@@ -1627,8 +1627,7 @@ function showAuthReturnError(msg, detail){
  showAccountSubForm('login');
  ['account-login-error', 'account-signup-error'].forEach(id => {
  const el = document.getElementById(id);
- if(el){ el.style.color = ''; el.textContent = detail ? msg + '
-(' + String(detail).slice(0, 160) + ')' : msg; el.style.whiteSpace = 'pre-line'; }
+ if(el){ el.style.color = ''; el.textContent = detail ? msg + ' (' + String(detail).slice(0, 160) + ')' : msg; }
  });
  toast(msg);
 }
