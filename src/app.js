@@ -1504,6 +1504,8 @@ function updateAccountUI(){
  const loginForm = document.getElementById('account-login-form');
  const signupForm = document.getElementById('account-signup-form');
  const tabs = document.querySelector('.auth-tabs');
+ const socialRow = document.getElementById('account-social-row');
+ const socialDivider = document.querySelector('.auth-social-divider');
  const backBtn = document.getElementById('account-back-btn');
  // 홈 화면 위쪽의 "로그인" 글자 버튼 — 로그인·로그아웃 직후 이 함수를
  // 부르는데도 정작 이 버튼은 안 바뀌어서, 로그인해도 화면이 계속
@@ -1515,6 +1517,8 @@ function updateAccountUI(){
  loginForm.style.display = 'none';
  signupForm.style.display = 'none';
  if(tabs) tabs.style.display = 'none';
+ if(socialRow) socialRow.style.display = 'none';
+ if(socialDivider) socialDivider.style.display = 'none';
  if(backBtn){
  backBtn.textContent = '로그아웃';
  backBtn.onclick = async ()=>{
@@ -1534,6 +1538,8 @@ function updateAccountUI(){
  signupForm.style.display = (activeTab && activeTab.dataset.tab === 'signup') ? 'flex' : 'none';
  loginForm.style.display = (activeTab && activeTab.dataset.tab === 'signup') ? 'none' : 'flex';
  }
+ if(socialRow) socialRow.style.display = 'flex';
+ if(socialDivider) socialDivider.style.display = '';
  if(backBtn){
  backBtn.textContent = '계정 없이 계속하기';
  backBtn.onclick = ()=> showScreen(startScreen);
@@ -1550,16 +1556,25 @@ function updateAccountUI(){
 function showAccountSubForm(mode){
  const resetForm = document.getElementById('account-reset-form');
  const newpwForm = document.getElementById('account-newpw-form');
+ const checkEmailForm = document.getElementById('account-checkemail-form');
  const backBtn = document.getElementById('account-back-btn');
- if(mode === 'reset' || mode === 'newpw'){
+ if(mode === 'reset' || mode === 'newpw' || mode === 'checkEmail'){
  const loginForm = document.getElementById('account-login-form');
  const signupForm = document.getElementById('account-signup-form');
  const tabs = document.querySelector('.auth-tabs');
+ const socialRow = document.getElementById('account-social-row');
+ const socialDivider = document.querySelector('.auth-social-divider');
  if(loginForm) loginForm.style.display = 'none';
  if(signupForm) signupForm.style.display = 'none';
  if(tabs) tabs.style.display = 'none';
+ // 간편 로그인 버튼(2026-10-01)도 재설정·새 비밀번호·메일 확인 중엔
+ // 뜻이 없다 — 지금 하는 일과 무관한 선택지가 위에 떠 있으면 혼란만
+ // 준다.
+ if(socialRow) socialRow.style.display = 'none';
+ if(socialDivider) socialDivider.style.display = 'none';
  if(resetForm) resetForm.style.display = mode === 'reset' ? 'flex' : 'none';
  if(newpwForm) newpwForm.style.display = mode === 'newpw' ? 'flex' : 'none';
+ if(checkEmailForm) checkEmailForm.style.display = mode === 'checkEmail' ? 'flex' : 'none';
  // 새 비밀번호를 넣는 중엔 "계정 없이 계속하기"로 빠져나갈 길을 감춘다 —
  // 재설정 메일 링크로 받은 임시 세션 상태에서 어중간하게 나가면
  // 다시 들어왔을 때 뭘 하던 중인지 알 길이 없다.
@@ -1567,6 +1582,7 @@ function showAccountSubForm(mode){
  } else {
  if(resetForm) resetForm.style.display = 'none';
  if(newpwForm) newpwForm.style.display = 'none';
+ if(checkEmailForm) checkEmailForm.style.display = 'none';
  if(backBtn) backBtn.style.display = '';
  updateAccountUI();
  }
@@ -5036,8 +5052,12 @@ try{
  const { data, error } = await sb.auth.signUp({ email, password: pw });
  if(error) throw error;
  if(!data.session){
- errEl.style.color = 'var(--volt)';
- errEl.textContent = '가입 완료! 인증 메일이 1분 정도 후에 도착할 수 있습니다. (스팸함도 확인해주십시오)';
+ // 인증 메일 안내(2026-10-01 가독성 요청으로 전용 화면으로 뺐다) —
+ // 작은 에러 줄에 끼워 넣으면 다들 "메일에서 인증 버튼을 눌러야
+ // 끝난다"는 제일 중요한 한 줄을 놓쳤다. account-checkemail-form 참고.
+ const addrEl = document.getElementById('account-checkemail-address');
+ if(addrEl) addrEl.textContent = t(STATIC_UI.checkEmailSentTo).replace('%s', email);
+ showAccountSubForm('checkEmail');
  return;
  }
  currentUserId = data.user.id;
@@ -5109,6 +5129,11 @@ try{
  const resetBackBtn = document.getElementById('account-reset-back-btn');
  if(resetBackBtn) resetBackBtn.addEventListener('click', ()=> showAccountSubForm('login'));
 }catch(e){ console.error('reset back button failed:', e); }
+
+try{
+ const checkEmailBackBtn = document.getElementById('account-checkemail-back-btn');
+ if(checkEmailBackBtn) checkEmailBackBtn.addEventListener('click', ()=> showAccountSubForm('login'));
+}catch(e){ console.error('checkemail back button failed:', e); }
 
 try{
  const resetBtn = document.getElementById('account-reset-btn');

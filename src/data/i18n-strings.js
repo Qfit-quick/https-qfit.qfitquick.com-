@@ -227,6 +227,11 @@ export const STATIC_UI = {
  newPwBlurb: {ko:'새 비밀번호를 입력해주세요.', en:'Please enter a new password.', zh:'请输入新密码。'},
  newPwSaveBtn: {ko:'비밀번호 저장', en:'Save password', zh:'保存密码'},
  newPwSavedMsg: {ko:'비밀번호를 바꿨어요! 이제 이 비밀번호로 로그인할 수 있어요.', en:"Password changed! You can now log in with it.", zh:'密码已修改！现在可以用新密码登录了。'},
+ // 가입 직후 "메일함을 확인하라"는 전용 화면(2026-10-01).
+ checkEmailTitle: {ko:'메일함을 확인해주세요', en:'Check your email', zh:'请查收邮箱'},
+ checkEmailAction: {ko:'받으신 메일을 열어 <b>인증 버튼</b>을 눌러야 가입이 완료돼요', en:'Open the email and tap the <b>verification button</b> to finish signing up', zh:'请打开邮件并点击<b>验证按钮</b>完成注册'},
+ checkEmailSentTo: {ko:'%s로 보냈어요', en:'Sent to %s', zh:'已发送至%s'},
+ checkEmailSpam: {ko:'1분 정도 걸릴 수 있어요. 안 보이면 스팸함도 확인해주세요.', en:"It can take about a minute. If you don't see it, check your spam folder too.", zh:'可能需要等待约1分钟。如果没收到，请检查垃圾邮件文件夹。'},
  setCountLabel: {ko:'세트 수', en:'Sets', zh:'组数'},
  sets4: {ko:'4세트', en:'4 sets', zh:'4组'},
  sets8: {ko:'8세트', en:'8 sets', zh:'8组'},

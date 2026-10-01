@@ -1302,6 +1302,21 @@
  <div class="auth-error" id="account-newpw-error"></div>
  </div>
 
+ <!-- 가입 직후 "메일함을 확인하라"는 안내(2026-10-01 가독성 요청) —
+      예전엔 회원가입 버튼 바로 밑 작은 에러 줄(.auth-error, 14px)에
+      초록 글자로 끼워 넣었다. 그 자리가 평소엔 오류만 뜨는 자리라
+      눈이 잘 안 가고, 글자도 작아서 "메일에서 인증 버튼을 눌러야
+      끝난다"는 제일 중요한 한 줄을 다들 놓쳤다. 전용 화면으로
+      분리하고 그 한 줄만 색이 있는 상자로 키운다. -->
+ <div id="account-checkemail-form" class="auth-form" style="display:none;">
+ <div class="checkemail-icon" aria-hidden="true">📩</div>
+ <p class="tagline checkemail-center" data-i18n="checkEmailTitle">메일함을 확인해주세요</p>
+ <div class="checkemail-callout" data-i18n="checkEmailAction">받으신 메일을 열어 <b>인증 버튼</b>을 눌러야 가입이 완료돼요</div>
+ <p class="dim checkemail-center" id="account-checkemail-address"></p>
+ <p class="dim checkemail-center" data-i18n="checkEmailSpam">1분 정도 걸릴 수 있어요. 안 보이면 스팸함도 확인해주세요.</p>
+ <button class="link-btn" id="account-checkemail-back-btn" data-i18n="resetPwBack">로그인으로 돌아가기</button>
+ </div>
+
  <button class="link-btn" id="account-back-btn" data-i18n="skipAccount">계정 없이 계속하기</button>
  </div>
 

@@ -458,6 +458,22 @@
 .auth-form { display: flex; flex-direction: column; gap: var(--s-4); }
 .auth-error { font-size: var(--t-sm); color: var(--danger); min-height: 1.4em; }
 
+/* 가입 직후 "메일함 확인" 전용 화면(2026-10-01). 제일 중요한 한 줄
+   (인증 버튼을 눌러야 끝난다)을 민트 상자로 키워서 놓칠 수 없게 한다 —
+   나머지(수신 메일함·스팸함 안내)는 보조 설명으로 작게 둔다. */
+.checkemail-icon { font-size: 40px; line-height: 1; text-align: center; }
+.checkemail-center { text-align: center; }
+.checkemail-callout {
+  background: var(--mint);
+  color: var(--on-mint);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  text-align: center;
+  font-size: var(--t-lg);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
 /* ── 알림 줄 ───────────────────────────────────────────
    배너를 카드로 만들지 않는다. 왼쪽 색 막대 하나로 성격만 말한다. */
 .comeback-banner,
