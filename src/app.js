@@ -1612,7 +1612,11 @@ async function checkSupabaseSession(){
  // pkce 흐름은 주소의 ?code=... 를 getSession() 이 처음 불릴 때 알아서
  // 세션으로 바꾼다(supabase-js 의 detectSessionInUrl) — 소셜 로그인으로
  // 막 돌아온 경우가 바로 이 자리다.
- const { data } = await sb.auth.getSession();
+ // code 교환은 SDK 초기화(initialize) 안에서 일어나고, 거기서 난 오류는
+ // getSession() 이 돌려주지 않는다 — 실패 원인을 남기려면 초기화 결과를
+ // 따로 받아야 한다. 이미 초기화됐으면 그 결과를 그대로 돌려준다.
+ const init = oauthReturning ? await sb.auth.initialize() : null;
+ const { data, error } = await sb.auth.getSession();
  // code 는 한 번 쓰면 끝이다(Supabase 가 재사용을 거부한다) — 성공하든
  // 실패하든 주소에서 지운다. 안 지우면 새로고침할 때마다 이미 죽은
  // code 로 다시 교환을 시도해 매번 조용히 실패한다.
@@ -1630,8 +1634,17 @@ async function checkSupabaseSession(){
  updateAccountUI();
  updateBestBox();
  if(oauthReturning) showScreen(startScreen);
+ }else if(oauthReturning){
+ // code 교환이 실패했다(만료·재사용·code_verifier 없음 등). 예전엔 여기서
+ // 아무 말 없이 첫 화면에 남아 '로그인 누르면 첫 화면으로 돌아온다'로만
+ // 보였다 — 실패했다고 알려야 사용자도 우리도 원인을 알 수 있다.
+ console.error('oauth code exchange failed:', (init && init.error) || error);
+ toast(t(STATIC_UI.socialLoginFailed));
  }
- }catch(e){ console.error('session check failed:', e); }
+ }catch(e){
+ console.error('session check failed:', e);
+ if(oauthReturning) toast(t(STATIC_UI.socialLoginFailed));
+ }
 }
 
 // 더보기 맨 아래의 '최고 기록' 카드(설계 16). 숫자 하나와 그 곁줄만 둔다 —

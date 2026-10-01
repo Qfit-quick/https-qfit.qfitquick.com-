@@ -79,13 +79,18 @@ export async function getSupabase() {
 }
 
 /** 소셜 로그인(구글/카카오/네이버)에서 막 돌아온 주소인가 — pkce 흐름은
- *  주소 쿼리에 ?code=...&state=... 를 남긴다. 이 기기에 로그인 흔적이
- *  없어도(첫 로그인) SDK 를 받아야 그 code 를 세션으로 바꿀 수 있다. */
+ *  주소 쿼리에 ?code=... 만 남긴다. 이 기기에 로그인 흔적이 없어도(첫
+ *  로그인) SDK 를 받아야 그 code 를 세션으로 바꿀 수 있다.
+ *
+ *  state 는 보지 않는다(2026-10-01). 예전엔 code 와 state 가 둘 다
+ *  있어야 true 였는데, state 는 Supabase 와 카카오·네이버 사이에서만
+ *  오가고 Supabase 가 이 앱으로 돌려보낼 땐 code 만 붙인다 — 그래서
+ *  이게 늘 false 였고, 첫 로그인 기기는 SDK 를 받지도 않은 채 code 를
+ *  버리고 첫 화면에 머물렀다. supabase-js 도 code 하나만 본다. */
 export function hasOAuthCodeReturn() {
   if (!CLOUD_ENABLED) return false;
   try {
-    const q = location.search;
-    return /[?&]code=/.test(q) && /[?&]state=/.test(q);
+    return /[?&]code=/.test(location.search);
   } catch (e) {
     return false;
   }
