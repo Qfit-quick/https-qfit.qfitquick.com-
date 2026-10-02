@@ -623,16 +623,19 @@ export const STATIC_UI = {
  logDietRule: {ko:'아침·점심·저녁 세 칸이 다 차면 그날 식단을 지킨 것으로 셉니다. 간식은 세지 않습니다.', en:'Diet counts as kept when breakfast, lunch and dinner are all checked. Snacks do not count.', zh:'早、午、晚三格都勾上就算当天饮食达标。加餐不计入。'},
  logNoPlan: {ko:'신체정보를 넣으면 여기에 오늘 식단이 나옵니다', en:'Add your body info and the menu appears here', zh:'填写身体信息后这里会显示今日菜单'},
  logDietSuggested: {ko:'추천', en:'Suggested', zh:'推荐'},
- logExtra: {ko:'물 · 체중', en:'Water & weight', zh:'饮水与体重'},
+ logExtra: {ko:'물 · 걸음 · 체중', en:'Water, steps & weight', zh:'饮水 · 步数 · 体重'},
  // '물·체중'만 위의 운동·식단 체크와 달리 아무 설명 없이 병 그림과 입력칸부터
  // 나왔다 — 눌러도 위 '오늘 상태'는 안 바뀌니 뭐 하는 칸인지 몰라 헤맨다는
  // 피드백(2026-09-15). 식단 칸의 logDietRule 처럼 kick 바로 아래 한 줄을 둔다.
  // 2026-09-24 요청으로 설명문 대신 물 권장량 한 줄로 바꿨다.
  logExtraNote: {ko:'하루 2L 권장', en:'2 L a day recommended', zh:'建议每天 2 升'},
+ logWaterCup: {ko:'한 컵', en:'1 cup', zh:'一杯'},
+ logWaterCupNote: {ko:'한 컵 = 200mL', en:'1 cup = 200 mL', zh:'一杯 = 200mL'},
+ logWeightDelta: {ko:'지난 기록보다 %s', en:'%s vs last', zh:'比上次 %s'},
  logWater: {ko:'물', en:'Water', zh:'饮水'},
  logSteps: {ko:'만보기', en:'Steps', zh:'步数'},
  logStepsUnit: {ko:'보', en:' steps', zh:'步'},
- logStepsNote: {ko:'직접 적거나, 이 화면을 켜 둔 채 측정해요.', en:'Type it in, or measure while this screen stays open.', zh:'手动输入，或保持本页面打开时测量。'},
+ logStepsNote: {ko:'직접 적거나, 화면을 켜 둔 채 측정', en:'Type it, or measure with screen on', zh:'手动输入或保持页面打开测量'},
  logStepsMeasureStart: {ko:'측정 시작', en:'Start', zh:'开始测量'},
  logStepsMeasureStop: {ko:'측정 중지', en:'Stop', zh:'停止测量'},
  logStepsMeasuring: {ko:'측정 중입니다 — 폰을 들고 걸어보세요. 화면을 벗어나면 멈춰요.', en:"Measuring — walk with your phone. It stops if you leave this screen.", zh:'正在测量——带着手机走动吧。离开本页面会停止。'},
