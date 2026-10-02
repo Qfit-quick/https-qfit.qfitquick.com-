@@ -11,6 +11,7 @@ import { EXERCISES } from '../data/exercises.js';
 import { QCE_MOVEMENT_STANDARDS, QCE_PENALTY_RULES } from '../data/qceRulebook.js';
 import { loadBody, loadProgramProgress, saveProgramProgress, removeProgramProgress, loadProgramHistory, archiveProgramProgress } from '../health/store.js';
 import { programBgUrl } from '../core/assets.js';
+import { goBack } from './nav.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -51,7 +52,7 @@ export function initPrograms({ translate, STATIC_UI, onStartDay: startFn, onStar
   if (showFn) onShowScreen = showFn;
 
   el('qce-rulebook-back-btn')?.addEventListener('click', () => {
-    onShowScreen('programs-screen');
+    goBack('programs-screen');
   });
 }
 

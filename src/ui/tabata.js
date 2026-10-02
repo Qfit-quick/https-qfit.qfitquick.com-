@@ -10,6 +10,7 @@
 import { Sound } from '../audio/sound.js';
 import { speakExercise, speakTip, recordWorkoutSession } from '../app.js';
 import { loadBody } from '../health/store.js';
+import { goBack } from './nav.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -323,7 +324,7 @@ export function initTabata({ translate, STATIC_UI, onShowScreen: showFn } = {}) 
     renderSetup();
     onShowScreen('tabata-setup-screen');
   });
-  el('tabata-setup-back-btn')?.addEventListener('click', () => onShowScreen('more-screen'));
+  el('tabata-setup-back-btn')?.addEventListener('click', () => goBack('more-screen'));
 
   bindStepper('tabata-work-value', 'tabata-work-minus', 'tabata-work-plus', 4, 300);
   bindStepper('tabata-rest-value', 'tabata-rest-minus', 'tabata-rest-plus', 0, 300);

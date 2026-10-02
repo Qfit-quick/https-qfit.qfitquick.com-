@@ -113,6 +113,30 @@ const BELONGS_TO = {
 
 let bar = null;
 let ignoreNextPush = false;
+// 지금 떠 있는 화면. screenchange 때 갱신한다 — 다음 화면의 기록 칸에
+// "어디서 왔는지"(prev)로 같이 적어 두려고 쓴다.
+let lastId = null;
+
+/**
+ * 화면의 '뒤로'(머리의 ← 와 화면마다 있던 닫기 버튼). 2026-10-02 전에는
+ * 뒤로 버튼마다 갈 곳을 박아 두었다 — '내 루틴'은 어디서 들어왔든 홈으로,
+ * 설정은 더보기나 홈으로. 더보기에서 내 루틴을 열고 뒤로를 누르면 홈으로
+ * 튕겼다. 이제 기록 칸에 적힌 들어온 화면(prev)으로 돌아간다.
+ *
+ * 운동 흐름(미리보기·카운트다운·운동·결과 — IMMERSIVE)으로는 되돌아가지
+ * 않는다. 미리보기의 '뒤로'가 설정을 새로 쌓으므로, 설정의 '뒤로'가 기록을
+ * 따라가면 미리보기로 돌아가 둘 사이를 영영 오가게 된다. 그때와 들어온
+ * 기록이 없을 때(주소로 바로 연 경우)는 fallback 화면으로 간다.
+ */
+export function goBack(fallbackId = 'start-screen') {
+  const st = history.state;
+  const current = document.querySelector('.screen.active')?.id;
+  if (st && st.prev && st.s === current && st.prev !== current && !IMMERSIVE.has(st.prev)) {
+    history.back();
+    return;
+  }
+  showScreenById(fallbackId);
+}
 
 /** 라벨을 다시 그린다 — 처음 세울 때, 그리고 언어가 바뀔 때 둘 다 부른다. */
 function paintLabels() {
@@ -200,6 +224,8 @@ export function initNav({ translate, STATIC_UI } = {}) {
 
   document.addEventListener('screenchange', (e) => {
     const id = e.detail.id;
+    const from = lastId;
+    lastId = id;
     // 시트에서 무언가를 골라 화면이 넘어간 경우. 안 닫으면 시트가 뜬 채로
     // 뒤 화면만 바뀌어서, 돌아왔을 때 이미 열려 있는 시트를 다시 만난다.
     const hadSheet = isSheetOpen();
@@ -212,12 +238,12 @@ export function initNav({ translate, STATIC_UI } = {}) {
     if (hadSheet) {
       // 시트가 쌓아 둔 칸을 새 화면으로 덮어쓴다. 새로 쌓으면 뒤로가기 한 번이
       // 이미 사라진 시트로 돌아가는 헛걸음이 된다.
-      history.replaceState({ s: id }, '', '#' + id);
+      history.replaceState({ s: id, prev: from }, '', '#' + id);
       return;
     }
     // 같은 화면을 두 번 쌓지 않는다 — 그러면 뒤로가기를 두 번 눌러야 한다
     if (history.state?.s === id) return;
-    history.pushState({ s: id }, '', '#' + id);
+    history.pushState({ s: id, prev: from }, '', '#' + id);
   });
 
   window.addEventListener('popstate', (e) => {
@@ -317,6 +343,7 @@ export function initNav({ translate, STATIC_UI } = {}) {
   // 결제 복귀(#billing-return?...)는 애초에 해시 뒤에 파라미터를 붙이는
   // 방식이라 이 문제를 비켜 갔었다.
   const first = document.querySelector('.screen.active')?.id || 'start-screen';
+  lastId = first;
   history.replaceState({ s: first }, '', location.search + (location.hash || ''));
   paint(first);
 }

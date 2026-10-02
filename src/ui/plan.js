@@ -19,6 +19,7 @@ import { loadBody, saveBody, bodyReady, dayKey, loadDay, loadDietSwaps, saveDiet
 import { todaysIntensity, todaysQuote } from './gate.js';
 import { EXERCISES } from '../data/exercises.js';
 import { toast } from './toast.js';
+import { goBack } from './nav.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -536,7 +537,7 @@ export function initPlan({ translate, STATIC_UI, onStartRoutine, onShowScreen } 
       renderPlanScreen();
       goScreen('plan-screen');
     });
-    el('body-back-btn')?.addEventListener('click', () => goScreen('more-screen'));
+    el('body-back-btn')?.addEventListener('click', () => goBack('more-screen'));
   } catch (e) {
     console.error('body form setup failed:', e);
   }

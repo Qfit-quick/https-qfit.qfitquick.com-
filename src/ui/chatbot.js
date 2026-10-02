@@ -57,6 +57,7 @@ import { FOODS, EATING_OUT } from '../data/foods.js';
 import { MUSCLE_GROUPS } from '../data/muscle-groups.js';
 import { COACHES } from '../data/coaches.js';
 import { CHALLENGE_TRACKS, CHALLENGE_TRACK_ORDER } from '../data/challengeTracks.js';
+import { goBack } from './nav.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -779,7 +780,7 @@ export function initChatbot({ translate, STATIC_UI, onShowScreen } = {}) {
       }
     });
 
-    el('chatbot-back-btn')?.addEventListener('click', () => goScreen('more-screen'));
+    el('chatbot-back-btn')?.addEventListener('click', () => goBack('more-screen'));
 
     const showGreeting = () => {
       appendMessage('bot', `<p>${esc(t(S.chatbotGreeting))}</p>`);

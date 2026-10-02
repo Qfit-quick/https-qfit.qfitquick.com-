@@ -12,6 +12,7 @@
 import { QM_CATEGORIES, QM_MISSIONS, QM_POINTS_PER_MISSION, QM_DAILY_PICK_COUNT, QM_DAILY_HEALTH_PICK_COUNT } from '../data/qmissions.js';
 import { dayKey, shiftDay } from '../health/store.js';
 import { ICON } from './icons.js';
+import { goBack } from './nav.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -319,7 +320,7 @@ export function initQMission({ translate, STATIC_UI, onShowScreen } = {}) {
     goScreen('q-mission-screen');
   });
 
-  el('qmission-back-btn')?.addEventListener('click', () => goScreen('start-screen'));
+  el('qmission-back-btn')?.addEventListener('click', () => goBack('start-screen'));
 
   el('qmission-list')?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-mission]');

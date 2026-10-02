@@ -187,12 +187,26 @@ Supabase 클라이언트가 pkce 흐름이라(`src/cloud/supabase.js`), 소셜 �
     npm run coverage   # 스타일 없는 클래스
     npm run contrast   # 명도 대비
 
-`smoke`·`flow`·`shot`·`auth` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
+`smoke`·`flow`·`shot`·`auth`·`backnav` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
 안 돌린다.
 
 `npm run phases` 는 브라우저 없이 돈다(2026-09-26 부터 워크플로에도 붙어
 있다). `src/data/exercise-phases.js` 의 국면 시각이 실제 클립과 맞는지
 본다.
+
+## '뒤로'는 갈 곳을 박지 않는다 (2026-10-02)
+
+화면의 뒤로 버튼은 `showScreen(어딘가)` 가 아니라 `goBack(기본값)`
+(`src/ui/nav.js`)을 부른다. 화면 이동 기록에 들어온 화면(`prev`)을 같이
+적어 두고 그리로 돌아가며, 기본값은 기록이 없을 때만 쓴다. 예전엔 갈 곳이
+박혀 있어서 "더보기 → 내 루틴 → 뒤로"가 홈으로 튕겼고, 계정 화면의 ← 는
+로그아웃 버튼을 대신 눌러서 로그인한 사람을 로그아웃시켰다.
+
+새 하위 화면을 만들면 `src/ui/header.js` 의 `SUB_SCREENS` 에 넣어 위쪽 ←
+를 달고, 그 뒤로 버튼도 `goBack` 을 쓴다. 홈 화면에 설치한 아이폰 앱엔
+시스템 뒤로가기가 없어서, 위쪽 ← 가 없으면 나갈 길이 탭바뿐이다.
+
+    npm run build && npm run backnav   # 들어간 모든 화면이 들어온 곳으로 돌아오는지
 
 ## 동작 국면 시각은 클립에 묶여 있다
 

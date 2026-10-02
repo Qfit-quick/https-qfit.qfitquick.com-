@@ -12,6 +12,8 @@
 // 있던 '닫기' 를 대신 눌러 준다 — 그 버튼이 어디로 돌아갈지를 이미 알고 있고,
 // 두 벌로 만들면 한쪽만 고쳤을 때 갈라진다.
 
+
+import { goBack } from './nav.js';
 // 화면 id → [사전 키, 원래 있던 뒤로 버튼]
 const SUB_SCREENS = {
   // 'todayWod' 는 미리보기 화면의 이름이다. 두 화면에 같은 제목을 달면
@@ -23,7 +25,11 @@ const SUB_SCREENS = {
   // 머리에도 이름을 달면 제목이 둘이 된다. 머리에는 진행 점과 건너뛰기만.
   'ai-quiz-screen': [null, '#ai-quiz-back-btn'],
   'routines-screen': ['routinesTitle', '#routines-back-btn'],
-  'account-screen': ['accountEyebrow', '#account-back-btn'],
+  // 계정 화면은 원래 버튼을 대신 누르지 않는다(2026-10-02). 그 자리의
+  // #account-back-btn 은 '뒤로'가 아니라 '계정 없이 계속하기' — 로그인한
+  // 뒤에는 '로그아웃'(app.js 의 updateAccountUI)이 된다. 예전엔 ← 가 그걸
+  // 눌러서, 로그인한 채 계정 화면에서 ← 를 누르면 로그아웃됐다.
+  'account-screen': ['accountEyebrow', null],
   'settings-screen': ['settingsBtn', '#settings-back-btn'],
   // 신체정보는 계획 아래 화면이다 — 저장하면 계획으로 나가므로 뒤로 갈 곳이
   // 있다. 계획·기록지는 탭으로 바로 닿으니 큰 제목 쪽(아래 목록)이다.
@@ -32,7 +38,18 @@ const SUB_SCREENS = {
   // 미리보기부터 탭바를 감춘다. 그러면 뒤로 버튼이 유일한 탈출구라
   // 이 화면에도 머리가 반드시 있어야 한다(설계의 주석 핀 4번).
   'wod-preview-screen': ['todayWod', '#preview-back-btn'],
+  // 아래 넷은 2026-10-02 에 더했다. 나가는 길이 화면 맨 아래 '닫기' 뿐이라
+  // 끝까지 내려야 했고, 홈 화면에 설치한 아이폰 앱엔 시스템 뒤로가기도 없다.
+  // 기록·회복은 예전에 탭이라 큰 제목만 두었는데, 탭에서 빠진 뒤로는(nav.js
+  // 의 TABS 주석) 들어온 화면으로 돌아갈 ← 가 하나도 없었다.
+  'records-screen': ['recordsBtn', '#records-back-btn'],
+  'recovery-screen': ['recoveryTitle', '#recovery-back-btn'],
+  'q-mission-screen': ['qmScreenTitle', '#qmission-back-btn'],
+  // 약관은 본문 소제목(사업자 정보·개인정보처리방침…)이 .lb-title 이라 큰
+  // 제목을 접으면 첫 소제목이 사라진다 — KEEP_TITLES 로 남긴다.
+  'legal-screen': ['setLegal', '#legal-back-btn'],
 };
+const KEEP_TITLES = new Set(['legal-screen']);
 
 let dict = null;
 let translate = null;
@@ -57,9 +74,20 @@ export function initHeaders({ STATIC_UI, t, ICON }) {
       (key ? `<h2 class="hd-title" data-hd-key="${key}"></h2>` : '');
 
     hd.querySelector('.hd-back').addEventListener('click', () => {
-      const back = document.querySelector(backSel);
+      if (id === 'account-screen') {
+        // 재설정 요청·메일 확인 폼이 떠 있으면 로그인 폼으로 한 단계만 돌아간다.
+        const sub = ['account-reset-form', 'account-checkemail-form']
+          .find((f) => { const n = document.getElementById(f); return n && n.style.display && n.style.display !== 'none'; });
+        if (sub) {
+          document.getElementById(sub === 'account-reset-form' ? 'account-reset-back-btn' : 'account-checkemail-back-btn')?.click();
+          return;
+        }
+        goBack('more-screen');
+        return;
+      }
+      const back = backSel && document.querySelector(backSel);
       if (back) back.click();
-      else history.back();
+      else goBack();
     });
 
     // 오른쪽 액션 한 자리. 설계의 머리 규칙은 '뒤로 · 제목 · 오른쪽 하나' 이고,
@@ -77,8 +105,8 @@ export function initHeaders({ STATIC_UI, t, ICON }) {
     //
     // 다만 '계정 없이 계속하기' 처럼 뜻이 있는 버튼은 남긴다. 그건 뒤로가
     // 아니라 선택지고, 감추면 그 선택이 화면에서 사라진다.
-    const back = document.querySelector(backSel);
-    const generic = back && ['lbBackBtn', 'backBtn'].includes(back.dataset.i18n);
+    const back = backSel && document.querySelector(backSel);
+    const generic = back && ['lbBackBtn', 'backBtn', 'closeBtn'].includes(back.dataset.i18n);
     if (generic && back.closest('.screen') === screen) back.hidden = true;
 
     // 큰 제목은 탭바로 바로 닿는 네 화면의 것이다. 하위 화면에서는 헤더가
@@ -86,7 +114,7 @@ export function initHeaders({ STATIC_UI, t, ICON }) {
     // 두 자리가 같은 사전 키를 읽으니 우연이 아니라 늘 그렇다.
     // 눈꼬리(eyebrow)도 같이 접는다. 제목 없이 그것만 남으면 무엇의
     // 머리말인지 알 수 없는 한 줄이 된다.
-    const hero = screen.querySelector(':scope > .lb-title');
+    const hero = KEEP_TITLES.has(id) ? null : screen.querySelector(':scope > .lb-title');
     if (hero) hero.hidden = true;
     // 눈꼬리는 제목이 있든 없든 접는다. 설정 화면처럼 제목 없이 눈꼬리만
     // 있는 곳에서는 머리의 '설정' 바로 아래 '설정' 이 또 한 번 찍혔다.
@@ -101,7 +129,7 @@ export function initHeaders({ STATIC_UI, t, ICON }) {
   //  · '닫기' 는 탭바가 이미 하는 일이다. 목록이 길면 스크롤을 끝까지 내려야
   //    나가는 길이 보이는데, 그 길은 화면 아래에 늘 떠 있는 탭바다.
   // 버튼은 지우지 않고 감춘다 — 다른 곳에서 눌러 이동하는 데 쓴다.
-  for (const id of ['records-screen', 'recovery-screen', 'more-screen', 'plan-screen', 'log-screen']) {
+  for (const id of ['more-screen', 'plan-screen', 'log-screen']) {
     const screen = document.getElementById(id);
     if (!screen) continue;
     const eyebrow = screen.querySelector(':scope > .eyebrow');

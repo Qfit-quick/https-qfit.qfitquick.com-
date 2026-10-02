@@ -4,6 +4,7 @@ import { toast } from './ui/toast.js';
 import { advanceProgramProgress, clearPendingProgramDay } from './ui/programs.js';
 import { getSupabase, hasStoredSession, hasOAuthCodeReturn, hasPendingPkceVerifier, waitForUrlAuthEvent, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
 import { refreshBillingStatus } from './ui/billing.js';
+import { goBack } from './ui/nav.js';
 import { heartbeat as presenceHeartbeat, getTodayActiveCount } from './cloud/presence.js';
 import * as reminder from './notify/reminder.js';
 import { RECOVERY_CARDS, INJURY_GUIDES, SPECIAL_GUIDES, DIET_GUIDES } from './data/recovery.js';
@@ -947,7 +948,7 @@ try{
  if(vibrationToggle) vibrationToggle.checked = vibrationEnabled;
 
  if(openSettingsBtn) openSettingsBtn.addEventListener('click', ()=>{ settingsEnteredFromMore = false; showScreen(settingsScreen); });
- if(settingsBackBtn) settingsBackBtn.addEventListener('click', ()=> showScreen(settingsEnteredFromMore ? moreScreen : startScreen));
+ if(settingsBackBtn) settingsBackBtn.addEventListener('click', ()=> goBack(settingsEnteredFromMore ? 'more-screen' : 'start-screen'));
  if(bgmToggle) bgmToggle.addEventListener('change', ()=>{
  Sound.setBgmMuted(!bgmToggle.checked);
  try{ localStorage.setItem('wodrush_bgm_v1', bgmToggle.checked ? 'on' : 'off'); }catch(e){}
@@ -2116,7 +2117,7 @@ try{
  renderRecordsScreen();
  showScreen(recordsScreen);
  });
- if(recordsBackBtn) recordsBackBtn.addEventListener('click', ()=> showScreen(moreScreen));
+ if(recordsBackBtn) recordsBackBtn.addEventListener('click', ()=> goBack('more-screen'));
 }catch(e){ console.error('records button setup failed:', e); }
 
 try{
@@ -2139,7 +2140,7 @@ try{
  document.querySelectorAll('.recovery-trigger-btn').forEach(btn=>{
  btn.addEventListener('click', ()=> showScreen(recoveryScreen));
  });
- if(recoveryBackBtn) recoveryBackBtn.addEventListener('click', ()=> showScreen(moreScreen));
+ if(recoveryBackBtn) recoveryBackBtn.addEventListener('click', ()=> goBack('more-screen'));
 
  const openMoreBtn = document.getElementById('open-more-btn');
  const moreBackBtn = document.getElementById('more-back-btn');
@@ -2259,7 +2260,7 @@ try{
  Sound.stopBGM();
  if(videoGalleryGrid) videoGalleryGrid.querySelectorAll('video').forEach(v=> v.pause());
  closeVideoLightbox();
- showScreen(startScreen);
+ goBack('more-screen');
  });
  }
  // '부위별 부상 대처법 바로가기 ↓' 버튼은 없앴다 — 부위 검색이 화면 맨 위로
@@ -2860,7 +2861,7 @@ try{
  const currentStep = document.querySelector('.quiz-step[style*="flex"]');
  const stepNum = currentStep ? Number(currentStep.dataset.step) : 0;
  if(stepNum > 0){ showQuizStep(stepNum - 1); }
- else { showScreen(startScreen); }
+ else { goBack('start-screen'); }
  });
  }
 
@@ -3036,7 +3037,8 @@ try{
  renderRoutinesList();
  showScreen(routinesScreen);
  });
- if(routinesBackBtn) routinesBackBtn.addEventListener('click', ()=> showScreen(startScreen));
+ // 뒤로는 들어온 화면으로(더보기·홈 어디서든) — ui/nav.js 의 goBack 참고.
+ if(routinesBackBtn) routinesBackBtn.addEventListener('click', ()=> goBack('start-screen'));
 }catch(e){ console.error('routines UI setup failed:', e); }
 
 // 하단 바의 '이 조합을 내 루틴으로 저장'(설계 05).
@@ -3096,7 +3098,7 @@ try{
  try{ syncPlayBtn(); }catch(e){}
  try{ revealDurationCard(); }catch(e){}
  });
- if(manualBackBtn) manualBackBtn.addEventListener('click', ()=> showScreen(startScreen));
+ if(manualBackBtn) manualBackBtn.addEventListener('click', ()=> goBack('start-screen'));
 }catch(e){ console.error('manual select buttons failed:', e); }
 
 try{
@@ -3293,7 +3295,7 @@ setupBackBtn.addEventListener('click', ()=>{
  // 프로그램 날을 시작해 놓고 설정에서 나가면, 안 한 운동이 나중에 다른
  // 운동 완주로 잘못 세지 않게 대기 상태를 지운다.
  try{ clearPendingProgramDay(); }catch(e){}
- showScreen(startScreen);
+ goBack('start-screen');
 });
 
 playBtn.addEventListener('touchstart', ()=> Sound.unlock(), {passive:true});
@@ -4994,7 +4996,7 @@ try{
  document.getElementById('settings-export-btn')?.addEventListener('click', exportHistoryCsv);
  document.getElementById('settings-wipe-btn')?.addEventListener('click', wipeAllData);
  document.getElementById('settings-legal-btn')?.addEventListener('click', ()=> showScreen(legalScreen));
- document.getElementById('legal-back-btn')?.addEventListener('click', ()=> showScreen(settingsScreen));
+ document.getElementById('legal-back-btn')?.addEventListener('click', ()=> goBack('settings-screen'));
 
  // 화면 맨 아래 판 번호. 무언가 이상할 때 "어느 판을 보고 있나" 를
  // 물어볼 수 있는 유일한 자리다.
