@@ -282,36 +282,36 @@ Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-kakao-billing.sql`
    - 대시보드가 보여 주는 **Callback URL** 을 복사해 2번의 네이버 앱
      설정에도 등록돼 있는지 다시 확인한다.
 
-**지금 실제 설정(2026-10-02)과 그 이유.** 대시보드의 Naver 제공자는 처음에
-**OIDC 유형**(Issuer `https://nid.naver.com`)으로 만들어졌다. 이 유형은
-저장할 때마다 자동 탐색이 다시 돌아서, 위 4번처럼 Manual 로 UserInfo URL 을
-넣어도 저장 직후 네이버 원래 주소(`openapi.naver.com/v1/nid/me`)로
-되돌아간다(실제로 그랬다). 그 주소는 이메일을 `response` 로 감싸 주므로
-Supabase 가 못 찾고, 앱에는 `Error getting user email from external
-provider` 로 돌아온다. 예전엔 이 안내가 '새 판 즉시 새로고침'에 지워져서
-"누르면 첫 화면으로 돌아온다"로만 보였다.
-
-유형은 바꿀 수 없고, OAuth2 유형으로 새로 만들려면 Client Secret 을 다시
-넣어야 한다. 그래서 **탐색이 읽는 문서를 우리 워커가 준다**:
+**지금 실제 설정(2026-10-02) — 앱이 쓰는 것은 `custom:naver-login` 이다.**
 
 | 칸 | 값 |
 | --- | --- |
-| Configuration Method | Auto-discovery |
-| Issuer URL | `https://nid.naver.com` |
-| Discovery URL | `https://qfit.qfitquick.com/api/auth/naver-openid-configuration` |
-| Scopes | `openid, profile` |
+| Provider Identifier | `naver-login` (앱: `custom:naver-login`) |
+| Configuration Method | Manual configuration |
+| Issuer URL | `https://nid.naver.com/oauth2.0` |
+| Authorization URL | `https://nid.naver.com/oauth2.0/authorize` |
+| Token URL | `https://nid.naver.com/oauth2.0/token` |
+| Userinfo URL | `https://qfit.qfitquick.com/api/auth/naver-userinfo` |
+| JWKS URI | 비움 |
+| Scopes | `profile` |
 
-`worker/api/naverAuth.js` 의 `naverOpenidConfiguration` 이 네이버의 진짜
-설정 문서를 받아 `userinfo_endpoint` 만 `/api/auth/naver-userinfo`(이메일을
-펴 주는 중계)로 바꿔 돌려준다. issuer·jwks·토큰 주소는 네이버 것 그대로다.
+실제 크롬에서 로그인해 이메일·이름까지 들어오는 것을 확인했다. 같은
+이메일로 이미 가입한 계정이 있으면 Supabase 가 그 계정에 합쳐 준다.
 
-그래도 이메일 오류가 남아서 **Allow users without email 을 켰다**
-(2026-10-02). 이걸 켠 뒤 실제 크롬에서 네이버 로그인이 끝까지 됐다. 다만
-그 계정엔 이메일이 비어 있었다 — Supabase 가 OIDC 에선 위 중계를 안
-부르는지, 네이버 앱의 '제공 정보'에 이메일이 꺼져 있는지는 아직 못
-가렸다. 앱은 계정을 이메일이 아니라 사용자 id 로 구분하므로 동작에는
-문제가 없다. 이메일까지 받으려면 네이버 개발자센터 → 내 애플리케이션 →
-API 설정 → 제공 정보에서 "이메일 주소"를 켜고 다시 로그인해 본다.
+**왜 이렇게 됐나 — 지뢰 둘:**
+
+- **Issuer 에 `https://nid.naver.com` 을 넣으면 안 된다.** 그 주소엔 OIDC
+  탐색 문서가 있어서, 저장할 때마다 자동 탐색이 돌아 직접 넣은 주소를
+  네이버 원래 주소로 덮어쓴다(실제로 그랬다). Issuer 칸은 필수라 비울 수도
+  없어서, 탐색 문서가 없는(404) `https://nid.naver.com/oauth2.0` 을 넣는다.
+- **처음 만든 `custom:naver` 는 OIDC 유형이라 못 쓴다.** 유형은 만든 뒤
+  바꿀 수 없다. OIDC 에선 Supabase 가 네이버 ID 토큰만 읽는데 거기엔
+  이메일이 없어서, `Error getting user email from external provider` 로
+  막히거나(이메일 필수) 이메일 없는 계정이 생겼다. 지금은 안 쓰는
+  제공자다 — 대시보드에서 꺼도/지워도 된다. 그 제공자로 2026-10-02 에
+  생긴 이메일 없는 테스트 계정이 Users 에 하나 남아 있을 수 있다.
+  워커의 `/api/auth/naver-openid-configuration`(탐색 문서 중계)도 그
+  제공자용으로 만들었던 것이라 지금은 쓰이지 않는다.
 
 **scope 에 `email` 을 넣으면 안 된다**(2026-10-01). 네이버는
 `openid`·`profile` 만 받고, `email` 이 섞이면 로그인 화면도 안 띄우고
