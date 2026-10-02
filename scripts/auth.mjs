@@ -98,11 +98,12 @@ const RECOVERY_VERIFIER = { [SKEY + '-code-verifier']: JSON.stringify('v'.repeat
   const ver = ((await ctx.storageState()).origins.find((o) => o.origin === ORIGIN)?.localStorage || []).map((x) => x.name).filter((k) => k.endsWith('code-verifier'));
   const rt = log.authorize && new URL(log.authorize).searchParams.get('redirect_to');
   check('7 kakao button → authorize with redirect_to=origin, verifier stored', /provider=kakao/.test(log.authorize || '') && rt && rt.startsWith(ORIGIN + '/') && ver.length > 0, { authorize: log.authorize, ver }); await ctx.close(); }
-// 7b. 네이버 버튼 → scope 에 email 이 없어야 한다(있으면 네이버가 invalid_scope 로 즉시 돌려보낸다)
+// 7b. 네이버 버튼 → OAuth2 유형 제공자(custom:naver-login)로 가고, 앱이 scope 를 덧씌우지 않는다
+//     (네이버는 scope 에 email 이 있으면 invalid_scope 로 즉시 돌려보낸다 — 대시보드 값 'profile' 을 그대로 쓴다)
 { const { pg, ctx, log } = await scenario({ url: '/' });
-  await pg.evaluate(() => document.querySelector('#account-social-row [data-provider="custom:naver"]').click()); await pg.waitForTimeout(2500);
+  await pg.evaluate(() => document.querySelector('#account-social-row [data-provider="custom:naver-login"]').click()); await pg.waitForTimeout(2500);
   const sc = log.authorize && new URL(log.authorize).searchParams.get('scopes');
-  check('7b naver button → scopes=openid profile (no email)', /provider=custom%3Anaver/.test(log.authorize || '') && sc === 'openid profile', { authorize: log.authorize }); await ctx.close(); }
+  check('7b naver button → custom:naver-login, no scope override', /provider=custom%3Anaver-login/.test(log.authorize || '') && sc === null, { authorize: log.authorize }); await ctx.close(); }
 // 8. 로그인 상태에서 로그아웃 → 프리미엄 잠김
 { const { pg, ctx, log } = await scenario({ url: '/', storage: { [SKEY]: JSON.stringify(SESSION) }, billing: { status: 'active' } });
   const before = await state(pg);
