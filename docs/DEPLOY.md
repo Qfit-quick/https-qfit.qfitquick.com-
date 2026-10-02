@@ -307,8 +307,14 @@ Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-kakao-billing.sql`
 - **처음 만든 `custom:naver` 는 OIDC 유형이라 못 쓴다.** 유형은 만든 뒤
   바꿀 수 없다. OIDC 에선 Supabase 가 네이버 ID 토큰만 읽는데 거기엔
   이메일이 없어서, `Error getting user email from external provider` 로
-  막히거나(이메일 필수) 이메일 없는 계정이 생겼다. 지금은 안 쓰는
-  제공자라 2026-10-02 에 **껐다**(Disabled, 지우지는 않았다 — 다시 켤 수 있다). 그 제공자로 2026-10-02 에
+  막히거나(이메일 필수) 이메일 없는 계정이 생겼다. 새 앱은 안 쓰지만
+  **켜 둔다.** 2026-10-02 에 껐더니, 홈 화면에 설치된 앱(옛 판을 아직 들고
+  있다)에서 네이버를 누르면 `custom provider custom:naver is disabled`
+  원문 오류 화면에 갇혔다. 그래서 다시 켜고 **Allow users without email 만
+  껐다** — 켜 두면 옛 판으로 로그인할 때 이메일 없는 별도 계정이 생겨
+  기록이 갈라진다. 끈 상태에선 옛 판 사용자는 앱 안에 '이메일 제공' 안내를
+  보고, 앱이 새 판으로 바뀐 뒤 다시 누르면 `custom:naver-login` 으로 된다.
+  모든 기기가 새 판으로 넘어갔다고 볼 수 있을 만큼(몇 주) 지난 뒤에 끈다. 그 제공자로 2026-10-02 에
   생긴 이메일 없는 테스트 계정이 Users 에 하나 남아 있을 수 있다.
   워커의 `/api/auth/naver-openid-configuration`(탐색 문서 중계)도 그
   제공자용으로 만들었던 것이라 지금은 쓰이지 않는다.
