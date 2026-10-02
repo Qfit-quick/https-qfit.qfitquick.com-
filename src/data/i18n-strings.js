@@ -35,7 +35,9 @@ export const STATIC_UI = {
  quickModeBtn: {ko:'3초 후 시작', en:'Starts in 3s', zh:'3秒后开始'},
  quickModeSub: {ko:'난이도만 고르면 끝', en:'Just pick a level', zh:'选个难度就行'},
  routinesTitle: {ko:'저장한 루틴', en:'Saved Routines', zh:'已保存的方案'},
- routinesEmpty: {ko:'아직 저장한 루틴이 없습니다.', en:"You haven't saved any routines yet.", zh:'还没有保存过方案。'},
+ routinesEmpty: {ko:'아직 저장한 루틴이 없어요', en:"No saved routines yet", zh:'还没有保存的方案'},
+ routinesEmptyHow: {ko:'운동을 고른 뒤 아래의 "이 조합을 내 루틴으로 저장"을 체크하면 여기 모여요. 다음부터는 한 번에 시작할 수 있어요.', en:'Pick your exercises, then tick "Save this as one of my routines" at the bottom. They gather here so you can start them in one tap.', zh:'选好动作后勾选底部的"把这个组合存为我的方案"，就会收集在这里，下次一键开始。'},
+ routinesEmptyCta: {ko:'운동 고르러 가기', en:'Pick exercises', zh:'去选动作'},
  saveRoutineBtn: {ko:'저장', en:'Save', zh:'保存'},
  accountBtn: {ko:'로그인', en:'Log In', zh:'登录'},
  accountBtnLoggedIn: {ko:'로그아웃', en:'Log Out', zh:'登出'},
@@ -122,6 +124,7 @@ export const STATIC_UI = {
  // 자리를 대신한다 — 그 기능 자체는 홈의 1분 시작 시트·결과 화면에
  // 그대로 남아 있어 여기서 하나 빠져도 사라지지 않는다.
  heartgameMenuLabel: {ko:'큐피드 게임', en:'Cupid Game', zh:'丘比特游戏'},
+ heartgameMenuSub: {ko:'하트를 맞혀 화살 쏘기 · 반응 속도', en:'Shoot arrows at hearts · reaction speed', zh:'射箭打爱心 · 反应速度'},
  heartgamePauseLabel: {ko:'일시정지', en:'Pause', zh:'暂停'},
  heartgameTitle: {ko:'큐피드 게임 💘', en:'Cupid Game 💘', zh:'丘比特游戏 💘'},
  heartgameIntro: {
@@ -622,6 +625,7 @@ export const STATIC_UI = {
  logWorkoutCheckSub: {ko:'앱에서 완주하면 저절로 켜집니다. 앱 밖에서 한 운동은 직접 눌러주십시오.', en:'Turns on by itself when you finish a session here. Tap it yourself for training done outside the app.', zh:'在App里完成会自动打勾。App以外的运动请手动勾选。'},
  logDietRule: {ko:'아침·점심·저녁 세 칸이 다 차면 그날 식단을 지킨 것으로 셉니다. 간식은 세지 않습니다.', en:'Diet counts as kept when breakfast, lunch and dinner are all checked. Snacks do not count.', zh:'早、午、晚三格都勾上就算当天饮食达标。加餐不计入。'},
  logNoPlan: {ko:'신체정보를 넣으면 여기에 오늘 식단이 나옵니다', en:'Add your body info and the menu appears here', zh:'填写身体信息后这里会显示今日菜单'},
+ logNoPlanCta: {ko:'신체정보 넣고 오늘 식단 받기 ›', en:'Add body info to get today’s menu ›', zh:'填写身体信息，获取今日菜单 ›'},
  logDietSuggested: {ko:'추천', en:'Suggested', zh:'推荐'},
  logExtra: {ko:'물 · 걸음 · 체중', en:'Water, steps & weight', zh:'饮水 · 步数 · 体重'},
  // '물·체중'만 위의 운동·식단 체크와 달리 아무 설명 없이 병 그림과 입력칸부터

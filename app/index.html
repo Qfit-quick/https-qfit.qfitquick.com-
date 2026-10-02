@@ -281,7 +281,6 @@
       repeat-trigger-btn 클래스를 쓰는 나머지 두 자리(홈의 1분 시작 시트,
       결과 화면)에 여전히 남아 있다. 이 버튼만 그 클래스에서 빼고
       heartgame-screen 을 여는 손잡이로 바꿨다. -->
- <button class="repeat-chip" id="open-heartgame-btn" type="button" data-i18n="heartgameMenuLabel">큐피드 게임</button>
 
  <!-- 로그인했을 때만 뜬다(showScreen 의 more-screen 분기). 익명 상태로는
       ?ref= 에 넣을 내 아이디가 없다. -->
@@ -297,6 +296,8 @@
       한 줄 한 줄을 구별할 실마리가 없다 — 시트의 .row44 가 이미 쓰는
       아이콘 상자(.row-ic)를 그대로 가져와 자리마다 다른 표식을 준다. -->
  <div class="menu-box">
+ <!-- 큐피드 게임도 다른 줄과 같은 모양으로(2026-10-02) — 혼자 큰 테두리 버튼으로
+      맨 위에 떠 있어 더보기의 첫인상이 '게임 버튼'이었다. 맨 아래(설정 앞)로. -->
  <button class="menu-btn" id="open-body-btn">
  <span class="row-ic" data-icon="body"></span>
  <span class="row-main"><span class="row-t" data-i18n="bodyTitle">신체정보</span><span class="row-d dim" id="body-summary-sub"></span></span>
@@ -327,6 +328,10 @@
  <button class="menu-btn" id="open-chatbot-btn">
  <span class="row-ic" data-icon="chat"></span>
  <span class="row-main"><span class="row-t" data-i18n="chatbotBtn">챗봇</span><span class="row-d dim" data-i18n="chatbotSub">자주 묻는 질문 · 부위별 도움말</span></span>
+ </button>
+ <button class="menu-btn" id="open-heartgame-btn" type="button">
+ <span class="row-ic" data-icon="dice"></span>
+ <span class="row-main"><span class="row-t" data-i18n="heartgameMenuLabel">큐피드 게임</span><span class="row-d dim" data-i18n="heartgameMenuSub">하트를 맞혀 화살 쏘기 · 반응 속도</span></span>
  </button>
  <button class="menu-btn" id="open-settings-btn-more">
  <span class="row-ic" data-icon="settings"></span>
@@ -1241,6 +1246,9 @@
       키워드로 찾아 주는 안내다. 회복 화면의 INJURY_GUIDES 를 그대로
       읽어서 답하므로 내용이 두 곳에서 갈라지지 않는다. -->
  <div class="screen" id="chatbot-screen">
+ <!-- '새 대화'는 머리 오른쪽 자리로(header.js 의 data-hd-aside). 화면 아래에
+      두었더니 '이전'이 머리로 올라가 감춰진 뒤 혼자 화면 중간에 떠 있었다. -->
+ <button class="link-btn chatbot-reset-btn" id="chatbot-reset-btn" data-hd-aside data-i18n="chatbotResetBtn">새 대화</button>
  <div class="chatbot-messages" id="chatbot-messages"></div>
  <div class="chatbot-suggest" id="chatbot-suggest"></div>
  <!-- 로컬 답은 이미 위에 떴다(항상 즉시). 이 줄은 그 옆에 서버(dev:chat)
@@ -1254,7 +1262,6 @@
  </form>
  <div class="chatbot-foot-row">
  <button class="back-link-btn" id="chatbot-back-btn" data-i18n="backBtn">이전</button>
- <button class="link-btn chatbot-reset-btn" id="chatbot-reset-btn" data-i18n="chatbotResetBtn">새 대화</button>
  </div>
  </div>
 

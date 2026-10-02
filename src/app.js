@@ -2982,7 +2982,15 @@ function renderRoutinesList(){
  const container = document.getElementById('routines-list');
  if(!container) return;
  if(!list.length){
- container.innerHTML = '<div class="lb-empty">아직 저장한 루틴이 없습니다.</div>';
+ // 빈 화면에 한 줄만 두면 루틴을 어떻게 만드는지 알 길이 없다(2026-10-02).
+ // 만드는 자리는 운동 설정 화면 아래의 '이 조합을 내 루틴으로 저장' 체크다.
+ container.innerHTML = '<div class="routines-empty">' +
+ `<span class="routines-empty-ic" aria-hidden="true">${ICON.repeat}</span>` +
+ `<p class="routines-empty-t">${t(STATIC_UI.routinesEmpty)}</p>` +
+ `<p class="routines-empty-d">${t(STATIC_UI.routinesEmptyHow)}</p>` +
+ `<button type="button" class="primary routines-empty-btn" id="routines-empty-start">${t(STATIC_UI.routinesEmptyCta)}</button>` +
+ '</div>';
+ document.getElementById('routines-empty-start')?.addEventListener('click', ()=> showScreen(setupScreen));
  return;
  }
  container.innerHTML = '';

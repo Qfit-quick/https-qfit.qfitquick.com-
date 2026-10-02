@@ -108,11 +108,17 @@ function paintChecks(dateStr) {
   html += `<div class="section-label">${esc(t(S.logDietSection))}</div>`;
   MEAL_SPLIT.forEach((m) => {
     const planned = meals && meals.find((x) => x.id === m.id);
+    // 신체정보가 없으면 줄마다 같은 안내("신체정보를 넣으면…")를 네 번
+    // 되풀이했다(2026-10-02 전). 줄은 비워 두고 아래에 한 번만, 바로 가는
+    // 버튼으로 둔다.
     const sub = planned
       ? `(${t(S.logDietSuggested)}: ${planned.rows.slice(0, 2).map((r) => t(r.food.label)).join(', ')} · ${planned.kcal}kcal)`
-      : t(S.logNoPlan);
+      : '';
     html += row(m.id, 'meal', !!(day.meals || {})[m.id], t(m.label), sub);
   });
+  if (!meals) {
+    html += `<button type="button" class="link-btn log-diet-cta" data-go-body>${esc(t(S.logNoPlanCta))}</button>`;
+  }
   html += `<p class="dim log-note">${esc(t(S.logDietRule))}</p>`;
 
   box.innerHTML = html;
@@ -532,6 +538,12 @@ export function initLog({ translate, STATIC_UI, onShowScreen } = {}) {
           saveDay(date, { meals: { [id]: !(day.meals || {})[id] } });
         }
         renderLogScreen(date);
+        return;
+      }
+
+      if (e.target.closest('[data-go-body]')) {
+        // 더보기의 '신체정보' 줄과 같은 문으로 연다 — 그 버튼이 화면을 채운다.
+        document.getElementById('open-body-btn')?.click();
         return;
       }
 

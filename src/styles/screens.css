@@ -939,7 +939,8 @@
 .stepper { display: flex; align-items: center; gap: var(--s-3); }
 /* 타바타 설정 화면(2026-09-24 되살림) 의 운동/휴식/라운드 세 줄 — 시트가
    아니라 화면에 바로 놓인 stepper 라 자기 줄에서 라벨과 좌우로 나뉜다. */
-.tabata-field { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+/* 안쪽 여백이 없어 '운동 시간(초)' 글자가 테두리에 붙어 있었다(2026-10-02). */
+.tabata-field { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4); }
 .tabata-field .stepper-val { width: 64px; }
 .stepper-btn { border: 1px solid var(--line); border-radius: var(--r-md); }
 .stepper-val {
@@ -1194,3 +1195,28 @@
 .amrap-foot { display: flex; gap: var(--s-2); }
 .amrap-foot button { flex: 1; }
 .amrap-done { align-items: center; text-align: center; gap: var(--s-2); }
+
+/* 저장한 루틴이 없을 때(2026-10-02). 한 줄만 두면 루틴을 어떻게 만드는지 알
+   길이 없어서, 만드는 자리(운동 설정 아래의 저장 체크)를 말하고 바로 가는
+   버튼을 둔다. */
+.routines-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-8) var(--s-4);
+  text-align: center;
+}
+.routines-empty-ic {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  color: var(--mint-text);
+}
+.routines-empty-ic svg { width: 26px; height: 26px; }
+.routines-empty-t { font-size: var(--t-lg); font-weight: 700; }
+.routines-empty-d { font-size: var(--t-sm); line-height: 1.6; color: var(--text-dim); word-break: keep-all; max-width: 300px; }
+.routines-empty-btn { width: auto; min-width: 200px; margin-top: var(--s-2); }

@@ -61,6 +61,11 @@
   text-transform: uppercase;
   color: var(--text-dim);
 }
+/* 단계가 바뀔 때 스크린리더용으로 제목에 초점을 준다(ui/gate.js 의 showStep).
+   제목은 누르는 것이 아니라 테두리가 필요 없다 — 있으면 앱을 열 때마다
+   "오늘 기분은 어떠십니까?" 둘레에 초록 상자가 떴다(2026-10-02). */
+.gate-q:focus,
+.gate-quote:focus { outline: none; }
 .gate-q {
   font-size: var(--t-xl);
   font-weight: 800;
@@ -675,6 +680,8 @@ body.gated { overflow: hidden; }
 }
 .pick-row .row-d { overflow: visible; white-space: normal; text-overflow: clip; }
 .log-note { font-size: var(--t-xs); line-height: 1.6; word-break: keep-all; }
+/* 신체정보가 없을 때 식단 줄 아래 한 번만 뜨는 바로가기(2026-10-02). */
+.log-diet-cta { align-self: flex-start; padding: var(--s-1) 0; font-size: var(--t-sm); font-weight: 700; color: var(--mint-text); }
 
 /* 물 · 걸음 · 체중 · 아침 체크인 (2026-10-02 다시 짰다).
    예전엔 셋을 한 카드에 위아래로 몰아넣은 긴 입력 양식이었다 — 만보기의
