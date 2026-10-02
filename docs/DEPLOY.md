@@ -308,7 +308,7 @@ Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-kakao-billing.sql`
   바꿀 수 없다. OIDC 에선 Supabase 가 네이버 ID 토큰만 읽는데 거기엔
   이메일이 없어서, `Error getting user email from external provider` 로
   막히거나(이메일 필수) 이메일 없는 계정이 생겼다. 지금은 안 쓰는
-  제공자다 — 대시보드에서 꺼도/지워도 된다. 그 제공자로 2026-10-02 에
+  제공자라 2026-10-02 에 **껐다**(Disabled, 지우지는 않았다 — 다시 켤 수 있다). 그 제공자로 2026-10-02 에
   생긴 이메일 없는 테스트 계정이 Users 에 하나 남아 있을 수 있다.
   워커의 `/api/auth/naver-openid-configuration`(탐색 문서 중계)도 그
   제공자용으로 만들었던 것이라 지금은 쓰이지 않는다.
