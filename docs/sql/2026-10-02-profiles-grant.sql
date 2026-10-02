@@ -16,4 +16,7 @@
 -- 주지 않는다. 삭제(DELETE)도 주지 않는다 — 앱이 쓰지 않는다.
 --
 -- 실행: Supabase 대시보드 → SQL Editor 에 붙여넣고 실행.
+-- 2026-10-02 실행함. 확인: 네이버로 로그인한 계정으로 자기 행 읽기 200·
+-- 쓰기(앱이 부팅 때 upsert, updated_at 갱신) 정상, 필터 없이 읽어도 자기
+-- 행 1개만 보임, 로그인 안 한 요청은 401. 부팅 때 콘솔 오류 없음.
 grant select, insert, update on public.profiles to authenticated;
