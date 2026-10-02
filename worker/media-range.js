@@ -13,7 +13,7 @@
 // 쓰는 코드가 전부 여기(서버)에만 있고 브라우저 번들에는 절대 안 들어간다.
 import { handleBillingRequest, renewDueSubscriptions } from './api/billing.js';
 import { handleBillingRequestKakao } from './api/kakaoBilling.js';
-import { naverUserinfo } from './api/naverAuth.js';
+import { naverUserinfo, naverOpenidConfiguration } from './api/naverAuth.js';
 
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)$/i;
 
@@ -31,6 +31,9 @@ export default {
     }
     // 네이버 로그인용 UserInfo 프록시(worker/api/naverAuth.js 머리 설명
     // 참고) — Supabase 서버가 부른다. 사용자 브라우저는 이 주소를 모른다.
+    if (url.pathname === '/api/auth/naver-openid-configuration') {
+      return naverOpenidConfiguration(request);
+    }
     if (url.pathname === '/api/auth/naver-userinfo') {
       return naverUserinfo(request);
     }

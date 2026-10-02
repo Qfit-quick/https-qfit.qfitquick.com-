@@ -58,3 +58,36 @@ export async function naverUserinfo(request) {
     { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } },
   );
 }
+
+// 네이버 OIDC 설정 문서 중계(2026-10-02).
+//
+// Supabase 대시보드의 Naver 제공자는 처음에 OIDC 유형으로 만들어져서,
+// 저장할 때마다 Issuer(https://nid.naver.com)로 자동 탐색이 다시 돌아
+// 사용자 정보 주소를 네이버 원래 주소로 되돌린다 — Manual 로 바꿔 위
+// naverUserinfo 를 넣어도 저장 직후 덮어써졌다(실제로 그랬다). 유형은
+// 바꿀 수 없고, OAuth2 유형으로 새로 만들려면 네이버 Client Secret 을
+// 다시 넣어야 한다.
+//
+// 그래서 탐색이 읽는 문서 자체를 바꾼다: 대시보드의 Discovery URL 을 이
+// 주소로 두면, 네이버의 진짜 설정을 그대로 돌려주되 userinfo_endpoint 만
+// 위 naverUserinfo 로 바꿔 준다. issuer·jwks_uri·token_endpoint 는 네이버
+// 것 그대로라 ID 토큰 검증은 원래대로 된다.
+export async function naverOpenidConfiguration(request) {
+  try {
+    const res = await fetch("https://nid.naver.com/.well-known/openid-configuration", {
+      signal: AbortSignal.timeout(15_000),
+    });
+    const doc = await res.json();
+    if (!res.ok || !doc.issuer) throw new Error("bad discovery response " + res.status);
+    doc.userinfo_endpoint = new URL("/api/auth/naver-userinfo", request.url).toString();
+    return new Response(JSON.stringify(doc), {
+      headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=3600" },
+    });
+  } catch (error) {
+    console.error("naver discovery relay failed", error);
+    return new Response(JSON.stringify({ error: "naver discovery failed" }), {
+      status: 502,
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
+  }
+}

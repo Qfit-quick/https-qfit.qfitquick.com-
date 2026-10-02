@@ -282,29 +282,29 @@ Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-09-kakao-billing.sql`
    - 대시보드가 보여 주는 **Callback URL** 을 복사해 2번의 네이버 앱
      설정에도 등록돼 있는지 다시 확인한다.
 
-**⚠ 2026-10-01 현재 대시보드 설정이 위 4번과 다르다 — 이게 네이버 로그인이
-안 되는 원인이다.** 대시보드의 Naver 제공자가 **Auto-discovery**
-(Issuer `https://nid.naver.com`)로 등록돼 있다. 그러면 Supabase 가 네이버의
-공개 설정에서 사용자 정보 주소를 네이버 원래 주소
-(`openapi.naver.com/v1/nid/me`)로 가져다 쓰고, 이메일이 `response` 안에
-감싸여 있어 못 찾는다. 앱에는 `Error getting user email from external
-provider` 로 돌아온다. 실제 크롬에서 네이버 로그인을 끝까지 돌려 이 사유를
-확인했다. 예전엔 이 안내가 '새 판 즉시 새로고침'에 지워져서 "누르면 첫
-화면으로 돌아온다"로만 보였다.
+**지금 실제 설정(2026-10-02)과 그 이유.** 대시보드의 Naver 제공자는 처음에
+**OIDC 유형**(Issuer `https://nid.naver.com`)으로 만들어졌다. 이 유형은
+저장할 때마다 자동 탐색이 다시 돌아서, 위 4번처럼 Manual 로 UserInfo URL 을
+넣어도 저장 직후 네이버 원래 주소(`openapi.naver.com/v1/nid/me`)로
+되돌아간다(실제로 그랬다). 그 주소는 이메일을 `response` 로 감싸 주므로
+Supabase 가 못 찾고, 앱에는 `Error getting user email from external
+provider` 로 돌아온다. 예전엔 이 안내가 '새 판 즉시 새로고침'에 지워져서
+"누르면 첫 화면으로 돌아온다"로만 보였다.
 
-고치는 법 — Authentication → Sign In / Providers → Custom Providers →
-Naver → **Configuration Method 를 Manual configuration** 으로 바꾸고:
+유형은 바꿀 수 없고, OAuth2 유형으로 새로 만들려면 Client Secret 을 다시
+넣어야 한다. 그래서 **탐색이 읽는 문서를 우리 워커가 준다**:
 
 | 칸 | 값 |
 | --- | --- |
-| Authorization URL | `https://nid.naver.com/oauth2.0/authorize` |
-| Token URL | `https://nid.naver.com/oauth2.0/token` |
-| UserInfo URL | `https://qfit.qfitquick.com/api/auth/naver-userinfo` |
-| Scopes | `profile` (또는 비움) |
+| Configuration Method | Auto-discovery |
+| Issuer URL | `https://nid.naver.com` |
+| Discovery URL | `https://qfit.qfitquick.com/api/auth/naver-openid-configuration` |
+| Scopes | `openid, profile` |
 
-Client ID·Secret 은 그대로 둔다. 위 세 주소는 2026-10-01 에 바깥에서 응답을
-확인했다(로그인 화면으로 넘어감, 토큰 주소 응답, 워커 응답). 네이버 개발자
-센터의 '제공 정보'에 **이메일**이 켜져 있어야 워커가 이메일을 넘길 수 있다.
+`worker/api/naverAuth.js` 의 `naverOpenidConfiguration` 이 네이버의 진짜
+설정 문서를 받아 `userinfo_endpoint` 만 `/api/auth/naver-userinfo`(이메일을
+펴 주는 중계)로 바꿔 돌려준다. issuer·jwks·토큰 주소는 네이버 것 그대로다.
+네이버 개발자센터의 '제공 정보'에 **이메일**이 켜져 있어야 이메일이 온다.
 
 **scope 에 `email` 을 넣으면 안 된다**(2026-10-01). 네이버는
 `openid`·`profile` 만 받고, `email` 이 섞이면 로그인 화면도 안 띄우고
