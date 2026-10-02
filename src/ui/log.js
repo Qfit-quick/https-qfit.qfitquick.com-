@@ -188,8 +188,10 @@ async function toggleStepMeasure(date) {
       const numEl = el('log-steps-input');
       if (numEl) numEl.value = session.baseSteps + session.count;
       const headEl = document.querySelector('.log-steps-row .log-water-n');
-      if (headEl) headEl.innerHTML = (session.baseSteps + session.count).toLocaleString() + esc(t(S.logStepsUnit)) +
-        ` <span class="dim">/ ${STEPS_TARGET.toLocaleString()}${esc(t(S.logStepsUnit))}</span>`;
+      if (headEl) headEl.innerHTML = (session.baseSteps + session.count).toLocaleString() +
+        `<span class="dim log-water-of"> / ${STEPS_TARGET.toLocaleString()}${esc(t(S.logStepsUnit))}</span>`;
+      const fillEl = document.querySelector('.log-steps-row .log-bar-fill');
+      if (fillEl) fillEl.style.width = Math.min(100, Math.round(((session.baseSteps + session.count) / STEPS_TARGET) * 100)) + '%';
     }
     session.lastMag = mag;
   };
@@ -273,9 +275,6 @@ function paintExtra(dateStr) {
   const drive = DRIVE_OPTIONS.find((o) => o.id === day.drive);
 
   let html = `<div class="kick">${esc(t(S.logExtra))}</div>`;
-  // 위 운동·식단 체크와 달리 설명 없이 병 그림부터 나와서 뭐 하는 칸인지
-  // 몰라 헤맨다는 피드백(2026-09-15) — 식단 칸의 logDietRule 처럼 한 줄을 둔다.
-  html += `<p class="dim log-note">${esc(t(S.logExtraNote))}</p>`;
 
   // 물. 병을 눌러서 채운다 — 숫자 입력칸으로 두면 아무도 안 적는다.
   const drank = Math.min(day.water || 0, WATER_MAX);
@@ -283,13 +282,19 @@ function paintExtra(dateStr) {
   const fillH = BOTTLE_H * fillRatio;
   const fillY = BOTTLE_BOTTOM - fillH;
   const targetY = BOTTLE_BOTTOM - BOTTLE_H * (WATER_TARGET / WATER_MAX);
-  html += '<div class="log-water-row">' +
+  // 2026-10-02 다시 짰다 — 예전엔 −100/+100 두 버튼이 카드 폭을 꽉 채워
+  // 세로로 쌓이고, 정작 '얼마나 마셨나'는 작은 병과 숫자뿐이었다. 이제 병
+  // 옆에 막대·퍼센트를 두고, 버튼은 한 줄(작은 −, 넓은 +)로 줄였다.
+  // '하루 2L 권장' 한 줄(2026-09-15 피드백: 뭐 하는 칸인지 모르겠다)은
+  // 카드 맨 위 대신 막대 바로 밑으로 옮겼다 — 숫자 옆에 있어야 읽힌다.
+  const waterPct = Math.min(100, Math.round((drank / WATER_TARGET) * 100));
+  html += '<div class="log-block log-water-row">' +
     '<span class="log-water-head">' +
     `<span class="log-water-l">${esc(t(S.logWater))}</span>` +
-    `<span class="log-water-n">${drank}mL <span class="dim">/ ${WATER_TARGET}mL</span></span>` +
+    `<span class="log-water-n">${drank.toLocaleString()}<span class="dim log-water-of"> / ${WATER_TARGET.toLocaleString()}mL</span></span>` +
     '</span>' +
     '<div class="log-water-body">' +
-    '<svg class="log-water-bottle" viewBox="0 0 60 104" xmlns="http://www.w3.org/2000/svg">' +
+    '<svg class="log-water-bottle" viewBox="0 0 60 104" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
     '<defs><clipPath id="log-bottle-clip">' +
     '<path d="M22,4 h16 v9 c8,4 12,13 12,21 v50 a7,7 0 0 1 -7,7 h-26 a7,7 0 0 1 -7,-7 v-50 c0,-8 4,-17 12,-21 z"/>' +
     '</clipPath></defs>' +
@@ -300,10 +305,17 @@ function paintExtra(dateStr) {
     '</g>' +
     `<line class="log-water-target-line" x1="15" x2="45" y1="${targetY}" y2="${targetY}"/>` +
     '</svg>' +
+    '<div class="log-water-side">' +
+    `<div class="log-bar"><div class="log-bar-fill${waterPct >= 100 ? ' done' : ''}" style="width:${waterPct}%"></div></div>` +
+    '<div class="log-bar-sub">' +
+    `<span class="dim">${esc(t(S.logExtraNote))}</span>` +
+    `<span class="log-bar-pct">${waterPct}%</span>` +
+    '</div>' +
     '<span class="log-water-btns">' +
-    '<button type="button" class="sec2 log-water-btn" id="log-water-minus">−100mL</button>' +
-    '<button type="button" class="primary log-water-btn" id="log-water-plus">+100mL</button>' +
+    '<button type="button" class="sec2 log-water-btn log-water-minus" id="log-water-minus" aria-label="−100mL">−100</button>' +
+    '<button type="button" class="primary log-water-btn log-water-plus" id="log-water-plus">+100mL</button>' +
     '</span>' +
+    '</div>' +
     '</div>' +
     '</div>';
 
@@ -318,12 +330,12 @@ function paintExtra(dateStr) {
   const steps = Math.max(0, day.steps || 0);
   const stepsPct = Math.min(100, Math.round((steps / STEPS_TARGET) * 100));
   const gfitOn = isGoogleFitConnected();
-  html += '<div class="log-steps-row">' +
+  html += '<div class="log-block log-steps-row">' +
     '<span class="log-water-head">' +
     `<span class="log-water-l">${esc(t(S.logSteps))}</span>` +
-    `<span class="log-water-n">${steps.toLocaleString()}${esc(t(S.logStepsUnit))} <span class="dim">/ ${STEPS_TARGET.toLocaleString()}${esc(t(S.logStepsUnit))}</span></span>` +
+    `<span class="log-water-n">${steps.toLocaleString()}<span class="dim log-water-of"> / ${STEPS_TARGET.toLocaleString()}${esc(t(S.logStepsUnit))}</span></span>` +
     '</span>' +
-    '<div class="log-steps-bar"><div class="log-steps-fill" style="width:' + stepsPct + '%"></div></div>';
+    `<div class="log-bar"><div class="log-bar-fill${stepsPct >= 100 ? ' done' : ''}" style="width:${stepsPct}%"></div></div>`;
 
   if (gfitOn) {
     // 연동됐으면 Google Fit 값이 유일한 출처다 — 손으로 적는 칸·가속도
@@ -349,18 +361,19 @@ function paintExtra(dateStr) {
 
   // 오늘 체중. 여기서 적으면 신체정보의 체중도 같이 바뀐다 — 두 곳에 따로
   // 적게 두면 계획은 옛 체중으로 계산되고 기록지만 새 체중을 안다.
-  html += '<div class="log-weight-row">' +
+  html += '<div class="log-block log-weight-block">' +
+    '<div class="log-weight-row">' +
     `<label class="log-weight-l" for="log-weight-input">${esc(t(S.logWeight))}</label>` +
-    '<span class="inp-wrap">' +
+    '<span class="inp-wrap log-weight-inp">' +
     `<input class="inp" id="log-weight-input" type="number" inputmode="decimal" min="12" max="250" step="0.1" ` +
     `value="${day.weightKg == null ? '' : day.weightKg}" placeholder="${body.weightKg == null ? '65' : body.weightKg}">` +
     '<span class="inp-unit">kg</span></span>' +
+    '</div>' +
+    `<p class="dim log-note">${esc(t(S.logWeightNote))}</p>` +
+    // 체중 변화 그래프. 적은 날만 있으면 잇는다(최근 90일 안에서).
+    `<div class="log-sub-l">${esc(t(S.logWeightChartTitle))}</div>` +
+    '<div class="log-weight-chart-wrap">' + weightChartHtml(weightHistory(90, dateStr)) + '</div>' +
     '</div>';
-  html += `<p class="dim log-note">${esc(t(S.logWeightNote))}</p>`;
-
-  // 체중 변화 그래프. 적은 날만 있으면 잇는다(최근 90일 안에서).
-  html += `<div class="section-label">${esc(t(S.logWeightChartTitle))}</div>`;
-  html += '<div class="log-weight-chart-wrap">' + weightChartHtml(weightHistory(90, dateStr)) + '</div>';
 
   // 아침 설문 답. 버려지는 질문이 아니게 하려면 되돌아볼 자리가 있어야 한다.
   if (mood || drive) {
@@ -370,7 +383,7 @@ function paintExtra(dateStr) {
     const driveBit = drive
       ? ' · ' + (drive.img ? `<img class="log-mood-img" src="${driveUrl(drive.img)}" alt="">` : drive.emoji + ' ') + esc(t(drive.label))
       : '';
-    html += '<div class="log-mood-row">' +
+    html += '<div class="log-block log-mood-row">' +
       `<span class="log-mood-l">${esc(t(S.logCheckin))}</span>` +
       `<span class="log-mood-v">${moodBit}${driveBit}</span>` +
       '</div>';

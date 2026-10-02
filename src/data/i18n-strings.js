@@ -628,11 +628,11 @@ export const STATIC_UI = {
  // 나왔다 — 눌러도 위 '오늘 상태'는 안 바뀌니 뭐 하는 칸인지 몰라 헤맨다는
  // 피드백(2026-09-15). 식단 칸의 logDietRule 처럼 kick 바로 아래 한 줄을 둔다.
  // 2026-09-24 요청으로 설명문 대신 물 권장량 한 줄로 바꿨다.
- logExtraNote: {ko:'하루 2리터 권장합니다.', en:'2 liters a day is recommended.', zh:'建议每天 2 升。'},
+ logExtraNote: {ko:'하루 2L 권장', en:'2 L a day recommended', zh:'建议每天 2 升'},
  logWater: {ko:'물', en:'Water', zh:'饮水'},
  logSteps: {ko:'만보기', en:'Steps', zh:'步数'},
  logStepsUnit: {ko:'보', en:' steps', zh:'步'},
- logStepsNote: {ko:'숫자는 직접 적거나, 이 화면을 열어둔 채 "측정 시작"으로 걸음을 셀 수 있어요. 화면을 벗어나면 측정이 멈춰요.', en:'Type the number yourself, or tap "Start" to count steps while this screen stays open. Measuring stops if you leave the screen.', zh:'可以手动输入，也可以打开本页面点"开始测量"来计步。离开页面测量会停止。'},
+ logStepsNote: {ko:'직접 적거나, 이 화면을 켜 둔 채 측정해요.', en:'Type it in, or measure while this screen stays open.', zh:'手动输入，或保持本页面打开时测量。'},
  logStepsMeasureStart: {ko:'측정 시작', en:'Start', zh:'开始测量'},
  logStepsMeasureStop: {ko:'측정 중지', en:'Stop', zh:'停止测量'},
  logStepsMeasuring: {ko:'측정 중입니다 — 폰을 들고 걸어보세요. 화면을 벗어나면 멈춰요.', en:"Measuring — walk with your phone. It stops if you leave this screen.", zh:'正在测量——带着手机走动吧。离开本页面会停止。'},
@@ -644,7 +644,7 @@ export const STATIC_UI = {
  logStepsGfitDisconnect: {ko:'연동 해제', en:'Disconnect', zh:'取消连接'},
  logStepsGfitNote: {ko:'Google Fit에서 오늘 걸음 수를 가져와요. 이 화면을 안 열어도 계속 기록돼요.', en:"Pulls today's steps from Google Fit — keeps counting even with this screen closed.", zh:'从 Google Fit 获取今天的步数 — 即使不打开此页面也会持续记录。'},
  logWeight: {ko:'오늘 체중', en:'Weight today', zh:'今日体重'},
- logWeightNote: {ko:'여기 적으면 신체정보의 체중도 같이 바뀝니다 — 계획이 옛 체중으로 계산되지 않게.', en:'Entering it here also updates your body info, so the plan is never calculated from an old weight.', zh:'在这里填写会同时更新身体信息，避免计划用旧体重计算。'},
+ logWeightNote: {ko:'신체정보의 체중도 같이 바뀌어요.', en:'Also updates your body info.', zh:'同时更新身体信息。'},
  logWeightChartTitle: {ko:'체중 변화', en:'Weight trend', zh:'体重变化'},
  logWeightChartEmpty: {ko:'체중을 며칠 더 적으면 여기 변화 그래프가 나와요', en:'Log your weight a few more days to see the trend here', zh:'再多记录几天体重，这里就会显示变化趋势'},
  logCheckin: {ko:'아침 체크인', en:'Morning check-in', zh:'早间打卡'},
