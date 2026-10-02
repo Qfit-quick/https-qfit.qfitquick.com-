@@ -1,0 +1,19 @@
+-- 로그인한 사용자의 클라우드 기록 동기화가 전부 실패하던 것을 고친다.
+--
+-- 증상(2026-10-02, 네이버 로그인을 실제로 돌리다 발견): 로그인은 되는데
+-- 콘솔에 "cloud fetch failed" — profiles 를 읽으면
+--   403 permission denied for table profiles (42501)
+-- 이 난다. 대시보드 Policies 화면에도 profiles 에 "API DISABLED" 가 붙어 있다.
+-- 이메일·카카오·네이버 로그인 모두 같다. 그동안 로그인해도 기록이 서버에
+-- 올라가지도, 내려오지도 않았다(앱은 오류를 잡고 조용히 넘어가서 몰랐다).
+--
+-- 원인: RLS 정책("본인 기록 읽기/쓰기/수정", 전부 auth.uid() = id)은 있는데,
+-- 그 앞 단계인 테이블 권한(GRANT)을 authenticated 역할에 준 적이 없다.
+-- 권한이 없으면 정책을 보기도 전에 막힌다.
+--
+-- 이 GRANT 는 정책을 대신하지 않는다 — RLS 가 켜져 있으므로 여전히 자기
+-- 행(id = auth.uid())만 읽고 쓸 수 있다. anon(로그인 안 한 사람)에게는
+-- 주지 않는다. 삭제(DELETE)도 주지 않는다 — 앱이 쓰지 않는다.
+--
+-- 실행: Supabase 대시보드 → SQL Editor 에 붙여넣고 실행.
+grant select, insert, update on public.profiles to authenticated;
