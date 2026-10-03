@@ -83,5 +83,37 @@ const rAll = await pg.evaluate(() => document.querySelectorAll('.challenge-days-
 check(`긴 기간: 최근 4주만(${r4}) → 모두 보기(${rAll})`, r4 === 4 && rAll === 6, { r4, rAll });
 const over = await pg.evaluate(() => { const vw = document.documentElement.clientWidth; return [...document.querySelectorAll('#challenge-days *')].filter(e => e.getBoundingClientRect().right > vw + 1).length; });
 check('달력이 화면 밖으로 안 나감', over === 0, over);
+// ── 들어올 때 고르는 트랙(2026-10-03: 늘 턱걸이였다) ──
+async function activeTabFor(seed) {
+  const c2 = await b.newContext({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
+  const p2 = await c2.newPage();
+  await p2.addInitScript((sd) => { if (sessionStorage.getItem('s')) return; sessionStorage.setItem('s', 1); for (const [k, v] of Object.entries(sd)) localStorage.setItem(k, v); }, seed);
+  await p2.goto('http://localhost:4802/'); await p2.waitForTimeout(1200);
+  await p2.click('#gate-mood-opts .gate-opt', { timeout: 1500 }).catch(()=>{}); await p2.click('#gate-drive-opts .gate-opt', { timeout: 1500 }).catch(()=>{}); await p2.waitForTimeout(300);
+  await p2.click('#gate-quote-card', { timeout: 1500 }).catch(()=>{}); await p2.waitForTimeout(500);
+  await p2.click('.tabbar .tab[data-screen="challenge-screen"]'); await p2.waitForTimeout(500);
+  const act2 = () => p2.evaluate(() => document.querySelector('.challenge-tab-btn.active')?.textContent || '');
+  return { p2, c2, act2 };
+}
+{
+  const { c2, act2 } = await activeTabFor({});
+  check('기록 없으면 턱걸이', /턱걸이/.test(await act2()), await act2()); await c2.close();
+}
+{
+  const { c2, act2 } = await activeTabFor({ 'qfit_challenge_planche_logs:days': JSON.stringify({ [dk(-1)]: true }), 'qfit_challenge_planche_start': dk(-5) });
+  check('플란체만 하고 있으면 처음 열 때 플란체', /플란체/.test(await act2()), await act2()); await c2.close();
+}
+{
+  const { c2, act2 } = await activeTabFor({ 'qfit_challenge_pullup_start': dk(-60), 'qfit_challenge_planche_logs:days': JSON.stringify({ [dk(0)]: true }) });
+  check('턱걸이는 예전에, 플란체를 최근에 → 플란체', /플란체/.test(await act2()), await act2()); await c2.close();
+}
+{
+  const { p2, c2, act2 } = await activeTabFor({ 'qfit_challenge_planche_logs:days': JSON.stringify({ [dk(0)]: true }) });
+  await p2.evaluate(() => [...document.querySelectorAll('.challenge-tab-btn')].find((x) => /물구나무/.test(x.textContent))?.click()); await p2.waitForTimeout(300);
+  await p2.reload(); await p2.waitForTimeout(1200);
+  await p2.click('#gate-quote-card', { timeout: 1500 }).catch(()=>{}); await p2.waitForTimeout(400);
+  await p2.click('.tabbar .tab[data-screen="challenge-screen"]'); await p2.waitForTimeout(500);
+  check('직접 고른 트랙은 앱을 다시 열어도 그대로', /물구나무/.test(await act2()), await act2()); await c2.close();
+}
 console.log('page errors:', errs); console.log(`${res.filter(Boolean).length}/${res.length} passed`); process.exitCode = res.every(Boolean) && !errs.length ? 0 : 1;
 await b.close(); srv.close();

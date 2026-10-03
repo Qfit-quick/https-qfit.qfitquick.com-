@@ -197,7 +197,36 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
   };
   if (!els.tabsContainer) return; // 마크업이 아직 안 붙었으면 조용히 넘어간다
 
-  let currentTrackKey = 'pullup';
+  // 들어올 때 고를 트랙(2026-10-03). 예전엔 늘 턱걸이였다 — 플란체를 하는
+  // 사람도 들어올 때마다 턱걸이가 눌려 있어 매번 다시 골라야 했다. 이제
+  // ①마지막으로 고른 트랙(저장) ②없으면 진행 중인 트랙 중 가장 최근에 실천한
+  // 것(실천 달력·주차 기록·시작일 중 가장 늦은 날) ③그것도 없으면 턱걸이.
+  const CURRENT_KEY = 'qfit_challenge_current_v1';
+  function lastActivity(key) {
+    const track = CHALLENGE_TRACKS[key];
+    const dates = Object.keys(getDailyChecks(track));
+    const start = loadStart(track.startKey);
+    if (start) dates.push(start);
+    if (!dates.length && Object.keys(getLogs(track)).length) dates.push('0000-00-00');
+    return dates.sort().pop() || '';
+  }
+  function initialTrackKey() {
+    try {
+      const saved = localStorage.getItem(CURRENT_KEY);
+      if (saved && CHALLENGE_TRACKS[saved]) return saved;
+    } catch (e) { /* 저장소가 막혀 있으면 아래로 */ }
+    let best = '', bestAt = '';
+    CHALLENGE_TRACK_ORDER.forEach((key) => {
+      const at = lastActivity(key);
+      if (at && at > bestAt) { best = key; bestAt = at; }
+    });
+    return best || 'pullup';
+  }
+  function selectTrack(key) {
+    currentTrackKey = key;
+    try { localStorage.setItem(CURRENT_KEY, key); } catch (e) { /* 이번 세션만 기억 */ }
+  }
+  let currentTrackKey = initialTrackKey();
   let openPhaseIdx = 0; // 트랙 바꿀 때마다 재계산
 
   // 검색 색인. 9개 트랙(2026-09-24, 피스톨 스쿼트·쉬운 습관 3주 추가로
@@ -245,7 +274,7 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
       btn.className = 'challenge-tab-btn' + (key === currentTrackKey ? ' active' : '');
       btn.textContent = t(S.challengeTabLabel).replace('%s', track.short).replace('%s', track.totalWeeks);
       btn.addEventListener('click', () => {
-        currentTrackKey = key;
+        selectTrack(key);
         renderTrack();
       });
       els.tabsContainer.appendChild(btn);
@@ -522,7 +551,7 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
         '<span class="challenge-search-result-meta">' + esc(meta) + '</span>' +
         '</span>';
       btn.addEventListener('click', () => {
-        currentTrackKey = row.trackKey;
+        selectTrack(row.trackKey);
         renderTrack(row.phaseIdx);
         els.searchInput.value = '';
         els.searchResults.innerHTML = '';
