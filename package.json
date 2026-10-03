@@ -26,6 +26,7 @@
     "auth": "node scripts/auth.mjs",
     "backnav": "node scripts/backnav.mjs",
     "awake": "node scripts/awake.mjs",
+    "challenge": "node scripts/challenge.mjs",
     "dev:chat": "node server/chat.mjs",
     "test:chat": "node --test \"tests/chat/**/*.test.mjs\"",
     "deploy": "npm run build && npx --yes wrangler deploy"

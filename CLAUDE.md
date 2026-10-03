@@ -187,7 +187,7 @@ Supabase 클라이언트가 pkce 흐름이라(`src/cloud/supabase.js`), 소셜 �
     npm run coverage   # 스타일 없는 클래스
     npm run contrast   # 명도 대비
 
-`smoke`·`flow`·`shot`·`auth`·`backnav`·`awake` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
+`smoke`·`flow`·`shot`·`auth`·`backnav`·`awake`·`challenge` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
 안 돌린다.
 
 `npm run phases` 는 브라우저 없이 돈다(2026-09-26 부터 워크플로에도 붙어

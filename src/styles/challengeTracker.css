@@ -247,3 +247,49 @@
   color: var(--danger); border-radius: var(--r-md); padding: var(--s-3); font-size: var(--t-xs);
   cursor: pointer; min-height: var(--tap);
 }
+
+/* 실천 달력(2026-10-03). 주마다 한 줄 — 왼쪽 주차, 가운데 7칸, 오른쪽 그 주 n/7. */
+#challenge-days {
+  background: var(--challenge-panel); border-radius: var(--r-lg);
+  padding: var(--s-4); margin-bottom: var(--s-5);
+  display: flex; flex-direction: column; gap: var(--s-2);
+}
+.challenge-days-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); }
+.challenge-days-title { font-size: var(--t-sm); font-weight: 800; color: #fff; }
+.challenge-days-stats { font-family: var(--font-num); font-size: var(--t-sm); font-weight: 700; color: var(--mint); }
+.challenge-days-hint,
+.challenge-days-empty { font-size: var(--t-xs); color: var(--challenge-text-dim); line-height: 1.5; word-break: keep-all; }
+.challenge-days-grid {
+  display: grid;
+  grid-template-columns: 34px repeat(7, minmax(0, 1fr)) 46px;
+  gap: 4px;
+  align-items: center;
+  margin-top: var(--s-1);
+}
+.challenge-days-wd { font-size: 11px; text-align: center; color: var(--challenge-text-dim); }
+.challenge-days-wk { font-size: 11px; font-weight: 700; color: var(--challenge-text-dim); white-space: nowrap; }
+.challenge-days-wk.cur { color: var(--accent); }
+.challenge-day {
+  height: 34px; min-width: 0;
+  border: 1px solid transparent; border-radius: var(--r-sm);
+  background: var(--challenge-panel-strong); color: #fff;
+  font-family: var(--font-num); font-size: var(--t-sm); font-weight: 700;
+  cursor: pointer; padding: 0;
+}
+.challenge-day.on { background: var(--mint); color: var(--on-mint); }
+.challenge-day.today { border-color: var(--accent); }
+.challenge-day:disabled { opacity: .3; cursor: default; }
+.challenge-days-cnt {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  font-family: var(--font-num); font-size: var(--t-sm); font-weight: 700; color: var(--challenge-text-dim);
+}
+.challenge-days-cnt.full { color: var(--mint); }
+.challenge-days-logged { font-family: inherit; font-size: 10px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+.challenge-days-more,
+.challenge-days-start {
+  align-self: center; margin-top: var(--s-1);
+  background: none; border: 1px solid var(--challenge-line); color: var(--challenge-text-dim);
+  border-radius: var(--r-full); padding: var(--s-2) var(--s-4); min-height: var(--tap);
+  font-size: var(--t-sm); font-weight: 700; font-family: inherit; cursor: pointer;
+}
+.challenge-days-start { border-color: var(--mint); color: var(--mint); }

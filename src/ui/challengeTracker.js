@@ -14,7 +14,7 @@
 import { CHALLENGE_TRACK_ORDER, CHALLENGE_TRACKS } from '../data/challengeTracks.js';
 import { getChallengeIcon } from '../data/challengeIcons.js';
 import { getChallengeGloss } from '../data/challengeGloss.js';
-import { dayKey, markWorkoutDone } from '../health/store.js';
+import { dayKey, shiftDay, markWorkoutDone } from '../health/store.js';
 import { setAwake } from '../core/wakeLock.js';
 
 let t = (o) => (o && o.ko) || '';
@@ -65,63 +65,98 @@ function renderDailyCheck(track) {
   note.textContent = t(done ? S.challengeDailyCheckedNote : S.challengeDailyCheckNote);
 }
 
-function toggleDailyCheck(track) {
-  const today = dayKey();
+// 하루 체크를 켜고 끈다(오늘 버튼·실천 달력 공용). 켤 때는 그날 기록지의
+// 운동 칸도 같이 켠다 — 도전도 운동이다(2026-09-27 요청). 시작일이 아직
+// 없으면 처음 체크한 날을 시작일로 잡는다 — 그래야 주별로 나눌 수 있다.
+function toggleDay(track, date) {
   const days = getDailyChecks(track);
-  if (days[today]) {
-    delete days[today];
+  if (days[date]) {
+    delete days[date];
   } else {
-    days[today] = true;
-    // 도전도 운동이다(2026-09-27 요청) — 기록지의 오늘 운동 칸을 같이 켠다.
-    try { markWorkoutDone(); } catch (e) { console.error('challenge markWorkoutDone failed:', e); }
+    days[date] = true;
+    try { markWorkoutDone(date); } catch (e) { console.error('challenge markWorkoutDone failed:', e); }
+    if (!loadStart(track.startKey)) saveStart(track.startKey, date);
   }
   saveJSON(dailyKey(track), days);
-  renderDailyCheck(track);
+}
+
+function toggleDailyCheck(track) {
+  toggleDay(track, dayKey());
 }
 
 // ── 자유 타이머(2026-09-27) ────────────────────────────────────
 // 특정 트랙·동작에 안 묶인 스톱워치다 — 쉬는 시간이든 세트 사이든
 // 사용자가 직접 시작·종료한다. 화면을 나가도 계속 흐른다(실제
 // 스톱워치가 그렇듯 — 여기서 멈추면 "쟀는데 안 잰 셈"이 된다).
-let timerSec = 0;
-let timerRunning = false;
-let timerIntervalId = null;
+// 2026-10-03: 시각으로 잰다. 예전엔 setInterval 로 1초씩 세서 메모리에만
+// 들고 있었는데, 홈 화면으로 오래 나가 있으면 폰이 앱을 메모리에서 지우고
+// 다시 열 때 처음부터 떠서 타이머가 00:00 으로 돌아갔다("오래 나가면 운동한
+// 게 초기화된다"). 이제 시작한 시각·쌓인 시간을 저장해 두고 그 차이로
+// 보여 준다 — 앱이 완전히 닫혔다 열려도 이어지고, 백그라운드에서 setInterval
+// 이 느려져도 시간이 밀리지 않는다.
+const TIMER_KEY = 'qfit_challenge_timer_v1';
+let timer = { running: false, startedAt: 0, acc: 0 };
+let tickId = null;
+
+function loadTimerState() {
+  const v = loadJSON(TIMER_KEY, {});
+  timer = {
+    running: !!v.running && Number(v.startedAt) > 0,
+    startedAt: Number(v.startedAt) || 0,
+    acc: Math.max(0, Number(v.acc) || 0),
+  };
+}
+function saveTimerState() { saveJSON(TIMER_KEY, timer); }
+function elapsedSec() {
+  const live = timer.running ? Math.max(0, Date.now() - timer.startedAt) : 0;
+  return Math.floor((timer.acc + live) / 1000);
+}
+// 도는 동안만 화면을 다시 그리고, 화면 꺼짐도 막는다.
+function syncTick() {
+  if (timer.running && !tickId) tickId = setInterval(renderTimer, 500);
+  if (!timer.running && tickId) { clearInterval(tickId); tickId = null; }
+  // 타이머가 도는 동안은 화면이 절대 꺼지면 안 된다 — 다른 탭으로 옮겨도
+  // (도전 화면 자체는 ui/nav.js 가 따로 잠근다).
+  setAwake('challenge-timer', timer.running);
+}
 
 function fmtTimer(sec) {
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s2 = sec % 60;
+  const mmss = String(m).padStart(2, '0') + ':' + String(s2).padStart(2, '0');
+  return h ? h + ':' + mmss : mmss;
 }
 
 function renderTimer() {
   const display = document.getElementById('challenge-timer-display');
-  if (display) display.textContent = fmtTimer(timerSec);
+  if (display) display.textContent = fmtTimer(elapsedSec());
   const toggleBtn = document.getElementById('challenge-timer-toggle-btn');
   if (toggleBtn) {
-    toggleBtn.textContent = t(timerRunning ? S.challengeTimerPause : S.challengeTimerStart);
-    toggleBtn.classList.toggle('running', timerRunning);
+    toggleBtn.textContent = t(timer.running ? S.challengeTimerPause : S.challengeTimerStart);
+    toggleBtn.classList.toggle('running', timer.running);
   }
 }
 
 function toggleTimer() {
-  timerRunning = !timerRunning;
-  // 타이머가 도는 동안은 화면이 절대 꺼지면 안 된다 — 다른 탭으로 옮겨도
-  // (도전 화면 자체는 ui/nav.js 가 따로 잠근다).
-  setAwake('challenge-timer', timerRunning);
-  if (timerRunning) {
-    timerIntervalId = setInterval(() => { timerSec++; renderTimer(); }, 1000);
-  } else if (timerIntervalId) {
-    clearInterval(timerIntervalId);
-    timerIntervalId = null;
+  const now = Date.now();
+  if (timer.running) {
+    timer.acc += Math.max(0, now - timer.startedAt);
+    timer.running = false;
+    timer.startedAt = 0;
+  } else {
+    timer.startedAt = now;
+    timer.running = true;
   }
+  saveTimerState();
+  syncTick();
   renderTimer();
 }
 
 function resetTimer() {
-  if (timerIntervalId) { clearInterval(timerIntervalId); timerIntervalId = null; }
-  timerRunning = false;
-  setAwake('challenge-timer', false);
-  timerSec = 0;
+  timer = { running: false, startedAt: 0, acc: 0 };
+  saveTimerState();
+  syncTick();
   renderTimer();
 }
 
@@ -156,6 +191,7 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
     progressBarInner: document.getElementById('challenge-progress-inner'),
     phaseList: document.getElementById('challenge-phase-list'),
     resetBtn: document.getElementById('challenge-reset-btn'),
+    days: document.getElementById('challenge-days'),
     searchInput: document.getElementById('challenge-search-input'),
     searchResults: document.getElementById('challenge-search-results'),
   };
@@ -341,6 +377,7 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
             saveJSON(track.logsKey, freshLogs);
             renderSummary();
             renderProgress(track, freshLogs);
+            renderDays(track); // 그 주 줄의 '기록✓'
             renderPhases(track); // filled 표시/뱃지 갱신
           }));
         });
@@ -348,6 +385,91 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
 
       card.appendChild(body);
       els.phaseList.appendChild(card);
+    });
+  }
+
+  // ── 실천 달력(2026-10-03 요청) ──────────────────────────────
+  // "기록 완료 0/24주"만으로는 내가 언제 했는지 알기 번거롭다는 요청. 시작일
+  // 부터 주마다 한 줄, 하루마다 한 칸을 그리고 칸을 눌러 그날 실천을 켜고
+  // 끈다(지난 날을 깜빡했어도 체크할 수 있다, 앞날은 막는다). 줄 끝에 그 주
+  // 며칠 했는지와 주차 기록(아래 표)을 적었는지를 같이 보인다. 주가 많으면
+  // 최근 4주만 펴고 나머지는 '지난 주 모두 보기'로 연다.
+  let showAllWeeks = false;
+
+  function renderDays(track) {
+    const box = els.days;
+    if (!box) return;
+    const start = loadStart(track.startKey);
+    const today = dayKey();
+    if (!start) {
+      box.innerHTML =
+        '<div class="challenge-days-head"><span class="challenge-days-title">' + esc(t(S.challengeDaysTitle)) + '</span></div>' +
+        '<p class="challenge-days-empty">' + esc(t(S.challengeDaysNoStart)) + '</p>' +
+        '<button type="button" class="challenge-days-start" data-days-start>' + esc(t(S.challengeDaysStartToday)) + '</button>';
+      return;
+    }
+    const days = getDailyChecks(track);
+    const logs = getLogs(track);
+    const loggedWeeks = new Set(track.logs.map((e) => e.week));
+    const total = track.totalWeeks;
+    const curWeek = Math.max(1, computeCalendarWeek(start, total) || 1);
+    const weekDates = (w) => Array.from({ length: 7 }, (_, i) => shiftDay(start, (w - 1) * 7 + i));
+    const doneIn = (w) => weekDates(w).filter((d) => days[d]).length;
+    const totalDays = Object.keys(days).length;
+
+    const names = t(S.challengeWeekdays).split(',');
+    const wd = (d) => { const [y, m, dd] = d.split('-').map(Number); return names[new Date(y, m - 1, dd).getDay()]; };
+
+    const first = showAllWeeks ? 1 : Math.max(1, curWeek - 3);
+    let html =
+      '<div class="challenge-days-head">' +
+      '<span class="challenge-days-title">' + esc(t(S.challengeDaysTitle)) + '</span>' +
+      '<span class="challenge-days-stats">' + esc(t(S.challengeDaysStats).replace('%s', doneIn(curWeek)).replace('%s', totalDays)) + '</span>' +
+      '</div>' +
+      '<p class="challenge-days-hint">' + esc(t(S.challengeDaysHint)) + '</p>' +
+      '<div class="challenge-days-grid">' +
+      '<span></span>' + weekDates(1).map((d) => '<span class="challenge-days-wd">' + esc(wd(d)) + '</span>').join('') + '<span></span>';
+    for (let w = first; w <= curWeek; w++) {
+      const n = doneIn(w);
+      html += '<span class="challenge-days-wk' + (w === curWeek ? ' cur' : '') + '">' + esc(t(S.challengeDaysWeek).replace('%s', w)) + '</span>';
+      weekDates(w).forEach((d) => {
+        const future = d > today;
+        const on = !!days[d];
+        const dayNum = Number(d.slice(8));
+        html += '<button type="button" class="challenge-day' + (on ? ' on' : '') + (d === today ? ' today' : '') + '"' +
+          ' data-day="' + d + '"' + (future ? ' disabled' : '') +
+          ' aria-pressed="' + on + '" aria-label="' + esc(d) + '">' + (on ? '✓' : dayNum) + '</button>';
+      });
+      const logged = loggedWeeks.has(w) && logs[w] !== undefined;
+      html += '<span class="challenge-days-cnt' + (n === 7 ? ' full' : '') + '">' + n + '/7' +
+        (logged ? '<span class="challenge-days-logged">' + esc(t(S.challengeDaysLogged)) + '</span>' : '') + '</span>';
+    }
+    html += '</div>';
+    if (curWeek > 4) {
+      html += '<button type="button" class="challenge-days-more" data-days-more>' +
+        esc(t(showAllWeeks ? S.challengeDaysShowRecent : S.challengeDaysShowAll)) + '</button>';
+    }
+    box.innerHTML = html;
+  }
+
+  if (els.days) {
+    els.days.addEventListener('click', (e) => {
+      const track = CHALLENGE_TRACKS[currentTrackKey];
+      const cell = e.target.closest('[data-day]');
+      if (cell && !cell.disabled) {
+        toggleDay(track, cell.dataset.day);
+        renderTrack(openPhaseIdx);
+        return;
+      }
+      if (e.target.closest('[data-days-start]')) {
+        saveStart(track.startKey, dayKey());
+        renderTrack();
+        return;
+      }
+      if (e.target.closest('[data-days-more]')) {
+        showAllWeeks = !showAllWeeks;
+        renderDays(track);
+      }
     });
   }
 
@@ -365,6 +487,7 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
     renderSummary();
     renderProgress(track, logs);
     renderDailyCheck(track);
+    renderDays(track);
 
     if (forcedPhaseIdx !== undefined) {
       openPhaseIdx = forcedPhaseIdx;
@@ -436,8 +559,13 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
   document.getElementById('challenge-timer-reset-btn')?.addEventListener('click', resetTimer);
   document.getElementById('challenge-daily-check-btn')?.addEventListener('click', () => {
     toggleDailyCheck(CHALLENGE_TRACKS[currentTrackKey]);
+    renderTrack(openPhaseIdx);
   });
+  // 저장된 타이머를 되살린다 — 앱이 닫혔다 열려도 돌던 타이머는 계속 돈다.
+  loadTimerState();
+  syncTick();
   renderTimer();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') renderTimer(); });
 
   // 언어를 바꾸면 탭 라벨·진행 문구 등 이 화면이 직접 t() 로 지은 글자도
   // 다시 그려야 한다 — 그대로 두면 홈 화면의 옛 버그(연속기록 줄 미갱신)
