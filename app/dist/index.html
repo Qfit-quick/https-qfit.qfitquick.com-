@@ -50,8 +50,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-BkrO23hB.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DmrmypkT.css">
+  <script type="module" crossorigin src="./assets/index-DHyiU5rR.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BbiPKoOv.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -164,6 +164,11 @@
  <span class="pet-level" id="pet-level">Lv. 1</span>
  </button>
  </div>
+
+ <!-- 진행 중인 도전(2026-10-04) — 하던 도전을 홈에 띄우고 바로 오늘 체크.
+      매일 쓰는 것이라 Q-Mission 위에 둔다(아래면 첫 화면에서 안 보였다).
+      없으면 숨는다. 안쪽은 src/ui/challengeTracker.js 의 renderHomeChallenge. -->
+ <div class="card home-chal" id="home-challenge" hidden></div>
 
  <!-- Q-Mission(2026-09-27) — 예전에는 "오늘 운동·식단 체크하러 가기"
       카드였다(운동/식단 완료 여부 두 칸). 사용자 요청으로 그 자리를

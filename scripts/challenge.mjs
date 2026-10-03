@@ -115,5 +115,26 @@ async function activeTabFor(seed) {
   await p2.click('.tabbar .tab[data-screen="challenge-screen"]'); await p2.waitForTimeout(500);
   check('직접 고른 트랙은 앱을 다시 열어도 그대로', /물구나무/.test(await act2()), await act2()); await c2.close();
 }
+// ── 홈의 '진행 중인 도전' 카드(2026-10-04) ──
+{
+  const { p2, c2 } = await activeTabFor({});
+  await p2.click('.tabbar .tab[data-screen="start-screen"]'); await p2.waitForTimeout(400);
+  check('진행 중인 도전이 없으면 홈 카드 숨김', await p2.evaluate(() => document.getElementById('home-challenge').hidden), null); await c2.close();
+}
+{
+  const { p2, c2 } = await activeTabFor({ 'qfit_challenge_planche_start': dk(-15), 'qfit_challenge_planche_logs:days': JSON.stringify({ [dk(-1)]: true }) });
+  await p2.click('.tabbar .tab[data-screen="start-screen"]'); await p2.waitForTimeout(400);
+  const title = await p2.evaluate(() => document.querySelector('#home-challenge .home-chal-t')?.textContent);
+  check(`홈 카드: ${title}`, /플란체 · 3주차/.test(title || ''), title);
+  await p2.click('#home-challenge [data-chal-check]'); await p2.waitForTimeout(300);
+  const st2 = await p2.evaluate((d) => ({ btn: document.querySelector('#home-challenge [data-chal-check]').classList.contains('done'), saved: JSON.parse(localStorage.getItem('qfit_challenge_planche_logs:days'))[d], workout: JSON.parse(localStorage.getItem('qfit_daylog_v1') || '{}')[d]?.workout }), dk(0));
+  check('홈에서 오늘 체크 → 저장 + 기록지 운동 칸', st2.btn && st2.saved && st2.workout, st2);
+  await p2.evaluate(() => document.getElementById('home-challenge').scrollIntoView({ block: 'center' })); await p2.waitForTimeout(200);
+  await (await p2.$('#home-challenge')).screenshot({ path: process.env.TEMP + '/home-chal.png' });
+  await p2.click('#home-challenge [data-chal-open]'); await p2.waitForTimeout(600);
+  const there = await p2.evaluate((d) => ({ screen: document.querySelector('.screen.active')?.id, tab: document.querySelector('.challenge-tab-btn.active')?.textContent, todayOn: document.querySelector(`.challenge-day[data-day="${d}"]`)?.classList.contains('on') }), dk(0));
+  check('카드 누르면 플란체 화면으로 + 오늘 체크 반영', there.screen === 'challenge-screen' && /플란체/.test(there.tab) && there.todayOn, there);
+  await c2.close();
+}
 console.log('page errors:', errs); console.log(`${res.filter(Boolean).length}/${res.length} passed`); process.exitCode = res.every(Boolean) && !errs.length ? 0 : 1;
 await b.close(); srv.close();

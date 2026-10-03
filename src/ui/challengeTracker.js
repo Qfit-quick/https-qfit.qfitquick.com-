@@ -178,6 +178,108 @@ function findPhaseIndexForWeek(phases, week) {
   return 0;
 }
 
+// 들어올 때 고를 트랙(2026-10-03). 예전엔 늘 턱걸이였다 — 플란체를 하는
+// 사람도 들어올 때마다 턱걸이가 눌려 있어 매번 다시 골라야 했다. 이제
+// ①마지막으로 고른 트랙(저장) ②없으면 진행 중인 트랙 중 가장 최근에 실천한
+// 것(실천 달력·주차 기록·시작일 중 가장 늦은 날) ③그것도 없으면 턱걸이.
+const CURRENT_KEY = 'qfit_challenge_current_v1';
+function lastActivity(key) {
+  const track = CHALLENGE_TRACKS[key];
+  const dates = Object.keys(getDailyChecks(track));
+  const start = loadStart(track.startKey);
+  if (start) dates.push(start);
+  if (!dates.length && Object.keys(getLogs(track)).length) dates.push('0000-00-00');
+  return dates.sort().pop() || '';
+}
+function initialTrackKey() {
+  try {
+    const saved = localStorage.getItem(CURRENT_KEY);
+    if (saved && CHALLENGE_TRACKS[saved]) return saved;
+  } catch (e) { /* 저장소가 막혀 있으면 아래로 */ }
+  let best = '', bestAt = '';
+  CHALLENGE_TRACK_ORDER.forEach((key) => {
+    const at = lastActivity(key);
+    if (at && at > bestAt) { best = key; bestAt = at; }
+  });
+  return best || 'pullup';
+}
+function rememberTrack(key) {
+  try { localStorage.setItem(CURRENT_KEY, key); } catch (e) { /* 이번 세션만 기억 */ }
+}
+// 시작일·실천 기록·주차 기록 중 하나라도 있으면 진행 중이다.
+function trackStarted(key) {
+  const track = CHALLENGE_TRACKS[key];
+  return !!loadStart(track.startKey) || Object.keys(getLogs(track)).length > 0 || Object.keys(getDailyChecks(track)).length > 0;
+}
+// 홈 카드에 띄울 '진행 중인 도전' — 고른 트랙이 진행 중이면 그것, 아니면
+// 가장 최근에 실천한 트랙. 하나도 없으면 null(카드를 안 띄운다).
+function activeTrackKey() {
+  const k = initialTrackKey();
+  if (trackStarted(k)) return k;
+  let best = null, bestAt = '';
+  CHALLENGE_TRACK_ORDER.forEach((key) => {
+    const at = lastActivity(key);
+    if (at && at > bestAt) { best = key; bestAt = at; }
+  });
+  return best;
+}
+
+
+// ── 홈의 '진행 중인 도전' 카드(2026-10-04) ──────────────────────
+// 도전 탭을 열면 하던 트랙이 골라져 있게 했지만(위 initialTrackKey), 매일
+// 하는 사람에겐 그래도 홈 → 도전 탭 → 스크롤 → 오늘 체크로 여러 단계였다.
+// 홈에 하던 도전을 띄우고 거기서 바로 오늘 체크, 누르면 그 트랙으로 간다.
+// 진행 중인 도전이 없으면 카드를 아예 안 띄운다(홈을 늘리지 않는다).
+export function renderHomeChallenge() {
+  const box = document.getElementById('home-challenge');
+  if (!box) return;
+  const key = activeTrackKey();
+  if (!key) { box.hidden = true; box.innerHTML = ''; return; }
+  const track = CHALLENGE_TRACKS[key];
+  const today = dayKey();
+  const days = getDailyChecks(track);
+  const start = loadStart(track.startKey) || today;
+  const week = Math.max(1, computeCalendarWeek(start, track.totalWeeks) || 1);
+  const weekDates = Array.from({ length: 7 }, (_, i) => shiftDay(start, (week - 1) * 7 + i));
+  const doneWeek = weekDates.filter((d) => days[d]).length;
+  const doneToday = !!days[today];
+  box.hidden = false;
+  box.innerHTML =
+    '<button type="button" class="home-chal-main" data-chal-open>' +
+    '<span class="home-chal-k">' + esc(t(S.homeChalKicker)) + '</span>' +
+    '<span class="home-chal-t">' + esc(t(S.homeChalTitle).replace('%s', track.short).replace('%s', week)) + '</span>' +
+    '<span class="home-chal-dots" aria-hidden="true">' +
+    weekDates.map((d) => '<i class="' + (days[d] ? 'on' : '') + (d === today ? ' today' : '') + (d > today ? ' future' : '') + '"></i>').join('') +
+    '</span>' +
+    '<span class="home-chal-s">' + esc(t(S.challengeDaysStats).replace('%s', doneWeek).replace('%s', Object.keys(days).length)) + '</span>' +
+    '</button>' +
+    '<button type="button" class="home-chal-check' + (doneToday ? ' done' : '') + '" data-chal-check aria-pressed="' + doneToday + '">' +
+    esc(t(doneToday ? S.homeChalChecked : S.homeChalCheck)) + '</button>';
+  box.dataset.track = key;
+}
+
+function initHomeChallenge() {
+  const box = document.getElementById('home-challenge');
+  if (!box) return;
+  box.addEventListener('click', (e) => {
+    const key = box.dataset.track;
+    if (!key) return;
+    if (e.target.closest('[data-chal-check]')) {
+      toggleDay(CHALLENGE_TRACKS[key], dayKey());
+      renderHomeChallenge();
+      return;
+    }
+    if (e.target.closest('[data-chal-open]')) {
+      rememberTrack(key);
+      document.querySelector('.tabbar .tab[data-screen="challenge-screen"]')?.click();
+    }
+  });
+  document.addEventListener('screenchange', (e) => {
+    if (e.detail?.id === 'start-screen') renderHomeChallenge();
+  });
+  renderHomeChallenge();
+}
+
 export function initChallengeTracker({ translate, STATIC_UI } = {}) {
   if (translate) t = translate;
   if (STATIC_UI) S = STATIC_UI;
@@ -197,36 +299,11 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
   };
   if (!els.tabsContainer) return; // 마크업이 아직 안 붙었으면 조용히 넘어간다
 
-  // 들어올 때 고를 트랙(2026-10-03). 예전엔 늘 턱걸이였다 — 플란체를 하는
-  // 사람도 들어올 때마다 턱걸이가 눌려 있어 매번 다시 골라야 했다. 이제
-  // ①마지막으로 고른 트랙(저장) ②없으면 진행 중인 트랙 중 가장 최근에 실천한
-  // 것(실천 달력·주차 기록·시작일 중 가장 늦은 날) ③그것도 없으면 턱걸이.
-  const CURRENT_KEY = 'qfit_challenge_current_v1';
-  function lastActivity(key) {
-    const track = CHALLENGE_TRACKS[key];
-    const dates = Object.keys(getDailyChecks(track));
-    const start = loadStart(track.startKey);
-    if (start) dates.push(start);
-    if (!dates.length && Object.keys(getLogs(track)).length) dates.push('0000-00-00');
-    return dates.sort().pop() || '';
-  }
-  function initialTrackKey() {
-    try {
-      const saved = localStorage.getItem(CURRENT_KEY);
-      if (saved && CHALLENGE_TRACKS[saved]) return saved;
-    } catch (e) { /* 저장소가 막혀 있으면 아래로 */ }
-    let best = '', bestAt = '';
-    CHALLENGE_TRACK_ORDER.forEach((key) => {
-      const at = lastActivity(key);
-      if (at && at > bestAt) { best = key; bestAt = at; }
-    });
-    return best || 'pullup';
-  }
+  let currentTrackKey = initialTrackKey();
   function selectTrack(key) {
     currentTrackKey = key;
-    try { localStorage.setItem(CURRENT_KEY, key); } catch (e) { /* 이번 세션만 기억 */ }
+    rememberTrack(key);
   }
-  let currentTrackKey = initialTrackKey();
   let openPhaseIdx = 0; // 트랙 바꿀 때마다 재계산
 
   // 검색 색인. 9개 트랙(2026-09-24, 피스톨 스쿼트·쉬운 습관 3주 추가로
@@ -604,5 +681,15 @@ export function initChallengeTracker({ translate, STATIC_UI } = {}) {
     renderTimer();
   });
 
+  // 들어올 때마다 다시 그린다 — 홈 카드에서 오늘 체크했거나 그 카드로 다른
+  // 트랙을 골랐을 수 있다(2026-10-04).
+  document.addEventListener('screenchange', (e) => {
+    if (e.detail?.id !== 'challenge-screen') return;
+    currentTrackKey = initialTrackKey();
+    renderTrack();
+  });
+  document.addEventListener('qfit:lang', renderHomeChallenge);
+
   renderTrack();
+  initHomeChallenge();
 }

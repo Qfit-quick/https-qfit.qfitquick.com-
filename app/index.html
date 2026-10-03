@@ -163,6 +163,11 @@
  </button>
  </div>
 
+ <!-- 진행 중인 도전(2026-10-04) — 하던 도전을 홈에 띄우고 바로 오늘 체크.
+      매일 쓰는 것이라 Q-Mission 위에 둔다(아래면 첫 화면에서 안 보였다).
+      없으면 숨는다. 안쪽은 src/ui/challengeTracker.js 의 renderHomeChallenge. -->
+ <div class="card home-chal" id="home-challenge" hidden></div>
+
  <!-- Q-Mission(2026-09-27) — 예전에는 "오늘 운동·식단 체크하러 가기"
       카드였다(운동/식단 완료 여부 두 칸). 사용자 요청으로 그 자리를
       Q-Mission(운동 밖의 작은 선행 체크리스트)으로 바꿨다 — 기록지

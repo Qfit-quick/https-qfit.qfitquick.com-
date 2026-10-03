@@ -1220,3 +1220,28 @@
 .routines-empty-t { font-size: var(--t-lg); font-weight: 700; }
 .routines-empty-d { font-size: var(--t-sm); line-height: 1.6; color: var(--text-dim); word-break: keep-all; max-width: 300px; }
 .routines-empty-btn { width: auto; min-width: 200px; margin-top: var(--s-2); }
+
+/* 홈의 진행 중인 도전(2026-10-04). 왼쪽은 눌러서 그 트랙으로, 오른쪽은 오늘 체크. */
+.home-chal { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); }
+.home-chal[hidden] { display: none; }
+.home-chal-main {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  background: none; border: 0; padding: 0; text-align: left; color: var(--text); cursor: pointer;
+  font-family: inherit;
+}
+.home-chal-k { font-size: var(--t-xs); font-weight: 700; color: var(--text-dim); }
+.home-chal-t { font-size: var(--t-md); font-weight: 800; }
+.home-chal-dots { display: flex; gap: 5px; margin: 2px 0; }
+.home-chal-dots i { width: 12px; height: 12px; border-radius: var(--r-full); background: var(--surface-2); border: 1px solid var(--line); }
+.home-chal-dots i.on { background: var(--mint-text); border-color: var(--mint-text); }
+.home-chal-dots i.today { border-color: var(--accent-text); border-width: 2px; }
+.home-chal-dots i.future { opacity: .45; }
+.home-chal-s { font-size: var(--t-xs); color: var(--text-dim); font-family: var(--font-num); font-weight: 700; }
+.home-chal-check {
+  flex: none; min-height: var(--tap); padding: 0 var(--s-4);
+  border-radius: var(--r-full); border: 1.5px solid var(--mint-text);
+  background: transparent; color: var(--mint-text);
+  font-size: var(--t-sm); font-weight: 800; font-family: inherit; cursor: pointer; white-space: nowrap;
+}
+.home-chal-check.done { background: var(--mint-text); color: var(--bg, #fff); }
