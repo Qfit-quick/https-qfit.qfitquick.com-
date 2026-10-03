@@ -1245,3 +1245,65 @@
   font-size: var(--t-sm); font-weight: 800; font-family: inherit; cursor: pointer; white-space: nowrap;
 }
 .home-chal-check.done { background: var(--mint-text); color: var(--bg, #fff); }
+
+/* ── 다시 열게 만드는 장치(2026-10-04, ui/engage.js) ───────────── */
+/* 연속 한 줄: 오늘 하면 이어지는 상태는 강조색, 오늘 끝났으면 민트. */
+#streak-line[data-state="risk"] { color: var(--accent-text); font-weight: 800; }
+#streak-line[data-state="done"] { color: var(--mint-text); font-weight: 700; }
+
+/* 펫: 오늘 운동 전엔 졸고(흐릿 + 💤), 하면 깨어나 한 번 뛴다. */
+.pet-card { position: relative; }
+.pet-card.sleepy .pet-img,
+.pet-card.sleepy .pet-emoji { filter: grayscale(.55) brightness(.97); opacity: .72; }
+.pet-card.sleepy::after {
+  content: '💤'; position: absolute; top: 8px; right: 10px; font-size: 14px;
+  animation: petZ 2.4s ease-in-out infinite;
+}
+.pet-card.awake .pet-img,
+.pet-card.awake .pet-emoji { animation: petHop .9s var(--ease-out) 1; }
+@keyframes petZ { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-4px); opacity: 1; } }
+@keyframes petHop { 0% { transform: translateY(0); } 35% { transform: translateY(-8px); } 70% { transform: translateY(0); } 85% { transform: translateY(-3px); } 100% { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .pet-card.sleepy::after, .pet-card.awake .pet-img, .pet-card.awake .pet-emoji { animation: none; }
+}
+
+/* 지난주 리포트 */
+.home-weekly { display: flex; align-items: flex-start; gap: var(--s-2); padding: var(--s-3) var(--s-4); }
+.home-weekly[hidden] { display: none; }
+.home-weekly-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.home-weekly-k { font-size: var(--t-xs); font-weight: 700; color: var(--text-dim); }
+.home-weekly-t { font-size: var(--t-md); font-weight: 800; }
+.home-weekly-dots { display: flex; gap: 5px; margin: 2px 0; }
+.home-weekly-dots i { width: 12px; height: 12px; border-radius: 3px; background: var(--surface-2); border: 1px solid var(--line); }
+.home-weekly-dots i.on { background: var(--mint-text); border-color: var(--mint-text); }
+.home-weekly-cmp { font-size: var(--t-xs); font-weight: 700; color: var(--mint-text); }
+.home-weekly-cmp.down { color: var(--accent-text); }
+.home-weekly-x {
+  flex: none; width: var(--tap); height: var(--tap); margin: -8px -10px 0 0;
+  background: none; border: 0; color: var(--text-dim); font-size: var(--t-md); cursor: pointer;
+}
+
+/* 연속 이정표 축하 */
+.streak-cele {
+  position: fixed; inset: 0; z-index: 60;
+  display: grid; place-items: center; padding: var(--s-6);
+  background: rgba(0, 0, 0, .55);
+  animation: celeIn .25s var(--ease-out);
+}
+.streak-cele-card {
+  width: 100%; max-width: 320px;
+  display: flex; flex-direction: column; align-items: center; gap: var(--s-3);
+  padding: var(--s-6) var(--s-5) var(--s-5);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-xl);
+  text-align: center;
+}
+.streak-cele-n {
+  font-family: var(--font-num); font-size: 4.5rem; font-weight: 800; line-height: 1;
+  color: var(--accent-text);
+}
+.streak-cele-n::before { content: '🔥'; display: block; font-size: 2rem; margin-bottom: 4px; }
+.streak-cele-t { font-size: var(--t-xl); font-weight: 800; }
+.streak-cele-d { font-size: var(--t-sm); color: var(--text-dim); line-height: 1.6; word-break: keep-all; }
+.streak-cele-btns { display: flex; gap: var(--s-2); width: 100%; margin-top: var(--s-2); }
+.streak-cele-btns > * { flex: 1 1 0; min-height: var(--tap); }
+@keyframes celeIn { from { opacity: 0; } to { opacity: 1; } }

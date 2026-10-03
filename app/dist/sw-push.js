@@ -12,6 +12,9 @@ self.addEventListener('push', function (event) {
   try { data = event.data ? event.data.json() : {}; } catch (e) {}
   var title = data.title || 'Q-fit';
   var body = data.body || '4일 쉬었습니다. 1분이면 다시 시작할 수 있어요.';
+  // 아이콘 배지도 같이 켠다(2026-10-04) — 알림을 지나쳐도 홈 화면 아이콘에
+  // ①이 남아 열 이유가 된다. 앱을 열어 오늘 운동을 하면 ui/engage.js 가 지운다.
+  try { if (self.navigator && self.navigator.setAppBadge) self.navigator.setAppBadge(1); } catch (e) {}
   event.waitUntil(
     self.registration.showNotification(title, {
       body: body,

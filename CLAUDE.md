@@ -187,7 +187,7 @@ Supabase 클라이언트가 pkce 흐름이라(`src/cloud/supabase.js`), 소셜 �
     npm run coverage   # 스타일 없는 클래스
     npm run contrast   # 명도 대비
 
-`smoke`·`flow`·`shot`·`auth`·`backnav`·`awake`·`challenge` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
+`smoke`·`flow`·`shot`·`auth`·`backnav`·`awake`·`challenge`·`engage` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
 안 돌린다.
 
 `npm run phases` 는 브라우저 없이 돈다(2026-09-26 부터 워크플로에도 붙어
@@ -224,6 +224,19 @@ Supabase 클라이언트가 pkce 흐름이라(`src/cloud/supabase.js`), 소셜 �
   돌려 함께 막는다. 기기가 잠금을 멋대로 풀면 다시 건다.
 
     npm run build && npm run awake   # 도전·프로그램·타이머·운동 화면에서 잠기는지
+
+## '운동한 날'은 기록지의 운동 칸 하나다 (2026-10-04)
+
+앱 완주(`recordCompletion → markWorkoutDone`)·도전 실천 체크·체크 화면의
+'오늘 운동했다'가 전부 기록지(`qfit_daylog_v1`)의 `workout` 칸을 켠다. 홈의
+연속·이번 주 칸·펫·아이콘 배지는 이 칸(+옛 완주 기록)으로 센다
+(`src/ui/engage.js` 의 `liveStreak`). 운동을 세는 길을 새로 만들면 반드시
+`markWorkoutDone(날짜)` 를 부른다 — 안 그러면 홈에서 운동 안 한 날로 보인다.
+
+날짜는 이 기기 시간대(`dayKey`)다. `toISOString()` 은 UTC 라 한국에서 아침
+9시 전이 전날로 잡힌다 — 2026-10-04 전 `todayStr()` 이 그랬다.
+
+    npm run build && npm run engage   # 연속 문구·축하·지난주 리포트·배지·아침 날짜
 
 ## 동작 국면 시각은 클립에 묶여 있다
 

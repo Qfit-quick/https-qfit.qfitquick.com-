@@ -26,7 +26,8 @@ import { phasesFor } from './data/exercise-phases.js';
 import { AI_GOAL_POOLS } from './data/ai-goals.js';
 import { photoUrl, clipUrl, petUrl } from './core/assets.js';
 import { clipThumb, disposeClipThumbs } from './ui/clip-thumb.js';
-import { markWorkoutDone, loadProgramProgress } from './health/store.js';
+import { markWorkoutDone, loadProgramProgress, dayKey, shiftDay } from './health/store.js';
+import { initEngage, liveStreak, streakLine, refreshEngagement } from './ui/engage.js';
 import { CHALLENGE_TRACK_ORDER, CHALLENGE_TRACKS } from './data/challengeTracks.js';
 
 // ---------- DATA ----------
@@ -639,6 +640,8 @@ function showScreen(el){
  // 운동을 끝내고 홈으로 오면 XP 가 늘어 있다. 여기서 다시 그리지 않으면
  // 알은 앱을 다시 켤 때까지 옛 레벨로 남는다.
  try{ renderPetCard(); }catch(e){ console.error('pet card render failed:', e); }
+ // 배지·지난주 리포트·연속 이정표 축하(ui/engage.js).
+ try{ refreshEngagement(); }catch(e){ console.error('engagement refresh failed:', e); }
  }
  // 화면이 바뀌었다고 알린다. 탭바와 뒤로가기가 이 신호를 듣는다 —
  // 그쪽에서 showScreen 을 직접 부르게 하면 위에 붙은 훅들을 건너뛰게 된다.
@@ -1799,17 +1802,18 @@ async function wipeAllData(){
 
 // 설계 16 에는 '오늘의 챌린지' 배너가 있지만 만들지 않는다 — 챌린지는 // FR-05 로 걷어낸 기능이다(커밋 150da98). 설계 파일은 그 결정보다 앞선 그림이라, // 둘이 어긋나면 요구사항이 이긴다.
 
+// 이 기기의 시간대로 오늘(2026-10-04). 예전엔 toISOString(UTC)이라, 한국에서
+// 아침 9시 전에 한 운동이 전날로 잡혀 연속 기록이 엉뚱하게 이어지거나 끊겼다.
+// 기록지(health/store.js 의 dayKey)와 같은 날짜를 쓴다.
 function todayStr(){
- return new Date().toISOString().slice(0,10);
+ return dayKey();
 }
 function todayCompletionCount(){
  const today = todayStr();
  return (myProfile.history || []).filter(e => new Date(histTime(e)).toISOString().slice(0,10) === today).length;
 }
 function isYesterday(dateStr){
- const d = new Date(dateStr + 'T00:00:00');
- d.setDate(d.getDate()+1);
- return d.toISOString().slice(0,10) === todayStr();
+ return shiftDay(todayStr(), -1) === dateStr;
 }
 
 function escapeHtml(str){
@@ -1837,16 +1841,25 @@ function weeklyCompletionCount(){
  return (myProfile.history || []).filter(e => now - histTime(e) <= weekMs).length;
 }
 
+// 운동한 날(이 기기 시간대). 기록지의 운동 칸 + 옛 완주 기록.
+function workoutDatesSafe(){
+ const set = new Set();
+ try{
+  const raw = JSON.parse(localStorage.getItem('qfit_daylog_v1') || '{}');
+  for(const [k, v] of Object.entries(raw)) if(v && v.workout) set.add(k);
+ }catch(e){}
+ (myProfile.history || []).forEach(e=>{ const ms = histTime(e); if(ms) set.add(dayKey(new Date(ms))); });
+ return set;
+}
+
 function renderWeekStrip(){
  const strip = document.getElementById('week-strip');
  if(!strip) return;
  strip.innerHTML = '';
 
- const countByDate = {};
- (myProfile.history || []).forEach(e=>{
-  const d = new Date(histTime(e));
-  countByDate[d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate()] = 1;
- });
+ // 운동한 날 = 앱 완주 + 도전 실천 + 체크 화면의 '오늘 운동했다'(2026-10-04).
+ // 예전엔 앱 완주만 세서, 플란체를 매일 해도 이 칸이 비어 있었다.
+ const doneDays = workoutDatesSafe();
 
  // 설계의 주는 월요일에 시작한다. 오늘로 끝나는 굴러가는 7일이 아니라
  // '이번 주' 라 카드 제목과 같은 말이 되어야 한다.
@@ -1859,7 +1872,7 @@ function renderWeekStrip(){
  for(let i = 0; i < 7; i++){
   const d = new Date(monday);
   d.setDate(monday.getDate() + i);
-  const done = !!countByDate[d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate()];
+  const done = doneDays.has(dayKey(d));
   // 다섯 가지 상태는 설계의 cell() 과 같다: done · today · miss · future · off.
   // 완주가 오늘보다 먼저 오는 게 중요하다 — 오늘 이미 했으면 테두리가 아니라
   // 채워진 칸으로 보여야 "오늘 것은 끝났다" 가 한눈에 읽힌다.
@@ -1878,10 +1891,14 @@ function renderWeekStrip(){
 
  // 카드 머리의 오른쪽. 기록이 없으면 숫자 대신 다음 할 일을 말한다 —
  // '연속 0일' 은 성적표처럼 읽혀서 처음 여는 사람을 쫓아낸다.
+ // 살아 있는 연속(2026-10-04, ui/engage.js). 오늘 아직 안 했고 어제까지
+ // 이어져 있으면 "오늘 하면 N일 연속" — 걸려 있는 것을 보여 준다. 예전엔
+ // 끊겨도 다음 운동 전까지 옛 숫자가 그대로 떠 있었다.
  const line = document.getElementById('streak-line');
  if(line){
-  const st = myProfile.currentStreak || 0;
-  line.textContent = st > 0 ? t(STATIC_UI.streakDays).replace('%s', st) : t(STATIC_UI.streakNone);
+  const sl = streakLine();
+  line.textContent = sl.text;
+  line.dataset.state = sl.state;
  }
 }
 
@@ -1942,6 +1959,13 @@ function renderPetCard(){
  // 눈으로는 그림과 숫자로 읽히지만, 소리로 들으면 'Lv. 3' 뿐이라
  // 무엇의 레벨인지 알 수 없다. 단계 이름을 붙여 준다.
  card.setAttribute('aria-label', t(stage.name) + ' · Lv. ' + level);
+ // 오늘 운동 전엔 졸고, 하면 깨어난다(2026-10-04) — 같이 키우는 알이 오늘
+ // 나를 기다리고 있다는 것을 말 없이 보여 준다.
+ try{
+  const done = liveStreak().doneToday;
+  card.classList.toggle('sleepy', !done);
+  card.classList.toggle('awake', done);
+ }catch(e){}
 }
 
 /** 성장 창을 채우고 연다. */
@@ -2047,7 +2071,7 @@ function renderRecordsScreen(){
  // 큰 숫자 자리에 부연을 넣으면 44px 로 '0일(오늘 0회)' 가 되어 두 줄로 넘친다.
   // 숫자는 숫자대로 두고 부연만 작게 떼어 붙인다.
   document.getElementById('rec-current-streak').innerHTML =
-    (myProfile.currentStreak || 0) + t({ko:'일', en:'d', zh:'天'}) +
+    liveStreak().count + t({ko:'일', en:'d', zh:'天'}) +
     '<span class="val-sub">' +
     t({ko:'오늘 ' + todayCompletionCount() + '회', en:todayCompletionCount() + ' today', zh:'今天' + todayCompletionCount() + '次'}) +
     '</span>';
@@ -2461,6 +2485,8 @@ function recordCompletion(groups){
  // 손으로 또 체크해야 한다면 그건 장부를 두 번 적는 것이고, 두 벌은
  // 반드시 어긋난다. 기록지가 이 함수를 유일한 출처로 삼는다.
  try{ markWorkoutDone(); }catch(e){ console.error('markWorkoutDone failed:', e); }
+ // 도전 실천까지 합친 연속이 앱 완주만 센 것보다 길 수 있다 — 최고 기록에 반영.
+ try{ myProfile.bestStreakEver = Math.max(myProfile.bestStreakEver || 0, liveStreak().count); }catch(e){}
  document.dispatchEvent(new CustomEvent('qfit:completed'));
 }
 
@@ -4669,7 +4695,9 @@ try{
 try{ loadNickname(); }catch(e){ console.error('loadNickname failed:', e); }
 try{ loadWeightKg(); }catch(e){ console.error('loadWeightKg failed:', e); }
 try{ applySetupPrefs(loadSetupPrefs()); }catch(e){ console.error('applySetupPrefs boot failed:', e); }
+try{ initEngage({ translate: t, STATIC_UI, history: ()=> myProfile.history || [], confetti: fireConfetti }); }catch(e){ console.error('engage init failed:', e); }
 try{ renderWeekStrip(); }catch(e){ console.error('week strip boot render failed:', e); }
+try{ refreshEngagement(); }catch(e){ console.error('engagement boot failed:', e); }
 // start-screen 은 HTML 에서부터 이미 active 라 showScreen() 을 안 거치고
 // 첫 화면이 된다 — refreshStartModeRow() 를 여기서 한 번 더 안 부르면
 // 첫 진입에서는 QCE 가 옛 자리(2026-09-24 이전)에 그대로 보인다.
