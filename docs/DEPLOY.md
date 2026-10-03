@@ -470,29 +470,36 @@ API 로는 안 된다(최초 설정만 허용, `10036`).
 워크플로는 이 이름에 의존하지 않으므로 바꿔도 코드는 손댈 필요 없다.
 다만 `README.md` 의 주소 표는 고쳐야 한다.
 
-## 매일 알림 (2026-10-04)
+## 알림 두 가지 — 운동 알림 · Q-Mission 알림 (2026-10-04)
 
-설정 → 알림 → **매일 알림**(끔/아침 8시/낮 12시/저녁 7시/밤 9시, 한국 시간).
-고른 시각에 그날 아직 운동 전이면(앱 완주·도전 체크·직접 체크 어느 것도
-안 했으면) 웹푸시를 한 번 보낸다. 기본은 꺼짐이다 — 매일 오는 알림은 사람이
-직접 골라야 한다(4일 리마인더는 지금처럼 기본 켜짐).
+설정 → 알림 에 둘이 있다. 둘 다 `send-reminders` 함수 하나가 보내고, GitHub
+Actions(`.github/workflows/push-reminders.yml`)가 매시 정각 그 함수를 부른다.
 
-서버 쪽 준비(한 번만):
+- **운동 알림**(예전 이름 '4일 리마인더', 기본 켜짐) — 나흘 넘게 운동을 쉬면
+  한 번(제목 'Q-fit 운동 알림'). 한국 시간 낮 12시 실행에만 돈다.
+- **Q-Mission 알림**(끔/아침 8시/낮 12시/저녁 7시/밤 9시, 기본 꺼짐) — 고른
+  시각에 오늘 Q-Mission 을 다 안 했으면 한 번(제목 'Q-Mission', 본문에 남은
+  개수). 처음엔 '오늘 운동 전이면'이었는데 사용자 요청으로 Q-Mission 기준으로
+  바꿨다. 앱이 Q-Mission 을 체크할 때·하트비트 때 오늘 진행(몇 개 중 몇 개)을
+  `report_qmission` 으로 적는다 — 이 알림을 켠 기기만.
 
-1. Supabase 대시보드 → SQL Editor 에서 `docs/sql/2026-10-04-daily-reminder.sql`
-   실행 — devices 에 `daily_hour`·`daily_sent_date` 칸과 `set_daily_reminder`
-   함수를 더한다.
-2. 대시보드 → Edge Functions → `send-reminders` 에
+서버 쪽 준비(한 번만, 순서대로):
+
+1. SQL Editor 에서 `docs/sql/2026-10-04-daily-reminder.sql` 실행 — devices 에
+   `daily_hour`·`daily_sent_date` 칸과 `set_daily_reminder` 함수.
+2. SQL Editor 에서 `docs/sql/2026-10-04-qmission-reminder.sql` 실행 — devices 에
+   `qm_date`·`qm_done`·`qm_total` 칸과 `report_qmission` 함수.
+3. 대시보드 → Edge Functions → `send-reminders` 에
    `supabase/functions/send-reminders/index.ts` 를 그대로 붙여넣어 배포.
-3. `.github/workflows/push-reminders.yml` 의 cron 을 매시 정각(`0 * * * *`)으로.
-   **반드시 2 다음에** — 옛 함수는 시각을 안 가려서, 매시간 부르면 4일
-   리마인더가 새벽에도 나갈 수 있다. 새 함수는 4일 리마인더를 한국 시간
-   낮 12시 실행에만 보낸다.
+4. 워크플로 cron 을 매시 정각(`0 * * * *`)으로. **반드시 3 다음에** — 옛
+   함수는 시각을 안 가려서 매시간 부르면 운동 알림이 새벽에도 나갈 수 있다.
 
-**지금 상태(2026-10-04): 1·2·3 모두 완료.** 확인 — `set_daily_reminder` 에 범위
-밖 시각을 넣으면 'hour out of range'(함수 있음, 행은 안 만든다), send-reminders
-를 직접 부르면 HTTP 200 에 `daily: ok`(devices 읽기 권한 정상 — 4일 리마인더도
-같은 권한이라 낮 12시 실행부터 다시 나간다. 10-03 까지는 이 권한이 없어 매번 500).
+**지금 상태(2026-10-04): 1·2·3·4 모두 완료.** 확인 —
+`report_qmission` 에 `p_done: 99` 를 넣으면 'count out of range'(함수 있음, 행은
+안 만든다), send-reminders 를 직접 부르면 HTTP 200 에 `qmission: {ok: true,
+qmKnown: true}`. `qmKnown: false` 면 2가 안 된 것이다 — 함수는 그래도 진행을
+모르는 채로 일반 문구를 보낸다. (10-03 까지는 devices 읽기 권한이 없어 운동
+알림이 매번 500 이었다 — 1이 그 권한도 준다.)
 
 1 전에는 앱이 고른 시각을 기기에 들고 있다가(설정에 '곧 켜져요' 안내)
 하트비트 때마다 서버에 다시 적어 본다 — 1을 하면 저절로 맞춰진다.
