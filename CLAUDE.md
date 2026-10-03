@@ -187,7 +187,7 @@ Supabase 클라이언트가 pkce 흐름이라(`src/cloud/supabase.js`), 소셜 �
     npm run coverage   # 스타일 없는 클래스
     npm run contrast   # 명도 대비
 
-`smoke`·`flow`·`shot`·`auth`·`backnav` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
+`smoke`·`flow`·`shot`·`auth`·`backnav`·`awake` 등은 playwright 로 실제 브라우저를 띄운다. CI 에서는
 안 돌린다.
 
 `npm run phases` 는 브라우저 없이 돈다(2026-09-26 부터 워크플로에도 붙어
@@ -207,6 +207,23 @@ Supabase 클라이언트가 pkce 흐름이라(`src/cloud/supabase.js`), 소셜 �
 시스템 뒤로가기가 없어서, 위쪽 ← 가 없으면 나갈 길이 탭바뿐이다.
 
     npm run build && npm run backnav   # 들어간 모든 화면이 들어온 곳으로 돌아오는지
+
+## 운동 중엔 화면이 절대 꺼지면 안 된다 (2026-10-03)
+
+사용자가 못 박은 요구다. `src/core/wakeLock.js` 의 `setAwake(이유, 켜기)`
+가 맡는다 — 이유가 하나라도 켜져 있으면 잠근다.
+
+- **어느 화면에서 잠그나**는 `src/ui/nav.js` 의 `KEEP_AWAKE`(운동 화면
+  `IMMERSIVE` 전부 + 도전·프로그램 탭 등)다. 탭바를 안 감추는 운동 화면을
+  새로 만들면 여기에 넣는다. 도전 타이머는 탭 밖에서도 돌므로 따로
+  `setAwake('challenge-timer', …)` 를 건다 — 타이머·스톱워치를 새로 만들면
+  같은 식으로 건다.
+- **Wake Lock API 하나만 믿지 않는다.** 아이폰 홈 화면 앱은 iOS 18.4 전까지
+  요청이 '성공'하고도 실제로는 효과가 없었다. 아이폰·아이패드와 Wake Lock 이
+  없거나 실패한 브라우저에선 소리 없는 4KB 영상(`keepAwakeVideo.js`)을 1px 로
+  돌려 함께 막는다. 기기가 잠금을 멋대로 풀면 다시 건다.
+
+    npm run build && npm run awake   # 도전·프로그램·타이머·운동 화면에서 잠기는지
 
 ## 동작 국면 시각은 클립에 묶여 있다
 

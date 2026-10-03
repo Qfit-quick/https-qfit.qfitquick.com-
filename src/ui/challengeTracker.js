@@ -15,6 +15,7 @@ import { CHALLENGE_TRACK_ORDER, CHALLENGE_TRACKS } from '../data/challengeTracks
 import { getChallengeIcon } from '../data/challengeIcons.js';
 import { getChallengeGloss } from '../data/challengeGloss.js';
 import { dayKey, markWorkoutDone } from '../health/store.js';
+import { setAwake } from '../core/wakeLock.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -104,6 +105,9 @@ function renderTimer() {
 
 function toggleTimer() {
   timerRunning = !timerRunning;
+  // 타이머가 도는 동안은 화면이 절대 꺼지면 안 된다 — 다른 탭으로 옮겨도
+  // (도전 화면 자체는 ui/nav.js 가 따로 잠근다).
+  setAwake('challenge-timer', timerRunning);
   if (timerRunning) {
     timerIntervalId = setInterval(() => { timerSec++; renderTimer(); }, 1000);
   } else if (timerIntervalId) {
@@ -116,6 +120,7 @@ function toggleTimer() {
 function resetTimer() {
   if (timerIntervalId) { clearInterval(timerIntervalId); timerIntervalId = null; }
   timerRunning = false;
+  setAwake('challenge-timer', false);
   timerSec = 0;
   renderTimer();
 }

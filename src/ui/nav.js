@@ -16,7 +16,7 @@ import { isSeniorModeRunning, isSeniorModePaused, pauseSeniorMode } from './seni
 import { isTabataRunning, isTabataPaused, pauseTabata } from './tabata.js';
 import { isViewingProgramDetail, backToProgramList } from './programs.js';
 import { closeSheet, isSheetOpen } from './sheet.js';
-import { keepAwake, allowSleep } from '../core/wakeLock.js';
+import { setAwake } from '../core/wakeLock.js';
 
 let t = (o) => (o && o.ko) || '';
 let S = {};
@@ -66,6 +66,16 @@ const IMMERSIVE = new Set([
   'tabata-run-screen',
   // 어르신·재활 모드(2026-09-27) — 위와 같은 이유.
   'senior-run-screen',
+]);
+
+// 화면이 꺼지면 안 되는 화면(2026-10-03). 운동 중이라 탭바를 감추는 화면
+// (IMMERSIVE) 전부에 더해, 도전과 프로그램 탭도 넣는다 — 둘 다 그 화면을
+// 켜 둔 채 운동하는 곳이라고 사용자가 분명히 말했다. 도전 탭 밖에서도 도전
+// 타이머가 돌고 있으면 challengeTracker.js 가 따로 잠금을 건다.
+const KEEP_AWAKE = new Set([
+  ...IMMERSIVE,
+  'challenge-screen', 'programs-screen', 'qce-rulebook-screen',
+  'tabata-setup-screen',
 ]);
 
 // 탭이 아닌 화면에 있을 때 어느 탭을 켜 둘지. 없으면 아무것도 안 켠다.
@@ -185,10 +195,10 @@ function paint(id) {
   document.body.dataset.screen = id;
   const immersive = IMMERSIVE.has(id);
   document.body.classList.toggle('immersive', immersive);
-  // 화면 안 꺼지게(2026-09-24 요청, src/core/wakeLock.js) — 운동 중이라
-  // 탭바를 감추는 화면과 정확히 같은 판정을 쓴다. 새 운동 화면이 생겨도
-  // IMMERSIVE 에만 넣으면 잠금이 자동으로 따라온다.
-  if (immersive) keepAwake(); else allowSleep();
+  // 화면 안 꺼지게(src/core/wakeLock.js). 새 운동 화면이 생겨도 IMMERSIVE
+  // 에만 넣으면 잠금이 자동으로 따라온다 — 탭바를 안 감추는 운동 화면은
+  // KEEP_AWAKE 에 직접 넣는다.
+  setAwake('screen', KEEP_AWAKE.has(id));
 }
 
 export function initNav({ translate, STATIC_UI } = {}) {
