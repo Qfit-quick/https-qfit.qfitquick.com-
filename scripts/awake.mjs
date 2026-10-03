@@ -1,6 +1,7 @@
 // 운동 중 화면 꺼짐 방지 검사 — src/core/wakeLock.js.
 //
 //     npm run build && npm run awake
+//     AWAKE_URL=https://qfit.qfitquick.com/ npm run awake   # 배포본 그대로
 //
 // 2026-10-03 "도전 실행 중인데 화면이 자꾸 꺼진다"를 고치면서 만들었다.
 // 그 전엔 꺼짐 방지가 운동 화면(IMMERSIVE)에만 걸려서 도전·프로그램 탭은
@@ -18,7 +19,9 @@ const srv = http.createServer((q, r) => {
   const f = path.join(root, p);
   if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { r.writeHead(404); return r.end(); }
   r.writeHead(200, { 'content-type': types[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r);
-}).listen(4800);
+});
+const BASE = process.env.AWAKE_URL || 'http://localhost:4800/';
+if (!process.env.AWAKE_URL) srv.listen(4800);
 
 const results = [];
 const check = (name, ok, info) => { results.push(ok); console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${ok ? '' : '  ' + JSON.stringify(info)}`); };
@@ -47,7 +50,7 @@ async function run({ ua, label }) {
     Object.defineProperty(navigator, 'wakeLock', { configurable: true, value: { request: async () => { st.requests++; const s = mk(); st.active.add(s); return s; } } });
     window.__osRelease = () => { [...st.active].forEach((s) => s.release()); };
   });
-  await pg.goto('http://localhost:4800/'); await pg.waitForTimeout(1200);
+  await pg.goto(BASE); await pg.waitForTimeout(1200);
   await pg.click('#gate-mood-opts .gate-opt').catch(() => {}); await pg.click('#gate-drive-opts .gate-opt').catch(() => {}); await pg.waitForTimeout(300);
   await pg.click('#gate-quote-card').catch(() => {}); await pg.waitForTimeout(600);
 
@@ -93,6 +96,13 @@ async function run({ ua, label }) {
   await pg.waitForTimeout(800); s = await state();
   check(`${label}: 앱을 내렸다 올려도 — 다시 걸림`, awake(s), s);
 
+  // 꺼짐 방지 영상이 밖의 이유(알림·전화·다른 앱 소리)로 멈추고 잠금도 풀린
+  // 경우 — 2026-10-03 진짜 브라우저 3분 검사에서 이게 회복되지 않는 구멍이
+  // 나왔다. 감시자(5초)·영상 pause 감지로 6초 안에 돌아와야 한다.
+  await pg.evaluate(() => { window.__osRelease(); document.querySelectorAll('video').forEach((v) => v.pause()); });
+  await pg.waitForTimeout(6000); s = await state();
+  check(`${label}: 영상이 멈추고 잠금도 풀려도 — 6초 안에 회복`, awake(s), s);
+
   // 타이머를 멈추면(홈에 있으니) 풀린다.
   await tab('challenge-screen');
   await pg.click('#challenge-timer-toggle-btn'); await pg.waitForTimeout(300);
@@ -111,7 +121,7 @@ async function run({ ua, label }) {
 
 await run({ ua: undefined, label: 'Chrome' });
 await run({ ua: IPHONE, label: 'iPhone' });
-srv.close();
+if (!process.env.AWAKE_URL) srv.close();
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);

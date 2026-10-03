@@ -14,6 +14,10 @@
 //  - 잠금을 거는 '이유'를 여럿 받는다(setAwake). 화면(nav.js)과 도전
 //    타이머(challengeTracker.js)가 각자 켜고 끄고, 하나라도 켜져 있으면 잠근다.
 //  - Wake Lock 을 걸고, 브라우저가 멋대로 풀면(배터리 절약 등) 바로 다시 건다.
+//  - 영상이 밖의 이유로 멈추면(알림·전화·다른 앱 소리) 바로 다시 튼다. 그리고
+//    잠그는 동안 5초마다 '지금 실제로 막고 있나'를 확인해 아니면 다시 건다
+//    (watchdog) — 2026-10-03 진짜 브라우저로 3분 흔들어 본 검사에서, 영상이
+//    멈춘 뒤 아무도 다시 안 틀어 보호가 풀린 채 남는 구멍이 나왔다.
 //  - 아이폰·아이패드, 또는 Wake Lock 이 없거나 실패한 브라우저에선 소리 없는
 //    아주 작은 영상(keepAwakeVideo.js)을 1px 짜리로 계속 돌린다. 영상이
 //    재생 중이면 기기가 화면을 끄지 않는다 — NoSleep.js 가 오래 써 온 방법이다.
@@ -28,6 +32,8 @@ let sentinel = null;
 let lockFailed = false;
 let video = null;
 let waitingForGesture = false;
+let watchdog = null;
+const WATCHDOG_MS = 5000;
 
 const IS_IOS = (() => {
   const ua = navigator.userAgent || '';
@@ -84,6 +90,12 @@ function ensureVideo() {
   video.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1;';
   // loop 를 무시하는 기기가 있어 끝나면 직접 되감는다.
   video.addEventListener('ended', () => { if (held()) { video.currentTime = 0; video.play().catch(() => {}); } });
+  // 밖의 이유로 멈췄다(알림·전화·다른 앱 소리 등). 운동 중이면 곧바로 다시 튼다.
+  // 운동이 끝나서 우리가 멈춘 것(stopVideo)은 held() 가 false 라 건드리지 않는다.
+  video.addEventListener('pause', () => {
+    if (!held() || !visible()) return;
+    setTimeout(() => { if (held() && visible() && video.paused) startVideo(); }, 250);
+  });
   document.body.appendChild(video);
   return video;
 }
@@ -116,13 +128,21 @@ function stopVideo() {
   if (video && !video.paused) video.pause();
 }
 
+function check() {
+  if (!held() || !visible()) return;
+  if (!sentinel) acquireLock();
+  if (needVideo() && (!video || video.paused)) startVideo();
+}
+
 function apply() {
   if (held()) {
     acquireLock();
     startVideo();
+    if (!watchdog) watchdog = setInterval(check, WATCHDOG_MS);
   } else {
     releaseLock();
     stopVideo();
+    if (watchdog) { clearInterval(watchdog); watchdog = null; }
   }
 }
 
@@ -147,3 +167,14 @@ document.addEventListener('visibilitychange', () => {
 });
 // 뒤로가기 캐시에서 되살아난 경우엔 visibilitychange 가 안 올 수 있다.
 window.addEventListener('pageshow', () => { if (held()) apply(); });
+
+// 진단용 — 실제 기기에서 지금 무엇으로 막고 있는지 콘솔에서 본다:
+//   qfitAwakeStatus()  →  { held, reasons, lock, lockFailed, video }
+// (2026-10-03, 진짜 브라우저 확인에 썼다.) 상태를 바꾸지는 않는다.
+window.qfitAwakeStatus = () => ({
+  held: held(),
+  reasons: [...reasons],
+  lock: !!sentinel,
+  lockFailed,
+  video: video ? (video.paused ? 'paused' : 'playing') : 'none',
+});
