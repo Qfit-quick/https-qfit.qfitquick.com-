@@ -153,6 +153,16 @@ function toggleMission(key) {
   impact.monthly[mk] = bucket;
   impact.totalQ = Math.max(0, impact.totalQ + delta * QM_POINTS_PER_MISSION);
   saveImpact(impact);
+  // Q-Mission 알림(서버, 2026-10-04)이 '오늘 다 했는지'를 알 수 있게 알린다.
+  try { document.dispatchEvent(new CustomEvent('qfit:qmission', { detail: todayQMissionProgress() })); } catch (e) { /* 무시 */ }
+}
+
+/** 오늘 Q-Mission 진행 — { date, done, total }. Q-Mission 알림(app.js → 서버)이 쓴다. */
+export function todayQMissionProgress() {
+  const date = dayKey();
+  const picks = picksForDate(date);
+  const doneKeys = doneForDate(date);
+  return { date, done: picks.filter((m) => doneKeys.includes(m.key)).length, total: picks.length };
 }
 
 function thisMonthTally() {

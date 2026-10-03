@@ -197,6 +197,17 @@ const TODAY = '2026-10-04';
   await pg.waitForTimeout(1200);
   const b2 = await pg.evaluate(() => localStorage.getItem('qfit_daily_synced_v1'));
   check('서버가 준비되면 다음 하트비트 때 저절로 맞춰짐', b2 === '21', { b2, setCalls });
+  // Q-Mission 알림을 켠 상태에서 Q-Mission 하나를 체크하면 오늘 진행(1/3)이 서버로 간다.
+  const qmCalls = [];
+  await ctx.route('**/rest/v1/rpc/report_qmission', async (r) => { qmCalls.push(JSON.parse(r.request().postData() || '{}')); await r.fulfill({ status: 204, body: '' }); });
+  await pg.click('.tabbar .tab[data-screen="start-screen"]'); await pg.waitForTimeout(300);
+  await pg.click('#qmission-card-open'); await pg.waitForTimeout(400);
+  await pg.click('#qmission-list [data-mission]');
+  await pg.waitForTimeout(800);
+  const lastQm = qmCalls.at(-1);
+  check(`Q-Mission 체크 → 진행이 서버로(${lastQm ? lastQm.p_done + '/' + lastQm.p_total : '없음'})`, !!lastQm && lastQm.p_done === 1 && lastQm.p_total >= 1, { qmCalls });
+  await pg.click('.tabbar .tab[data-screen="start-screen"]'); await pg.waitForTimeout(300);
+  await pg.click('#open-settings-btn'); await pg.waitForTimeout(300);
   await pg.selectOption('#daily-reminder-select', 'off'); await pg.waitForTimeout(800);
   const c = await pg.evaluate(() => ({ synced: localStorage.getItem('qfit_daily_synced_v1'), hour: localStorage.getItem('qfit_daily_hour_v1') }));
   check('끄면 서버에도 끔으로', c.synced === 'off' && c.hour === null && setCalls.at(-1)?.p_hour === null, { c, last: setCalls.at(-1) });

@@ -87,3 +87,22 @@ export async function setDailyReminder(hour) {
     return false;
   }
 }
+
+/** 오늘 Q-Mission 진행(몇 개 중 몇 개)을 서버에 적는다(2026-10-04) — Q-Mission
+ *  알림이 고른 시각에 '오늘 다 했는지'를 보고 보낼지 정한다. 성공하면 true. */
+export async function reportQMission(date, done, total) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/report_qmission`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_device_id: getDeviceId(), p_date: date, p_done: done, p_total: total }),
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}

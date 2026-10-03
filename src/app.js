@@ -5,7 +5,8 @@ import { advanceProgramProgress, clearPendingProgramDay } from './ui/programs.js
 import { getSupabase, hasStoredSession, hasOAuthCodeReturn, hasPendingPkceVerifier, waitForUrlAuthEvent, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
 import { refreshBillingStatus } from './ui/billing.js';
 import { goBack } from './ui/nav.js';
-import { heartbeat as presenceHeartbeat, getTodayActiveCount, setDailyReminder } from './cloud/presence.js';
+import { heartbeat as presenceHeartbeat, getTodayActiveCount, setDailyReminder, reportQMission } from './cloud/presence.js';
+import { todayQMissionProgress } from './ui/qmission.js';
 import * as reminder from './notify/reminder.js';
 import { RECOVERY_CARDS, INJURY_GUIDES, SPECIAL_GUIDES, DIET_GUIDES } from './data/recovery.js';
 import { INJURY_AVOID } from './data/injury-avoid.js';
@@ -1880,6 +1881,19 @@ async function syncDailyReminder(){
   return ok;
  }finally{ dailySyncing = false; }
 }
+
+// 오늘 Q-Mission 진행을 서버에 알린다(Q-Mission 알림, 2026-10-04). 알림을 켠
+// 사람만 — 안 켠 사람의 진행까지 서버에 보낼 이유가 없다. 같은 값이면 다시 안 보낸다.
+let lastQmReported = '';
+async function syncQMissionProgress(force){
+ if(loadDailyHour() == null) return;
+ let p;
+ try{ p = todayQMissionProgress(); }catch(e){ return; }
+ const sig = p.date + ':' + p.done + '/' + p.total;
+ if(!force && sig === lastQmReported) return;
+ if(await reportQMission(p.date, p.done, p.total)) lastQmReported = sig;
+}
+document.addEventListener('qfit:qmission', ()=>{ syncQMissionProgress(true); });
 
 function lastWorkoutDate(){
  let best = myProfile.lastPlayDate || null;
@@ -5179,6 +5193,7 @@ try{
    }
    saveDailyHour(v);
    const synced = await syncDailyReminder();
+   if(v != null) syncQMissionProgress(true);
    if(remNote) remNote.textContent = (v != null && !synced) ? t(STATIC_UI.dailyReminderPending) : '';
   });
  }
@@ -5504,17 +5519,17 @@ async function refreshLiveStats(){
  renderLiveStats();
 }
 try{
- presenceHeartbeat(lastWorkoutDate()); syncDailyReminder();
+ presenceHeartbeat(lastWorkoutDate()); syncDailyReminder(); syncQMissionProgress();
  refreshLiveStats();
  // 45초마다, 탭이 보일 때만 — 백그라운드에서 배터리·요청을 낭비하지 않는다.
  setInterval(()=>{
  if(document.visibilityState !== 'visible') return;
- presenceHeartbeat(lastWorkoutDate()); syncDailyReminder();
+ presenceHeartbeat(lastWorkoutDate()); syncDailyReminder(); syncQMissionProgress();
  refreshLiveStats();
  }, 45000);
  document.addEventListener('visibilitychange', ()=>{
  if(document.visibilityState === 'visible'){
- presenceHeartbeat(lastWorkoutDate()); syncDailyReminder();
+ presenceHeartbeat(lastWorkoutDate()); syncDailyReminder(); syncQMissionProgress();
  refreshLiveStats();
  }
  });
