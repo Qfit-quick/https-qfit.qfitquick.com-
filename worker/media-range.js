@@ -8,6 +8,7 @@
 // KB~수 MB(운동 클립)라 통째로 메모리에 올려도 부담 없다.
 import { handleBillingRequest, renewDueSubscriptions } from "./api/billing.js";
 import { handleBillingRequestKakao } from "./api/kakaoBilling.js";
+import { handleBillingRequestNaver } from "./api/naverBilling.js";
 import { test } from "./api/test.js";
 import { getTestToken } from "./utils/getTestToken.js";
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)$/i;
@@ -35,6 +36,9 @@ export default {
     }
     if (url.pathname.startsWith("/api/billing/kakao")) {
       return handleBillingRequestKakao(request, env);
+    }
+    if (url.pathname.startsWith("/api/billing/naver")) {
+      return handleBillingRequestNaver(request, env);
     }
     if (request.method !== "GET" || !VIDEO_EXT.test(url.pathname)) {
       return env.ASSETS.fetch(request);
