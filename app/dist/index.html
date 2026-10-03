@@ -50,8 +50,8 @@
 <!-- 설계가 정한 두 벌: 본문은 Noto Sans KR, 숫자·대문자 라벨은 Barlow Condensed.
      Barlow 는 한글 글리프가 없으므로 숫자와 라틴에만 쓴다 — 한글에 걸면 조용히 폴백된다. -->
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-BoTqdzN5.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DwNeAJYI.css">
+  <script type="module" crossorigin src="./assets/index-yUwCoW2i.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Bjac_5FZ.css">
 <script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <!-- 스플래시(FR-10).
@@ -147,6 +147,9 @@
  <!-- 이번 주 칸과 알을 한 줄에 세운다. 알은 눌러서 성장 창을 여는
       버튼이고, 이 줄에서는 그림과 레벨 두 가지만 말한다 — 홈에서
       필요한 것은 "얼마나 컸나" 하나이고, 나머지는 창 안에 있다. -->
+ <!-- 홈 화면 설치 안내(2026-10-04) — 브라우저로 쓰는 사람에게만. app.js 의 paintInstallBanner. -->
+ <div class="card home-install" id="home-install" hidden></div>
+
  <!-- 지난주 리포트(2026-10-04) — 새 주 첫 사흘, 닫을 때까지. ui/engage.js. -->
  <div class="card home-weekly" id="home-weekly" hidden></div>
 
@@ -1108,6 +1111,17 @@
  <span class="row-main"><span class="row-t" data-i18n="setReminder">운동 알림</span><span class="row-d dim" data-i18n="reminderNote">나흘 동안 운동을 안 하면 한 번 알려드립니다.</span></span>
  <input type="checkbox" id="reminder-toggle" class="sw-input">
  <span class="sw" aria-hidden="true"><i></i></span>
+ </label>
+ <!-- 매일 알림(2026-10-04) — 고른 시각에 오늘 아직 운동 전이면 한 번. 기본 끔. -->
+ <label class="settings-row">
+ <span class="row-main"><span class="row-t" data-i18n="dailyReminder">매일 알림</span><span class="row-d dim" data-i18n="dailyReminderNote">고른 시각에 운동 전이면 알려드려요.</span></span>
+ <select id="daily-reminder-select" class="daily-reminder-select" aria-label="매일 알림 시각" data-i18n-aria="dailyReminder">
+ <option value="off" data-i18n="dailyOff">끔</option>
+ <option value="8" data-i18n="daily8">아침 8시</option>
+ <option value="12" data-i18n="daily12">낮 12시</option>
+ <option value="19" data-i18n="daily19">저녁 7시</option>
+ <option value="21" data-i18n="daily21">밤 9시</option>
+ </select>
  </label>
  </div>
  <p class="dim-note" id="reminder-note"></p>

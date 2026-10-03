@@ -66,3 +66,24 @@ export function savePushSubscription(subscription, lastPlayDate) {
 export function removePushSubscription() {
   return rpc('remove_push_subscription', { p_device_id: getDeviceId() });
 }
+
+/** 매일 알림 시간(한국 시간 0~23시, null 이면 끔)을 서버에 적는다(2026-10-04).
+ *  true/false 를 돌려준다 — 위 rpc() 는 성공해도 빈 응답이면 null 이라 '서버
+ *  함수가 아직 없다'(SQL 을 아직 안 돌렸다)와 구별이 안 된다. 실패하면 부르는
+ *  쪽이 기기에 값을 들고 있다가 다음 하트비트 때 다시 시도한다. */
+export async function setDailyReminder(hour) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/set_daily_reminder`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_device_id: getDeviceId(), p_hour: hour == null ? null : Number(hour) }),
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}

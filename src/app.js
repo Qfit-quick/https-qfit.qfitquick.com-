@@ -5,7 +5,7 @@ import { advanceProgramProgress, clearPendingProgramDay } from './ui/programs.js
 import { getSupabase, hasStoredSession, hasOAuthCodeReturn, hasPendingPkceVerifier, waitForUrlAuthEvent, isSupabaseReady, isCloudEnabled } from './cloud/supabase.js';
 import { refreshBillingStatus } from './ui/billing.js';
 import { goBack } from './ui/nav.js';
-import { heartbeat as presenceHeartbeat, getTodayActiveCount } from './cloud/presence.js';
+import { heartbeat as presenceHeartbeat, getTodayActiveCount, setDailyReminder } from './cloud/presence.js';
 import * as reminder from './notify/reminder.js';
 import { RECOVERY_CARDS, INJURY_GUIDES, SPECIAL_GUIDES, DIET_GUIDES } from './data/recovery.js';
 import { INJURY_AVOID } from './data/injury-avoid.js';
@@ -1850,6 +1850,41 @@ function workoutDatesSafe(){
  }catch(e){}
  (myProfile.history || []).forEach(e=>{ const ms = histTime(e); if(ms) set.add(dayKey(new Date(ms))); });
  return set;
+}
+
+// 서버(4일 리마인더·매일 알림)에 알려 줄 마지막 운동 날짜(2026-10-04).
+// 예전엔 myProfile.lastPlayDate(앱 완주만)를 보내서, 도전만 하는 사람은 매일
+// 운동해도 서버가 4일 쉰 걸로 알고 "4일 쉬었습니다" 알림을 받았다.
+const DAILY_HOUR_KEY = 'qfit_daily_hour_v1';
+const DAILY_SYNCED_KEY = 'qfit_daily_synced_v1';
+function loadDailyHour(){
+ try{ const v = localStorage.getItem(DAILY_HOUR_KEY); return v == null || v === '' ? null : Number(v); }catch(e){ return null; }
+}
+function saveDailyHour(h){
+ try{ if(h == null) localStorage.removeItem(DAILY_HOUR_KEY); else localStorage.setItem(DAILY_HOUR_KEY, String(h)); }catch(e){}
+}
+// 기기에 고른 값과 서버에 적힌 값이 다르면 서버에 적는다. 성공하면 true.
+let dailySyncing = false;
+async function syncDailyReminder(){
+ if(dailySyncing) return false;
+ const want = loadDailyHour();
+ let synced = null;
+ try{ synced = localStorage.getItem(DAILY_SYNCED_KEY); }catch(e){}
+ const wantStr = want == null ? 'off' : String(want);
+ if(synced === wantStr) return true;
+ if(want == null && synced == null) return true; // 한 번도 안 켰으면 서버에 적을 것도 없다
+ dailySyncing = true;
+ try{
+  const ok = await setDailyReminder(want);
+  if(ok){ try{ localStorage.setItem(DAILY_SYNCED_KEY, wantStr); }catch(e){} }
+  return ok;
+ }finally{ dailySyncing = false; }
+}
+
+function lastWorkoutDate(){
+ let best = myProfile.lastPlayDate || null;
+ try{ for(const k of workoutDatesSafe()) if(!best || k > best) best = k; }catch(e){}
+ return best;
 }
 
 function renderWeekStrip(){
@@ -4813,6 +4848,59 @@ try{
  e.preventDefault();
  deferredInstallPrompt = e;
  });
+ // 홈의 설치 안내(2026-10-04). 홈 화면에 설치하면 아이콘·배지·(아이폰은)
+ // 알림이 생겨 다시 여는 길이 생긴다. 설정 깊숙이 줄 하나만 있어서 아무도 못
+ // 찾았다. 브라우저로 쓰는 사람에게만, 서로 다른 이틀 이상 왔고 운동을 한 번은
+ // 한 뒤에(처음 온 사람에게 들이밀지 않는다), 설치 창을 띄울 수 있거나
+ // 아이폰이면 띄운다. 닫으면 2주 동안 안 띄운다.
+ const installBanner = document.getElementById('home-install');
+ const VISIT_KEY = 'qfit_visit_days_v1', INSTALL_DISMISS_KEY = 'qfit_install_dismissed_v1';
+ const visitDays = (()=>{
+  let a = [];
+  try{ a = JSON.parse(localStorage.getItem(VISIT_KEY) || '[]'); }catch(e){}
+  if(!Array.isArray(a)) a = [];
+  const today = dayKey();
+  if(!a.includes(today)){ a.push(today); a = a.slice(-10); try{ localStorage.setItem(VISIT_KEY, JSON.stringify(a)); }catch(e){} }
+  return a;
+ })();
+ const paintInstallBanner = ()=>{
+  if(!installBanner) return;
+  let dismissed = 0;
+  try{ dismissed = Number(localStorage.getItem(INSTALL_DISMISS_KEY) || 0); }catch(e){}
+  const canPrompt = !!deferredInstallPrompt || isIOS;
+  const show = !isStandaloneMode && canPrompt && visitDays.length >= 2
+   && (()=>{ try{ return liveStreak().ever; }catch(e){ return false; } })()
+   && (Date.now() - dismissed > 14 * 86400000);
+  installBanner.hidden = !show;
+  if(!show){ installBanner.innerHTML = ''; return; }
+  installBanner.innerHTML =
+   '<div class="home-install-main">' +
+   '<span class="home-install-t">' + t(STATIC_UI.installBannerTitle) + '</span>' +
+   '<span class="home-install-d">' + t(isIOS && !deferredInstallPrompt ? STATIC_UI.installBannerIos : STATIC_UI.installBannerDesc) + '</span>' +
+   '</div>' +
+   (deferredInstallPrompt ? '<button type="button" class="home-install-btn" data-install-go>' + t(STATIC_UI.installBannerBtn) + '</button>' : '') +
+   '<button type="button" class="home-install-x" data-install-close aria-label="' + t(STATIC_UI.weeklyClose) + '">✕</button>';
+ };
+ if(installBanner){
+  installBanner.addEventListener('click', async (e)=>{
+   if(e.target.closest('[data-install-close]')){
+    try{ localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now())); }catch(err){}
+    paintInstallBanner();
+    return;
+   }
+   if(e.target.closest('[data-install-go]') && deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    try{ await deferredInstallPrompt.userChoice; }catch(err){}
+    deferredInstallPrompt = null;
+    paintInstallBanner();
+   }
+  });
+  // 설치 창을 띄울 수 있게 되는 순간(브라우저가 알려 준다)·홈으로 돌아올 때 다시 본다.
+  window.addEventListener('beforeinstallprompt', ()=> setTimeout(paintInstallBanner, 0));
+  window.addEventListener('appinstalled', ()=>{ installBanner.hidden = true; });
+  document.addEventListener('screenchange', (e)=>{ if(e.detail?.id === 'start-screen') paintInstallBanner(); });
+  paintInstallBanner();
+ }
  if(installRow){
  installRow.addEventListener('click', async ()=>{
  if(deferredInstallPrompt){
@@ -4832,7 +4920,7 @@ try{ loadProfile(); }catch(e){ console.error('loadProfile failed:', e); }
 // 알림 권한을 대신 물어본다 — reminder.js 의 maybeAutoEnable() 이 "이미
 // 물어봤음" 을 기억해서 이후로는 다시 안 묻는다. myProfile 이 있어야
 // lastPlayDate 를 구독 정보에 같이 실을 수 있어 loadProfile() 뒤에 둔다.
-try{ reminder.maybeAutoEnable(myProfile.lastPlayDate); }catch(e){ console.error('reminder auto-enable failed:', e); }
+try{ reminder.maybeAutoEnable(lastWorkoutDate()); }catch(e){ console.error('reminder auto-enable failed:', e); }
 // 알은 프로필의 xp 로 그린다. 그래서 loadProfile 뒤에 있어야 한다.
 try{ renderPetCard(); }catch(e){ console.error('pet card boot render failed:', e); }
 
@@ -5067,10 +5155,32 @@ try{
  if(remNote) remNote.textContent = t(STATIC_UI.reminderUnsupported);
  return;
  }
- const ok = await reminder.enable(myProfile.lastPlayDate);
+ const ok = await reminder.enable(lastWorkoutDate());
  remToggle.checked = ok;
  if(remNote) remNote.textContent = ok ? '' : t(STATIC_UI.reminderDenied);
  });
+ }
+ // 매일 알림(2026-10-04). 고른 시각(한국 시간)에 오늘 아직 운동 전이면 한 번
+ // 알린다 — 실제 발송은 서버(supabase/functions/send-reminders, 매시간). 기기에
+ // 값을 들고 있다가 서버에 적는다(syncDailyReminder) — 서버 쪽 준비(docs/sql/
+ // 2026-10-04-daily-reminder.sql)가 아직이면 다음 하트비트 때 다시 시도한다.
+ // 4일 리마인더와 달리 기본은 꺼짐이다: 매일 오는 알림은 사람이 직접 골라야 한다.
+ const dailySel = document.getElementById('daily-reminder-select');
+ if(dailySel){
+  dailySel.value = String(loadDailyHour() ?? 'off');
+  dailySel.addEventListener('change', async ()=>{
+   const v = dailySel.value === 'off' ? null : Number(dailySel.value);
+   if(v != null){
+    // 매일 알림도 웹푸시다 — 알림 권한·구독이 먼저다.
+    if(typeof Notification === 'undefined'){ dailySel.value = 'off'; if(remNote) remNote.textContent = t(STATIC_UI.reminderUnsupported); return; }
+    const ok = await reminder.enable(lastWorkoutDate());
+    if(remToggle) remToggle.checked = ok;
+    if(!ok){ dailySel.value = 'off'; if(remNote) remNote.textContent = t(STATIC_UI.reminderDenied); return; }
+   }
+   saveDailyHour(v);
+   const synced = await syncDailyReminder();
+   if(remNote) remNote.textContent = (v != null && !synced) ? t(STATIC_UI.dailyReminderPending) : '';
+  });
  }
  // 앱을 열었을 때 알릴 때가 됐으면 알린다. 닫혀 있는 사이는 웹푸시가
  // 필요하고 그건 배포가 붙어야 한다.
@@ -5394,17 +5504,17 @@ async function refreshLiveStats(){
  renderLiveStats();
 }
 try{
- presenceHeartbeat(myProfile.lastPlayDate);
+ presenceHeartbeat(lastWorkoutDate()); syncDailyReminder();
  refreshLiveStats();
  // 45초마다, 탭이 보일 때만 — 백그라운드에서 배터리·요청을 낭비하지 않는다.
  setInterval(()=>{
  if(document.visibilityState !== 'visible') return;
- presenceHeartbeat(myProfile.lastPlayDate);
+ presenceHeartbeat(lastWorkoutDate()); syncDailyReminder();
  refreshLiveStats();
  }, 45000);
  document.addEventListener('visibilitychange', ()=>{
  if(document.visibilityState === 'visible'){
- presenceHeartbeat(myProfile.lastPlayDate);
+ presenceHeartbeat(lastWorkoutDate()); syncDailyReminder();
  refreshLiveStats();
  }
  });

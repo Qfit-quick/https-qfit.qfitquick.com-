@@ -1318,3 +1318,22 @@
 }
 
 .rec-streak-note { font-size: var(--t-xs); margin-top: var(--s-2); }
+
+/* 홈 화면 설치 안내(2026-10-04) */
+.home-install { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-color: var(--mint-text); }
+.home-install[hidden] { display: none; }
+.home-install-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.home-install-t { font-size: var(--t-sm); font-weight: 800; }
+.home-install-d { font-size: var(--t-xs); color: var(--text-dim); line-height: 1.5; word-break: keep-all; }
+.home-install-btn {
+  flex: none; min-height: var(--tap); padding: 0 var(--s-4); border: 0; border-radius: var(--r-full);
+  background: var(--mint-text); color: var(--bg); font-size: var(--t-sm); font-weight: 800; font-family: inherit; cursor: pointer;
+}
+.home-install-x { flex: none; width: var(--tap); height: var(--tap); margin-right: -10px; background: none; border: 0; color: var(--text-dim); cursor: pointer; }
+
+/* 매일 알림 시각 고르기 */
+.daily-reminder-select {
+  flex: none; min-height: 36px; padding: 0 var(--s-2);
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text); font-family: inherit; font-size: var(--t-sm);
+}

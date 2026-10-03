@@ -100,7 +100,9 @@ export async function enable(lastPlayDate) {
     // 웹푸시는 되면 좋은 것이지 필수가 아니다 — 미지원 기기(iOS 홈 화면
     // 미설치 등)에서 실패해도 위 checkOnOpen() 은 그대로 동작하므로
     // 실패를 삼킨다.
-    try { await subscribePush(lastPlayDate); } catch (e) { console.error('push subscribe failed:', e); }
+    // 기다리지 않는다(2026-10-04) — 서비스 워커가 늦게 준비되면 이 자리에서
+    // 토글·매일 알림 설정이 반응 없이 멈췄다. 권한만 받으면 켜진 것이다.
+    subscribePush(lastPlayDate).catch((e) => console.error('push subscribe failed:', e));
   }
   return ok;
 }
@@ -143,7 +145,11 @@ export async function subscribePush(lastPlayDate) {
     return { ok: false, reason: 'unsupported' };
   }
   try {
-    const reg = await navigator.serviceWorker.ready;
+    // 서비스 워커가 아직 없으면 ready 는 영영 안 끝난다 — 10초만 기다린다.
+    const reg = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('service worker not ready')), 10000)),
+    ]);
     let sub = await reg.pushManager.getSubscription();
     if (!sub) {
       sub = await reg.pushManager.subscribe({
