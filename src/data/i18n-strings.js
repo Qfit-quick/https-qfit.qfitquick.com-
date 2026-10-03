@@ -312,6 +312,8 @@ export const STATIC_UI = {
  streakToday: {ko:'🔥 연속 %s일 · 오늘 ✓', en:'🔥 %s-day streak · today ✓', zh:'🔥 连续%s天 · 今天 ✓'},
  streakAtRisk: {ko:'🔥 오늘 하면 %s일 연속', en:'🔥 Today makes %s in a row', zh:'🔥 今天练就连续%s天'},
  streakRestart: {ko:'오늘 하면 다시 1일째', en:'Today starts day 1 again', zh:'今天练就重新第1天'},
+ streakRestMark: {ko:'쉼', en:'rest', zh:'休'},
+ streakRestRule: {ko:'한 주에 하루는 쉬어도 연속이 이어져요.', en:'One rest day a week keeps your streak alive.', zh:'每周休息一天，连续记录也不会断。'},
  streakMilestoneTitle: {ko:'%s일 연속 달성!', en:'%s-day streak!', zh:'连续%s天达成！'},
  streakMilestoneBody: {ko:'하루도 안 빼고 %s일째예요. 내일도 1분이면 이어져요.', en:'%s days in a row. Tomorrow, one minute keeps it going.', zh:'连续%s天没断。明天一分钟就能继续。'},
  streakMilestoneShare: {ko:'자랑하기', en:'Share', zh:'分享'},

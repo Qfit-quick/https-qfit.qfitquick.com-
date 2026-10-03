@@ -1860,6 +1860,8 @@ function renderWeekStrip(){
  // 운동한 날 = 앱 완주 + 도전 실천 + 체크 화면의 '오늘 운동했다'(2026-10-04).
  // 예전엔 앱 완주만 세서, 플란체를 매일 해도 이 칸이 비어 있었다.
  const doneDays = workoutDatesSafe();
+ // 주 1회 쉬는 날로 연속을 지켜 준 날(ui/engage.js) — '쉼'으로 보인다.
+ const restDays = (()=>{ try{ return new Set(liveStreak().restDays); }catch(e){ return new Set(); } })();
 
  // 설계의 주는 월요일에 시작한다. 오늘로 끝나는 굴러가는 7일이 아니라
  // '이번 주' 라 카드 제목과 같은 말이 되어야 한다.
@@ -1877,14 +1879,15 @@ function renderWeekStrip(){
   // 완주가 오늘보다 먼저 오는 게 중요하다 — 오늘 이미 했으면 테두리가 아니라
   // 채워진 칸으로 보여야 "오늘 것은 끝났다" 가 한눈에 읽힌다.
   const isToday = d.toDateString() === today.toDateString();
-  const state = done ? 'done' : (isToday ? 'today' : (d > today ? 'future' : 'miss'));
+  const state = done ? 'done' : (isToday ? 'today' : (d > today ? 'future' : (restDays.has(dayKey(d)) ? 'rest' : 'miss')));
 
   const cell = document.createElement('div');
   cell.className = 'week-day ' + state;
   cell.innerHTML = '<span class="wd-label">' + dow[i] + '</span>';
   const dot = document.createElement('span');
   dot.className = 'wd-dot';
-  dot.textContent = done ? '✓' : '';
+  dot.textContent = done ? '✓' : (state === 'rest' ? t(STATIC_UI.streakRestMark) : '');
+  if(state === 'rest') cell.title = t(STATIC_UI.streakRestRule);
   cell.appendChild(dot);
   strip.appendChild(cell);
  }
@@ -2067,6 +2070,12 @@ function renderRecordsScreen(){
  // 빈 자리가 남는데, 그건 '이번 주 운동을 안 했다'로 읽힌다.
  try{ renderBodyparts(); }catch(e){ console.error('renderBodyparts failed:', e); }
  renderCalendar();
+ // 도전·직접 체크로 이어 온 연속도 최고 기록에 든다(2026-10-04) — 예전엔
+ // 앱 완주 때만 갱신돼서 '현재 연속 4일 · 역대 최고 0일' 이 함께 떴다.
+ try{
+  const live = liveStreak().count;
+  if(live > (myProfile.bestStreakEver || 0)){ myProfile.bestStreakEver = live; saveProfile(); }
+ }catch(e){}
  document.getElementById('rec-best-streak').textContent = (myProfile.bestStreakEver || 0) + t({ko:'일',en:'d',zh:'天'});
  // 큰 숫자 자리에 부연을 넣으면 44px 로 '0일(오늘 0회)' 가 되어 두 줄로 넘친다.
   // 숫자는 숫자대로 두고 부연만 작게 떼어 붙인다.

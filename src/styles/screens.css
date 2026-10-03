@@ -1307,3 +1307,14 @@
 .streak-cele-btns { display: flex; gap: var(--s-2); width: 100%; margin-top: var(--s-2); }
 .streak-cele-btns > * { flex: 1 1 0; min-height: var(--tap); }
 @keyframes celeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* 주 1회 쉬는 날로 연속을 지켜 준 날 — 빈칸(놓침)과 구별되게 옅은 민트 테두리에 '쉼'. */
+.week-day.rest .wd-dot {
+  border: 1.5px dashed var(--mint-text);
+  color: var(--mint-text);
+  font-size: 10px;
+  font-weight: 700;
+  background: transparent;
+}
+
+.rec-streak-note { font-size: var(--t-xs); margin-top: var(--s-2); }

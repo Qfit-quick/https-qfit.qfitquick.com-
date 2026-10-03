@@ -80,6 +80,37 @@ const TODAY = '2026-10-04';
   check(`끊긴 연속: "${h.line}"`, h.state === 'restart', h);
   await ctx.close();
 }
+// 3b. 주 1회 쉬는 날: 토요일(10-03) 하루 빠지고 오늘(일) 아직 → 연속 유지, 토요일 칸은 '쉼'
+{
+  const { ctx, pg } = await open({ now: SUN, workouts: ['2026-10-01', '2026-10-02'] });
+  const h = await home(pg);
+  const cells = h.todayCell || [];
+  check(`하루 쉬어도 유지: "${h.line}" · 토요일=${cells[5]}`, h.state === 'risk' && /3일 연속/.test(h.line) && cells[5] === 'rest', { h, cells });
+  await ctx.close();
+}
+// 3c. 같은 주에 이틀 빠지면 끊긴다
+{
+  const { ctx, pg } = await open({ now: SUN, workouts: ['2026-09-30', '2026-10-01'] });
+  const h = await home(pg);
+  check(`같은 주 이틀 쉬면 끊김: "${h.line}"`, h.state === 'restart', h);
+  await ctx.close();
+}
+// 3d. 주중 하루(수) 쉬고 다시 매일 → 쉰 날은 세지 않는다(월·화·목·금·토·일 = 6일)
+{
+  const { ctx, pg } = await open({ now: SUN, workouts: ['2026-09-28', '2026-09-29', '2026-10-01', '2026-10-02', '2026-10-03', TODAY] });
+  const h = await home(pg);
+  check(`쉰 날 빼고 셈: "${h.line}"`, h.state === 'done' && /연속 6일/.test(h.line), h);
+  await ctx.close();
+}
+// 3e. 기록 화면: 현재 연속이 최고 기록보다 크면 최고 기록도 그만큼
+{
+  const { ctx, pg } = await open({ now: SUN, workouts: ['2026-10-01', '2026-10-02', '2026-10-03'] });
+  await pg.click('.tabbar .tab[data-screen="more-screen"]'); await pg.clock.runFor(300);
+  await pg.click('#open-records-btn'); await pg.clock.runFor(500);
+  const r = await pg.evaluate(() => ({ best: document.getElementById('rec-best-streak').textContent, cur: document.getElementById('rec-current-streak').textContent }));
+  check(`기록 화면: 현재 ${r.cur} · 최고 ${r.best}`, /^3일/.test(r.cur) && r.best === '3일', r);
+  await ctx.close();
+}
 // 4. 도전 실천 체크 → 이번 주 칸·연속·펫·배지에 반영 + 3일째면 축하(한 번만)
 {
   const { ctx, pg } = await open({ now: SUN, workouts: [key(TODAY, -1), key(TODAY, -2)], extra: { qfit_challenge_planche_start: key(TODAY, -10) } });

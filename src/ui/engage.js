@@ -50,23 +50,53 @@ export function workoutDates() {
   return set;
 }
 
+function weekOf(dateKey) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const dow = (new Date(y, m - 1, d).getDay() + 6) % 7; // 월=0
+  return shiftDay(dateKey, -dow);
+}
+
 /**
  * 지금 살아 있는 연속 기록.
- *  count     — 오늘 했으면 오늘까지, 아니면 어제까지 이어진 날 수
+ *  count     — 이어진 운동 일수(쉬는 날은 세지 않는다)
  *  doneToday — 오늘 이미 했나
- *  atRisk    — 어제까지 이어져 있는데 오늘 아직 안 했다(오늘 안 하면 끊긴다)
+ *  atRisk    — 이어져 있는데 오늘 아직 안 했다
  *  ever      — 한 번이라도 운동한 적이 있나
+ *  restDays  — 연속을 지켜 준 쉬는 날들(YYYY-MM-DD)
+ *  start     — 이 연속이 시작된 날
+ *
+ * 주 1회 쉬는 날(2026-10-04): 한 주(월~일)에 하루는 빠져도 끊기지 않는다 —
+ * 그 하루 뒤에 다시 운동했거나 그 하루가 어제(오늘 하면 이어진다)일 때만.
+ * 한 번 끊기면 의욕이 꺾여 아예 그만두는 사람이 많아서다. 같은 주에 이틀을
+ * 빠지면 끊긴다. 오늘은 아직 끝나지 않은 날이라 쉬는 날로 치지 않는다.
  */
 export function liveStreak(today = dayKey()) {
   const days = workoutDates();
   const doneToday = days.has(today);
   let cursor = doneToday ? today : shiftDay(today, -1);
   let count = 0;
-  while (days.has(cursor) && count < 3650) {
-    count++;
-    cursor = shiftDay(cursor, -1);
+  let start = null;
+  const restDays = [];
+  const restUsed = new Set(); // 쉬는 날을 쓴 주(월요일 날짜)
+  for (let guard = 0; guard < 3650; guard++) {
+    if (days.has(cursor)) {
+      count++;
+      start = cursor;
+      cursor = shiftDay(cursor, -1);
+      continue;
+    }
+    // 빠진 날 — 이 주의 쉬는 날을 아직 안 썼고, 그 전날 운동했으면 이어 준다.
+    const wk = weekOf(cursor);
+    const before = shiftDay(cursor, -1);
+    if (!restUsed.has(wk) && days.has(before)) {
+      restUsed.add(wk);
+      restDays.push(cursor);
+      cursor = before;
+      continue;
+    }
+    break;
   }
-  return { count, doneToday, atRisk: !doneToday && count > 0, ever: days.size > 0 };
+  return { count, doneToday, atRisk: !doneToday && count > 0, ever: days.size > 0, restDays, start };
 }
 
 /** 홈 '이번 주' 카드 머리의 한 줄 — 상태에 따라 말이 바뀐다. */
@@ -104,9 +134,8 @@ function loadCelebrated() {
 export function maybeCelebrateStreak() {
   const s = liveStreak();
   if (!s.doneToday || !MILESTONES.includes(s.count)) return false;
-  const startDay = shiftDay(dayKey(), -(s.count - 1));
   const done = loadCelebrated();
-  const id = s.count + '@' + startDay;
+  const id = s.count + '@' + s.start;
   if (done[id]) return false;
   done[id] = true;
   try { localStorage.setItem(CELE_KEY, JSON.stringify(done)); } catch (e) { /* 이번만 */ }
